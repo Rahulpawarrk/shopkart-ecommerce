@@ -35,6 +35,7 @@ COPY --from=builder /app/target/ecommerce-web.war webapps/ROOT.war
 
 # Create dynamic entrypoint script to adapt Tomcat port to cloud platform $PORT (Render / Koyeb)
 RUN printf '#!/bin/sh\n\
+sed -i "s/port=\"8005\"/port=\"-1\"/g" conf/server.xml\n\
 if [ -n "$PORT" ]; then\n\
   sed -i "s/port=\"8080\"/port=\"$PORT\"/g" conf/server.xml\n\
 fi\n\
