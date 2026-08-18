@@ -127,22 +127,28 @@ public class CartDAO {
      * Upserts an item into the cart (increments quantity if already in cart).
      */
     public void upsertCartItem(int cartId, int productId, int quantityToAdd) {
-        String sql = "MERGE dbo.cart_items AS target " +
-                     "USING (SELECT ? AS cart_id, ? AS product_id) AS source " +
-                     "ON target.cart_id = source.cart_id AND target.product_id = source.product_id " +
-                     "WHEN MATCHED THEN " +
-                     "    UPDATE SET target.quantity = target.quantity + ?, target.updated_at = SYSDATETIME() " +
-                     "WHEN NOT MATCHED THEN " +
-                     "    INSERT (cart_id, product_id, quantity, created_at, updated_at) " +
-                     "    VALUES (source.cart_id, source.product_id, ?, SYSDATETIME(), SYSDATETIME());";
+        String updateSql = "UPDATE dbo.cart_items SET quantity = quantity + ?, updated_at = CURRENT_TIMESTAMP " +
+                           "WHERE cart_id = ? AND product_id = ?";
+        String insertSql = "INSERT INTO dbo.cart_items (cart_id, product_id, quantity, created_at, updated_at) " +
+                           "VALUES (?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
         
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, cartId);
-            stmt.setInt(2, productId);
-            stmt.setInt(3, quantityToAdd);
-            stmt.setInt(4, quantityToAdd);
-            stmt.executeUpdate();
+        try (Connection conn = DBConnection.getConnection()) {
+            int rowsUpdated = 0;
+            try (PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+                updateStmt.setInt(1, quantityToAdd);
+                updateStmt.setInt(2, cartId);
+                updateStmt.setInt(3, productId);
+                rowsUpdated = updateStmt.executeUpdate();
+            }
+
+            if (rowsUpdated == 0) {
+                try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+                    insertStmt.setInt(1, cartId);
+                    insertStmt.setInt(2, productId);
+                    insertStmt.setInt(3, quantityToAdd);
+                    insertStmt.executeUpdate();
+                }
+            }
             updateCartTimestamp(cartId, conn);
         } catch (SQLException e) {
             logger.error("Error adding product {} to cart {}", productId, cartId, e);
