@@ -38,7 +38,7 @@ public class EmailService {
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
     private static final String SMTP_HOST = "smtp.gmail.com";
-    private static final int SMTP_PORT = 587;
+    private static final int SMTP_PORT = 465;
 
     private static final ExecutorService mailExecutor = Executors.newCachedThreadPool(r -> {
         Thread t = new Thread(r, "ShopKart-Mail-Worker");
@@ -130,8 +130,6 @@ public class EmailService {
             logger.error("Failed to send signup verification OTP email to: {}", toEmail, e);
         }
     }
-
-    private static final int SMTP_PORT = 465;
 
     private Session buildMailSession() {
         Properties props = new Properties();

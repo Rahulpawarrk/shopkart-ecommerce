@@ -27,10 +27,10 @@ public class DashboardDAO {
         DashboardStats stats = new DashboardStats();
 
         String sql = "SELECT " +
-                     "(SELECT ISNULL(SUM(total_amount), 0) FROM dbo.orders WHERE (payment_status = 'PAID' OR order_status = 'DELIVERED') AND order_status != 'CANCELLED') AS total_revenue, " +
-                     "(SELECT ISNULL(SUM(total_amount), 0) FROM dbo.orders WHERE (payment_status = 'PAID' OR order_status = 'DELIVERED') AND order_status != 'CANCELLED' AND CAST(created_at AS DATE) = CAST(SYSDATETIME() AS DATE)) AS today_revenue, " +
+                     "(SELECT COALESCE(SUM(total_amount), 0) FROM dbo.orders WHERE (payment_status = 'PAID' OR order_status = 'DELIVERED') AND order_status != 'CANCELLED') AS total_revenue, " +
+                     "(SELECT COALESCE(SUM(total_amount), 0) FROM dbo.orders WHERE (payment_status = 'PAID' OR order_status = 'DELIVERED') AND order_status != 'CANCELLED' AND CAST(created_at AS DATE) = CAST(CURRENT_TIMESTAMP AS DATE)) AS today_revenue, " +
                      "(SELECT COUNT(*) FROM dbo.orders WHERE order_status != 'CANCELLED') AS total_orders, " +
-                     "(SELECT COUNT(*) FROM dbo.orders WHERE order_status != 'CANCELLED' AND CAST(created_at AS DATE) = CAST(SYSDATETIME() AS DATE)) AS today_orders, " +
+                     "(SELECT COUNT(*) FROM dbo.orders WHERE order_status != 'CANCELLED' AND CAST(created_at AS DATE) = CAST(CURRENT_TIMESTAMP AS DATE)) AS today_orders, " +
                      "(SELECT COUNT(*) FROM dbo.orders WHERE order_status IN ('PLACED', 'CONFIRMED', 'PROCESSING', 'DISPATCHED', 'IN_TRANSIT', 'OUT_FOR_DELIVERY')) AS pending_orders, " +
                      "(SELECT COUNT(*) FROM dbo.products WHERE status = 'ACTIVE') AS total_products, " +
                      "(SELECT COUNT(*) FROM dbo.inventory WHERE quantity <= low_stock_threshold) AS low_stock_products, " +
@@ -60,12 +60,12 @@ public class DashboardDAO {
     public List<SalesReportItem> getMonthlySalesReport(int year) {
         List<SalesReportItem> list = new ArrayList<>();
         String sql = "SELECT " +
-                     "FORMAT(created_at, 'yyyy-MM') AS month_label, " +
+                     "TO_CHAR(created_at, 'YYYY-MM') AS month_label, " +
                      "COUNT(order_id) AS order_count, " +
-                     "ISNULL(SUM(total_amount), 0) AS total_sales " +
+                     "COALESCE(SUM(total_amount), 0) AS total_sales " +
                      "FROM dbo.orders " +
-                     "WHERE YEAR(created_at) = ? AND (payment_status = 'PAID' OR order_status = 'DELIVERED') AND order_status != 'CANCELLED' " +
-                     "GROUP BY FORMAT(created_at, 'yyyy-MM') " +
+                     "WHERE EXTRACT(YEAR FROM created_at) = ? AND (payment_status = 'PAID' OR order_status = 'DELIVERED') AND order_status != 'CANCELLED' " +
+                     "GROUP BY TO_CHAR(created_at, 'YYYY-MM') " +
                      "ORDER BY month_label ASC";
 
         try (Connection conn = DBConnection.getConnection();
@@ -122,7 +122,7 @@ public class DashboardDAO {
 
     public List<Map<String, Object>> getTopSellingProducts(int limit) {
         List<Map<String, Object>> list = new ArrayList<>();
-        String sql = "SELECT TOP (?) " +
+        String sql = "SELECT " +
                      "p.product_id, p.product_name, p.sku, " +
                      "SUM(oi.quantity) AS total_units_sold, " +
                      "SUM(oi.line_total) AS total_revenue " +
@@ -131,7 +131,8 @@ public class DashboardDAO {
                      "INNER JOIN dbo.orders o ON oi.order_id = o.order_id " +
                      "WHERE (o.payment_status = 'PAID' OR o.order_status = 'DELIVERED') AND o.order_status != 'CANCELLED' " +
                      "GROUP BY p.product_id, p.product_name, p.sku " +
-                     "ORDER BY total_revenue DESC";
+                     "ORDER BY total_revenue DESC " +
+                     "LIMIT ?";
 
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
