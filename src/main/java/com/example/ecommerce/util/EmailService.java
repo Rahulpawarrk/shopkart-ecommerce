@@ -52,14 +52,16 @@ public class EmailService {
     private final String appBaseUrl;
 
     public EmailService() {
-        this.smtpEmail = System.getenv("SMTP_EMAIL");
-        this.smtpPassword = System.getenv("SMTP_PASSWORD");
+        String email = System.getenv("SMTP_EMAIL");
+        this.smtpEmail = (email != null) ? email.trim() : null;
+        String pass = System.getenv("SMTP_PASSWORD");
+        this.smtpPassword = (pass != null) ? pass.trim().replaceAll("\\s+", "") : null;
         String name = System.getenv("SMTP_FROM_NAME");
         this.fromName = (name != null && !name.trim().isEmpty()) ? name.trim() : "ShopKart";
         String baseUrl = System.getenv("APP_BASE_URL");
         this.appBaseUrl = (baseUrl != null && !baseUrl.trim().isEmpty()) 
                 ? baseUrl.trim().replaceAll("/+$", "") 
-                : "http://localhost:8080/ecommerce-web";
+                : "https://shopkart-ecommerce-1m2n.onrender.com";
     }
 
     /**
