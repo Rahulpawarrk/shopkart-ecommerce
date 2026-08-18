@@ -373,17 +373,17 @@ public class ProductDAO {
             params.add(criteria.getStatus());
         }
 
-        if (criteria.getKeyword() != null) {
+        if (criteria.getKeyword() != null && !criteria.getKeyword().trim().isEmpty()) {
             whereClause
                     .append("AND (p.product_name LIKE ? OR p.description LIKE ? OR p.brand LIKE ? OR p.sku LIKE ?) ");
-            String kwParam = "%" + criteria.getKeyword() + "%";
+            String kwParam = "%" + criteria.getKeyword().trim() + "%";
             params.add(kwParam);
             params.add(kwParam);
             params.add(kwParam);
             params.add(kwParam);
         }
 
-        if (criteria.getCategoryId() != null) {
+        if (criteria.getCategoryId() != null && criteria.getCategoryId() > 0) {
             whereClause.append("AND (p.category_id = ? OR c.parent_category_id = ?) ");
             params.add(criteria.getCategoryId());
             params.add(criteria.getCategoryId());
