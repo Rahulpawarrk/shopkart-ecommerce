@@ -120,10 +120,10 @@ public class InventoryDAO {
     public Optional<Inventory> getInventoryWithLock(int productId, Connection conn) throws SQLException {
         String sql = "SELECT i.inventory_id, i.product_id, i.quantity, i.low_stock_threshold, i.last_updated, " +
                      "p.product_name, p.sku, p.brand, p.price, c.category_name " +
-                     "FROM dbo.inventory i WITH (UPDLOCK, ROWLOCK) " +
+                     "FROM dbo.inventory i " +
                      "INNER JOIN dbo.products p ON i.product_id = p.product_id " +
                      "INNER JOIN dbo.categories c ON p.category_id = c.category_id " +
-                     "WHERE i.product_id = ?";
+                     "WHERE i.product_id = ? FOR UPDATE";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, productId);
             try (ResultSet rs = stmt.executeQuery()) {
