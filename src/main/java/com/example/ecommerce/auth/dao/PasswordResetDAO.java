@@ -24,9 +24,9 @@ public class PasswordResetDAO {
      * Deletes any existing unused tokens for the same user first.
      */
     public void createToken(int userId, String token) {
-        String deleteSql = "DELETE FROM dbo.password_reset_tokens WHERE user_id = ? AND is_used = 0";
+        String deleteSql = "DELETE FROM dbo.password_reset_tokens WHERE user_id = ? AND is_used = false";
         String insertSql = "INSERT INTO dbo.password_reset_tokens (user_id, token, expires_at, is_used, created_at) " +
-                           "VALUES (?, ?, ?, 0, SYSDATETIME())";
+                           "VALUES (?, ?, ?, false, CURRENT_TIMESTAMP)";
         try (Connection conn = DBConnection.getConnection()) {
             conn.setAutoCommit(false);
             try {
@@ -58,9 +58,9 @@ public class PasswordResetDAO {
      * Deletes any existing unused tokens/OTPs for the same user first.
      */
     public void createOtp(int userId, String otpCode) {
-        String deleteSql = "DELETE FROM dbo.password_reset_tokens WHERE user_id = ? AND is_used = 0";
+        String deleteSql = "DELETE FROM dbo.password_reset_tokens WHERE user_id = ? AND is_used = false";
         String insertSql = "INSERT INTO dbo.password_reset_tokens (user_id, token, expires_at, is_used, created_at) " +
-                           "VALUES (?, ?, ?, 0, SYSDATETIME())";
+                           "VALUES (?, ?, ?, false, CURRENT_TIMESTAMP)";
         try (Connection conn = DBConnection.getConnection()) {
             conn.setAutoCommit(false);
             try {
@@ -92,7 +92,7 @@ public class PasswordResetDAO {
      */
     public boolean validateOtp(int userId, String otpCode) {
         String sql = "SELECT token_id FROM dbo.password_reset_tokens " +
-                     "WHERE user_id = ? AND token = ? AND is_used = 0 AND expires_at > SYSDATETIME()";
+                     "WHERE user_id = ? AND token = ? AND is_used = false AND expires_at > CURRENT_TIMESTAMP";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, userId);
@@ -111,7 +111,7 @@ public class PasswordResetDAO {
      */
     public Optional<Integer> findValidToken(String token) {
         String sql = "SELECT user_id FROM dbo.password_reset_tokens " +
-                     "WHERE token = ? AND is_used = 0 AND expires_at > SYSDATETIME()";
+                     "WHERE token = ? AND is_used = false AND expires_at > CURRENT_TIMESTAMP";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, token);
@@ -131,7 +131,7 @@ public class PasswordResetDAO {
      * Marks a token as used so it cannot be replayed.
      */
     public void invalidateToken(String token) {
-        String sql = "UPDATE dbo.password_reset_tokens SET is_used = 1 WHERE token = ?";
+        String sql = "UPDATE dbo.password_reset_tokens SET is_used = true WHERE token = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, token);

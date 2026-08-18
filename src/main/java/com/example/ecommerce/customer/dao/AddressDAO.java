@@ -190,8 +190,8 @@ public class AddressDAO {
      * Atomically designates one address as default while unsetting all other addresses for the user.
      */
     public void setDefaultAddress(int addressId, int userId) {
-        String clearSql = "UPDATE dbo.addresses SET is_default = 0 WHERE user_id = ?";
-        String setSql = "UPDATE dbo.addresses SET is_default = 1 WHERE address_id = ? AND user_id = ?";
+        String clearSql = "UPDATE dbo.addresses SET is_default = false WHERE user_id = ?";
+        String setSql = "UPDATE dbo.addresses SET is_default = true WHERE address_id = ? AND user_id = ?";
 
         try (Connection conn = DBConnection.getConnection()) {
             conn.setAutoCommit(false); // Begin Transaction
