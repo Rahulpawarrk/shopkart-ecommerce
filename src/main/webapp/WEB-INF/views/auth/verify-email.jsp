@@ -181,6 +181,14 @@
                 </div>
             </c:if>
 
+            <!-- Dev / Demo Mode OTP Hint (When SMTP is not configured) -->
+            <c:if test="${not empty demoOtp}">
+                <div style="background: #fefce8; border: 1px solid #fde047; border-left: 4px solid #eab308; padding: 0.75rem 1rem; border-radius: var(--radius-sm); margin-bottom: 1.25rem; color: #854d0e; font-size: 0.85rem;">
+                    <div style="font-weight: 700; margin-bottom: 0.25rem;">ℹ️ Demo Mode (SMTP Not Configured):</div>
+                    <div>Your 6-digit verification code is: <strong style="font-family: monospace; font-size: 1.15rem; color: #0f172a; background: #fff; padding: 2px 8px; border-radius: 4px; border: 1px solid #cbd5e1; letter-spacing: 2px;"><c:out value="${demoOtp}" /></strong></div>
+                </div>
+            </c:if>
+
             <form action="${pageContext.request.contextPath}/verify-email" method="POST" id="verifyEmailForm">
                 <div style="margin-bottom: 1.25rem;">
                     <label for="otp" style="display: block; font-size: 0.85rem; font-weight: 700; color: #111827; margin-bottom: 0.5rem;">

@@ -65,6 +65,11 @@ public class VerifyEmailServlet extends HttpServlet {
             logger.info("Resent signup email verification OTP to: {}", pending.getEmail());
         }
 
+        String smtpEmail = System.getenv("SMTP_EMAIL");
+        if (smtpEmail == null || smtpEmail.trim().isEmpty()) {
+            request.setAttribute("demoOtp", pending.getOtpCode());
+        }
+
         request.setAttribute("pendingEmail", pending.getEmail());
         request.setAttribute("pendingPhone", pending.getPhone());
         request.setAttribute("pendingFirstName", pending.getFirstName());
