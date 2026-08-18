@@ -36,9 +36,8 @@ COPY --from=builder /app/target/ecommerce-web.war webapps/ROOT.war
 # Create dynamic entrypoint script to adapt Tomcat port to cloud platform $PORT (Render / Koyeb)
 RUN printf '#!/bin/sh\n\
 sed -i "s/port=\"8005\"/port=\"-1\"/g" conf/server.xml\n\
-if [ -n "$PORT" ]; then\n\
-  sed -i "s/port=\"8080\"/port=\"$PORT\"/g" conf/server.xml\n\
-fi\n\
+PORT_TO_USE="${PORT:-8080}"\n\
+sed -i "s/<Connector port=\"8080\"/<Connector port=\"$PORT_TO_USE\" address=\"0.0.0.0\"/g" conf/server.xml\n\
 exec catalina.sh run\n' > /usr/local/tomcat/bin/docker-entrypoint.sh && \
 chmod +x /usr/local/tomcat/bin/docker-entrypoint.sh
 
