@@ -70,17 +70,24 @@ public final class DBConnection {
 
             HikariConfig config = new HikariConfig();
             
-            // Driver and Connection Parameters with Environment Variable Overrides
-            String driver = System.getenv("DB_DRIVER");
-            if (driver == null || driver.trim().isEmpty()) {
-                driver = props.getProperty("db.driver", "com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            }
-            config.setDriverClassName(driver);
-
             String jdbcUrl = System.getenv("DB_URL");
             if (jdbcUrl == null || jdbcUrl.trim().isEmpty()) {
                 jdbcUrl = props.getProperty("db.url");
             }
+            if (jdbcUrl != null && jdbcUrl.startsWith("postgresql://")) {
+                jdbcUrl = "jdbc:" + jdbcUrl;
+            }
+
+            // Driver and Connection Parameters with Automatic Dialect Detection
+            String driver = System.getenv("DB_DRIVER");
+            if (driver == null || driver.trim().isEmpty()) {
+                if (jdbcUrl != null && jdbcUrl.startsWith("jdbc:postgresql:")) {
+                    driver = "org.postgresql.Driver";
+                } else {
+                    driver = props.getProperty("db.driver", "com.microsoft.sqlserver.jdbc.SQLServerDriver");
+                }
+            }
+            config.setDriverClassName(driver);
             config.setJdbcUrl(jdbcUrl);
 
             String username = System.getenv("DB_USER");

@@ -85,6 +85,13 @@
             <version>${mssql.jdbc.version}</version>
         </dependency>
 
+        <!-- PostgreSQL JDBC Driver for Neon / Cloud Database -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.5</version>
+        </dependency>
+
         <!-- HikariCP JDBC Connection Pool -->
         <dependency>
             <groupId>com.zaxxer</groupId>
