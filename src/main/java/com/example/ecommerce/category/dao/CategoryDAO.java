@@ -34,9 +34,9 @@ public class CategoryDAO {
                 "LEFT JOIN dbo.categories p ON c.parent_category_id = p.category_id "
         );
         if (activeOnly) {
-            sql.append("WHERE c.is_active = 1 ");
+            sql.append("WHERE c.is_active = true ");
         }
-        sql.append("ORDER BY ISNULL(c.parent_category_id, c.category_id), c.category_id ASC");
+        sql.append("ORDER BY COALESCE(c.parent_category_id, c.category_id), c.category_id ASC");
 
         List<Category> categories = new ArrayList<>();
         try (Connection conn = DBConnection.getConnection();

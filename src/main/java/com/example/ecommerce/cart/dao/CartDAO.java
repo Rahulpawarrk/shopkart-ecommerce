@@ -80,8 +80,8 @@ public class CartDAO {
             // Query items joined with live catalog pricing and stock
             String itemsSql = "SELECT ci.cart_item_id, ci.cart_id, ci.product_id, ci.quantity, ci.created_at, ci.updated_at, " +
                               "p.product_name, p.sku, p.brand, p.price, p.discount_percentage, p.tax_percentage, " +
-                              "ISNULL(i.quantity, 0) AS stock_quantity, " +
-                              "(SELECT TOP 1 image_url FROM dbo.product_images pi WHERE pi.product_id = p.product_id ORDER BY pi.is_primary DESC, pi.display_order ASC) AS primary_image_url " +
+                              "COALESCE(i.quantity, 0) AS stock_quantity, " +
+                              "(SELECT image_url FROM dbo.product_images pi WHERE pi.product_id = p.product_id ORDER BY pi.is_primary DESC, pi.display_order ASC LIMIT 1) AS primary_image_url " +
                               "FROM dbo.cart_items ci " +
                               "INNER JOIN dbo.products p ON ci.product_id = p.product_id " +
                               "LEFT JOIN dbo.inventory i ON p.product_id = i.product_id " +

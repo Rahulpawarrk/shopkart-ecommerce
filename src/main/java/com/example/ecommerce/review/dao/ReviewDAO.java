@@ -28,9 +28,9 @@ public class ReviewDAO {
      * Checks if the customer has purchased this product and the order was delivered.
      */
     public boolean isVerifiedPurchase(int userId, int productId) {
-        String sql = "SELECT TOP 1 1 FROM dbo.orders o " +
+        String sql = "SELECT 1 FROM dbo.orders o " +
                      "INNER JOIN dbo.order_items oi ON o.order_id = oi.order_id " +
-                     "WHERE o.user_id = ? AND oi.product_id = ? AND o.order_status = 'DELIVERED'";
+                     "WHERE o.user_id = ? AND oi.product_id = ? AND o.order_status = 'DELIVERED' LIMIT 1";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, userId);
@@ -45,10 +45,10 @@ public class ReviewDAO {
     }
 
     public Optional<String> getDeliveredOrderNumber(int userId, int productId) {
-        String sql = "SELECT TOP 1 o.order_number FROM dbo.orders o " +
+        String sql = "SELECT o.order_number FROM dbo.orders o " +
                      "INNER JOIN dbo.order_items oi ON o.order_id = oi.order_id " +
                      "WHERE o.user_id = ? AND oi.product_id = ? AND o.order_status = 'DELIVERED' " +
-                     "ORDER BY o.delivered_at DESC, o.created_at DESC";
+                     "ORDER BY o.delivered_at DESC, o.created_at DESC LIMIT 1";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, userId);

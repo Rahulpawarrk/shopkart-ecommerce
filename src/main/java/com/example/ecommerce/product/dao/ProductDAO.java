@@ -74,9 +74,9 @@ public class ProductDAO {
         String dataSql = "SELECT p.product_id, p.category_id, p.sku, p.product_name, p.slug, p.description, " +
                 "p.brand, p.price, p.discount_percentage, p.tax_percentage, p.weight_kg, p.status, " +
                 "p.created_at, p.updated_at, c.category_name, c.slug AS category_slug, " +
-                "ISNULL(i.quantity, 0) AS stock_quantity, ISNULL(i.low_stock_threshold, 5) AS low_stock_threshold, " +
-                "ISNULL((SELECT AVG(CAST(r.rating AS FLOAT)) FROM dbo.reviews r WHERE r.product_id = p.product_id AND (r.status = 'APPROVED' OR r.status IS NULL)), 0.0) AS avg_rating, " +
-                "ISNULL((SELECT COUNT(*) FROM dbo.reviews r WHERE r.product_id = p.product_id AND (r.status = 'APPROVED' OR r.status IS NULL)), 0) AS review_count " +
+                "COALESCE(i.quantity, 0) AS stock_quantity, COALESCE(i.low_stock_threshold, 5) AS low_stock_threshold, " +
+                "COALESCE((SELECT AVG(r.rating) FROM dbo.reviews r WHERE r.product_id = p.product_id AND (r.status = 'APPROVED' OR r.status IS NULL)), 0.0) AS avg_rating, " +
+                "COALESCE((SELECT COUNT(*) FROM dbo.reviews r WHERE r.product_id = p.product_id AND (r.status = 'APPROVED' OR r.status IS NULL)), 0) AS review_count " +
                 "FROM dbo.products p " +
                 "INNER JOIN dbo.categories c ON p.category_id = c.category_id " +
                 "LEFT JOIN dbo.inventory i ON p.product_id = i.product_id " +
@@ -114,9 +114,9 @@ public class ProductDAO {
         String sql = "SELECT p.product_id, p.category_id, p.sku, p.product_name, p.slug, p.description, " +
                 "p.brand, p.price, p.discount_percentage, p.tax_percentage, p.weight_kg, p.status, " +
                 "p.created_at, p.updated_at, c.category_name, c.slug AS category_slug, " +
-                "ISNULL(i.quantity, 0) AS stock_quantity, ISNULL(i.low_stock_threshold, 5) AS low_stock_threshold, " +
-                "ISNULL((SELECT AVG(CAST(r.rating AS FLOAT)) FROM dbo.reviews r WHERE r.product_id = p.product_id AND (r.status = 'APPROVED' OR r.status IS NULL)), 0.0) AS avg_rating, " +
-                "ISNULL((SELECT COUNT(*) FROM dbo.reviews r WHERE r.product_id = p.product_id AND (r.status = 'APPROVED' OR r.status IS NULL)), 0) AS review_count " +
+                "COALESCE(i.quantity, 0) AS stock_quantity, COALESCE(i.low_stock_threshold, 5) AS low_stock_threshold, " +
+                "COALESCE((SELECT AVG(r.rating) FROM dbo.reviews r WHERE r.product_id = p.product_id AND (r.status = 'APPROVED' OR r.status IS NULL)), 0.0) AS avg_rating, " +
+                "COALESCE((SELECT COUNT(*) FROM dbo.reviews r WHERE r.product_id = p.product_id AND (r.status = 'APPROVED' OR r.status IS NULL)), 0) AS review_count " +
                 "FROM dbo.products p " +
                 "INNER JOIN dbo.categories c ON p.category_id = c.category_id " +
                 "LEFT JOIN dbo.inventory i ON p.product_id = i.product_id " +
@@ -145,9 +145,9 @@ public class ProductDAO {
         String sql = "SELECT p.product_id, p.category_id, p.sku, p.product_name, p.slug, p.description, " +
                 "p.brand, p.price, p.discount_percentage, p.tax_percentage, p.weight_kg, p.status, " +
                 "p.created_at, p.updated_at, c.category_name, c.slug AS category_slug, " +
-                "ISNULL(i.quantity, 0) AS stock_quantity, ISNULL(i.low_stock_threshold, 5) AS low_stock_threshold, " +
-                "ISNULL((SELECT AVG(CAST(r.rating AS FLOAT)) FROM dbo.reviews r WHERE r.product_id = p.product_id AND (r.status = 'APPROVED' OR r.status IS NULL)), 0.0) AS avg_rating, " +
-                "ISNULL((SELECT COUNT(*) FROM dbo.reviews r WHERE r.product_id = p.product_id AND (r.status = 'APPROVED' OR r.status IS NULL)), 0) AS review_count " +
+                "COALESCE(i.quantity, 0) AS stock_quantity, COALESCE(i.low_stock_threshold, 5) AS low_stock_threshold, " +
+                "COALESCE((SELECT AVG(r.rating) FROM dbo.reviews r WHERE r.product_id = p.product_id AND (r.status = 'APPROVED' OR r.status IS NULL)), 0.0) AS avg_rating, " +
+                "COALESCE((SELECT COUNT(*) FROM dbo.reviews r WHERE r.product_id = p.product_id AND (r.status = 'APPROVED' OR r.status IS NULL)), 0) AS review_count " +
                 "FROM dbo.products p " +
                 "INNER JOIN dbo.categories c ON p.category_id = c.category_id " +
                 "LEFT JOIN dbo.inventory i ON p.product_id = i.product_id " +

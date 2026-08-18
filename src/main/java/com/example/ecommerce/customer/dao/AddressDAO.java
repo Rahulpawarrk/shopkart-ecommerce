@@ -71,9 +71,9 @@ public class AddressDAO {
      * Finds default shipping address for a user.
      */
     public Optional<Address> findDefaultByUserId(int userId) {
-        String sql = "SELECT TOP 1 address_id, user_id, address_type, full_name, phone, address_line1, " +
+        String sql = "SELECT address_id, user_id, address_type, full_name, phone, address_line1, " +
                      "address_line2, city, state, postal_code, country, is_default, created_at, updated_at " +
-                     "FROM dbo.addresses WHERE user_id = ? AND is_default = 1";
+                     "FROM dbo.addresses WHERE user_id = ? AND is_default = true LIMIT 1";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, userId);
