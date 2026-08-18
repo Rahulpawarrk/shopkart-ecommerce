@@ -1,0 +1,138 @@
+package com.example.ecommerce.order.controller;
+
+import com.example.ecommerce.auth.model.UserSession;
+import com.example.ecommerce.exception.ValidationException;
+import com.example.ecommerce.order.model.Order;
+import com.example.ecommerce.order.service.OrderService;
+import com.example.ecommerce.util.Pagination;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
+import java.io.IOException;
+
+/**
+ * Controller for Customer Order History, Order Details, and Order Cancellations.
+ * Routes: /orders, /order, /order/cancel
+ * Protected by AuthFilter.
+ */
+@WebServlet(name = "CustomerOrderServlet", urlPatterns = {
+        "/orders",
+        "/order",
+        "/order/cancel"
+})
+public class CustomerOrderServlet extends HttpServlet {
+
+    private OrderService orderService;
+    private com.example.ecommerce.order.service.OrderReturnService orderReturnService;
+    private com.example.ecommerce.review.service.ReviewService reviewService;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+        this.orderService = new OrderService();
+        this.orderReturnService = new com.example.ecommerce.order.service.OrderReturnService();
+        this.reviewService = new com.example.ecommerce.review.service.ReviewService();
+    }
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        String path = request.getServletPath();
+
+        if ("/order".equals(path)) {
+            showOrderDetail(request, response);
+        } else {
+            showOrderList(request, response);
+        }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        String path = request.getServletPath();
+
+        if ("/order/cancel".equals(path)) {
+            handleCancelOrder(request, response);
+        } else {
+            response.sendRedirect(request.getContextPath() + "/orders");
+        }
+    }
+
+    private void showOrderList(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        HttpSession session = request.getSession(false);
+        UserSession user = (UserSession) session.getAttribute("currentUser");
+
+        int page = 1;
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.trim().isEmpty()) {
+            try {
+                page = Integer.parseInt(pageParam.trim());
+            } catch (NumberFormatException ignored) {}
+        }
+
+        String status = request.getParameter("status");
+        String sortBy = request.getParameter("sort");
+
+        Pagination<Order> pagination = orderService.getUserOrders(user.getUserId(), status, sortBy, page, 10);
+        request.setAttribute("pagination", pagination);
+        request.setAttribute("selectedStatus", status != null ? status.trim() : "ALL");
+        request.setAttribute("selectedSort", sortBy != null ? sortBy.trim() : "newest");
+
+        request.getRequestDispatcher("/WEB-INF/views/order/order-list.jsp").forward(request, response);
+    }
+
+    private void showOrderDetail(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        HttpSession session = request.getSession(false);
+        UserSession user = (UserSession) session.getAttribute("currentUser");
+
+        int orderId = Integer.parseInt(request.getParameter("id"));
+        try {
+            Order order = orderService.getOrderById(orderId, user.getUserId());
+            request.setAttribute("order", order);
+
+            orderReturnService.getReturnByOrderId(orderId)
+                    .ifPresent(ret -> request.setAttribute("orderReturn", ret));
+
+            // Load existing customer reviews for items in this order
+            if (order.getItems() != null && !order.getItems().isEmpty()) {
+                java.util.Map<Integer, com.example.ecommerce.review.model.Review> userReviews = new java.util.HashMap<>();
+                for (com.example.ecommerce.order.model.OrderItem item : order.getItems()) {
+                    reviewService.getUserReviewForProduct(user.getUserId(), item.getProductId())
+                            .ifPresent(r -> userReviews.put(item.getProductId(), r));
+                }
+                request.setAttribute("userReviews", userReviews);
+            }
+
+            request.getRequestDispatcher("/WEB-INF/views/order/order-detail.jsp").forward(request, response);
+        } catch (Exception e) {
+            response.sendRedirect(request.getContextPath() + "/orders?error=notfound");
+        }
+    }
+
+    private void handleCancelOrder(HttpServletRequest request, HttpServletResponse response) 
+            throws IOException {
+        
+        HttpSession session = request.getSession(false);
+        UserSession user = (UserSession) session.getAttribute("currentUser");
+
+        int orderId = Integer.parseInt(request.getParameter("orderId"));
+        String reason = request.getParameter("reason");
+
+        try {
+            orderService.cancelOrder(orderId, user.getUserId(), reason);
+            response.sendRedirect(request.getContextPath() + "/order?id=" + orderId + "&cancelled=true");
+        } catch (ValidationException ve) {
+            response.sendRedirect(request.getContextPath() + "/order?id=" + orderId + "&error=" + ve.getMessage());
+        }
+    }
+}

@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 48" width="200" height="48" fill="none">
+    <defs>
+        <!-- Background Icon Gradient -->
+        <linearGradient id="skBadgeGradDark" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#2563eb" />
+            <stop offset="50%" stop-color="#1d4ed8" />
+            <stop offset="100%" stop-color="#1e40af" />
+        </linearGradient>
+
+        <!-- Golden Amber Accent Gradient -->
+        <linearGradient id="skGoldGradDark" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#f59e0b" />
+            <stop offset="60%" stop-color="#ea580c" />
+            <stop offset="100%" stop-color="#c2410c" />
+        </linearGradient>
+
+        <!-- Text Gold Gradient -->
+        <linearGradient id="skTextGradDark" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#f59e0b" />
+            <stop offset="60%" stop-color="#ea580c" />
+            <stop offset="100%" stop-color="#c2410c" />
+        </linearGradient>
+
+        <filter id="skBadgeShadowDark" x="-10%" y="-10%" width="120%" height="120%">
+            <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#2563eb" flood-opacity="0.3"/>
+        </filter>
+    </defs>
+
+    <!-- 1. ICON BADGE -->
+    <g transform="translate(2, 4)">
+        <rect x="0" y="0" width="40" height="40" rx="10" fill="url(#skBadgeGradDark)" filter="url(#skBadgeShadowDark)"/>
+        <rect x="0.75" y="0.75" width="38.5" height="38.5" rx="9.25" stroke="#60a5fa" stroke-width="1.5" stroke-opacity="0.8"/>
+        
+        <!-- Speed Shopping Basket -->
+        <path d="M9 13H14L16.5 25H29.5L32 16.5H15.5" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        
+        <!-- Basket Wheels -->
+        <circle cx="18.5" cy="29.5" r="2" fill="#fbbf24"/>
+        <circle cx="27.5" cy="29.5" r="2" fill="#fbbf24"/>
+        
+        <!-- High-Velocity Lightning Bolt Spark -->
+        <path d="M24 9L20.5 16H25L22 22L28.5 14H24L26 9H24Z" fill="#fbbf24"/>
+    </g>
+
+    <!-- 2. BRAND TYPOGRAPHY -->
+    <!-- "Shop" in Deep Slate for Light Backgrounds -->
+    <text x="50" y="27" font-family="'Outfit', 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif" font-weight="900" font-size="24" fill="#0f172a" letter-spacing="-0.5">Shop</text>
+    
+    <!-- "Kart" in Energetic Vibrant Golden Amber Gradient -->
+    <text x="108" y="27" font-family="'Outfit', 'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif" font-weight="900" font-size="24" fill="url(#skTextGradDark)" letter-spacing="-0.5">Kart</text>
+
+    <!-- 3. PLUS VIP BADGE -->
+    <g transform="translate(162, 10)">
+        <rect x="0" y="0" width="34" height="15" rx="3.5" fill="url(#skGoldGradDark)"/>
+        <text x="17" y="11" font-family="'Outfit', 'Inter', sans-serif" font-weight="900" font-size="9.5" fill="#ffffff" text-anchor="middle" letter-spacing="0.8">PLUS</text>
+    </g>
+
+    <!-- 4. SIGNATURE DYNAMIC SWOOSH -->
+    <path d="M52 35 C 80 41, 125 41, 154 33" stroke="url(#skGoldGradDark)" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M152 30.5 L 157.5 33.2 L 153.5 36.5" fill="url(#skGoldGradDark)"/>
+
+    <!-- 5. TAGLINE -->
+    <text x="52" y="44" font-family="'Inter', sans-serif" font-weight="600" font-style="italic" font-size="7.5" fill="#64748b" letter-spacing="0.4">Explore <tspan fill="#ea580c" font-weight="700">Plus ✦</tspan></text>
+</svg>

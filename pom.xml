@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.example.ecommerce</groupId>
+    <artifactId>ecommerce-web</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>war</packaging>
+
+    <name>E-Commerce Web Application</name>
+    <description>Enterprise-style E-Commerce Application built with Jakarta EE 11, Tomcat 11, JDBC, and SQL Server</description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <maven.compiler.release>21</maven.compiler.release>
+        
+        <!-- Dependency Versions -->
+        <jakarta.servlet-api.version>6.1.0</jakarta.servlet-api.version>
+        <jakarta.jsp-api.version>4.0.0</jakarta.jsp-api.version>
+        <jakarta.jstl-api.version>3.0.0</jakarta.jstl-api.version>
+        <glassfish.jstl.version>3.0.1</glassfish.jstl.version>
+        <mssql.jdbc.version>12.8.1.jre11</mssql.jdbc.version>
+        <hikaricp.version>6.2.1</hikaricp.version>
+        <bcrypt.version>0.4</bcrypt.version>
+        <jakarta.mail.version>2.0.5</jakarta.mail.version>
+        <slf4j.version>2.0.16</slf4j.version>
+        <logback.version>1.5.16</logback.version>
+        <junit.jupiter.version>5.11.4</junit.jupiter.version>
+        <mockito.version>5.14.2</mockito.version>
+    </properties>
+
+    <dependencies>
+        <!-- Razorpay Java SDK for Payment Gateway (UPI, Cards, NetBanking) -->
+        <dependency>
+            <groupId>com.razorpay</groupId>
+            <artifactId>razorpay-java</artifactId>
+            <version>1.4.6</version>
+        </dependency>
+
+        <!-- JSON Library for REST API and Gateway payloads -->
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20240303</version>
+        </dependency>
+
+        <!-- Jakarta Servlet API (Provided by Tomcat 11) -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>${jakarta.servlet-api.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Jakarta JSP API (Provided by Tomcat 11) -->
+        <dependency>
+            <groupId>jakarta.servlet.jsp</groupId>
+            <artifactId>jakarta.servlet.jsp-api</artifactId>
+            <version>${jakarta.jsp-api.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Jakarta JSTL API -->
+        <dependency>
+            <groupId>jakarta.servlet.jsp.jstl</groupId>
+            <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
+            <version>${jakarta.jstl-api.version}</version>
+        </dependency>
+
+        <!-- GlassFish JSTL Implementation (Jakarta JSTL 3.0 Compatible) -->
+        <dependency>
+            <groupId>org.glassfish.web</groupId>
+            <artifactId>jakarta.servlet.jsp.jstl</artifactId>
+            <version>${glassfish.jstl.version}</version>
+        </dependency>
+
+        <!-- Microsoft SQL Server JDBC Driver -->
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+            <version>${mssql.jdbc.version}</version>
+        </dependency>
+
+        <!-- HikariCP JDBC Connection Pool -->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>${hikaricp.version}</version>
+        </dependency>
+
+        <!-- BCrypt for Password Hashing -->
+        <dependency>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
+            <version>${bcrypt.version}</version>
+        </dependency>
+
+        <!-- Jakarta Mail (JavaMail) for SMTP Email (Forgot Password) -->
+        <dependency>
+            <groupId>org.eclipse.angus</groupId>
+            <artifactId>jakarta.mail</artifactId>
+            <version>${jakarta.mail.version}</version>
+        </dependency>
+
+        <!-- Logging: SLF4J API -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+
+        <!-- Logging: Logback Implementation -->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+        </dependency>
+
+        <!-- Test: JUnit 5 Jupiter -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Test: Mockito Core -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Test: Mockito JUnit Jupiter Extension -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>ecommerce-web</finalName>
+        <plugins>
+            <!-- Compiler Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <release>21</release>
+                    <compilerArgs>
+                        <arg>-parameters</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+
+            <!-- WAR Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.4.0</version>
+                <configuration>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                </configuration>
+            </plugin>
+
+            <!-- Surefire Plugin for Unit Testing with Java 25 compatibility -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.2</version>
+                <configuration>
+                    <argLine>-Dnet.bytebuddy.experimental=true</argLine>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

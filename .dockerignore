@@ -1,0 +1,8 @@
+.git
+.gitignore
+.vscode
+target/
+logs/
+*.log
+cookies.txt
+.system_generated

@@ -1,0 +1,23 @@
+# ── Build output ──────────────────────────────────────────────────────────
+target/
+*.war
+*.jar
+
+# ── IDE files ──────────────────────────────────────────────────────────────
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+*.launch
+
+# ── OS junk ───────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Secrets — NEVER commit these ──────────────────────────────────────────
+setenv.bat
+setenv.sh
+.env
+*.env
+db.properties.local
