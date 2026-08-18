@@ -73,62 +73,173 @@ public class EmailService {
      *                  https://yourapp.com/reset-password?token=...)
      */
     public void sendPasswordResetEmail(String toEmail, String toName, String resetLink) {
-        if (smtpEmail == null || smtpEmail.trim().isEmpty() ||
-                smtpPassword == null || smtpPassword.trim().isEmpty()) {
-            logger.warn("SMTP_EMAIL or SMTP_PASSWORD environment variable not set. " +
-                    "Password reset email NOT sent to {}. Reset link: {}", toEmail, resetLink);
-            return;
-        }
+        mailExecutor.submit(() -> {
+            try {
+                String brevoApiKey = System.getenv("BREVO_API_KEY");
+                String resendApiKey = System.getenv("RESEND_API_KEY");
+                String htmlBody = buildHtmlBody(toName, resetLink);
+                String subject = "Reset Your ShopKart Password";
 
-        Session session = buildMailSession();
+                if (brevoApiKey != null && !brevoApiKey.trim().isEmpty()) {
+                    sendViaBrevoHttps(brevoApiKey.trim(), toEmail, toName, subject, htmlBody);
+                    return;
+                }
+                if (resendApiKey != null && !resendApiKey.trim().isEmpty()) {
+                    sendViaResendHttps(resendApiKey.trim(), toEmail, subject, htmlBody);
+                    return;
+                }
 
-        try {
-            MimeMessage message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(smtpEmail, fromName));
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
-            message.setSubject("Reset Your ShopKart Password");
-            message.setContent(buildHtmlBody(toName, resetLink), "text/html; charset=UTF-8");
+                if (smtpEmail == null || smtpEmail.trim().isEmpty() ||
+                        smtpPassword == null || smtpPassword.trim().isEmpty()) {
+                    logger.info("🔑 Dev Mode: Password reset link for {}: {}", toEmail, resetLink);
+                    return;
+                }
 
-            Transport.send(message);
-            logger.info("Password reset email sent to: {}", toEmail);
+                Session session = buildMailSession();
+                MimeMessage message = new MimeMessage(session);
+                message.setFrom(new InternetAddress(smtpEmail, fromName));
+                message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
+                message.setSubject(subject);
+                message.setContent(htmlBody, "text/html; charset=UTF-8");
 
-        } catch (Exception e) {
-            logger.error("Failed to send password reset email to: {}", toEmail, e);
-            // Do NOT rethrow — email failure should not prevent the token from being
-            // created
-        }
+                Transport.send(message);
+                logger.info("Password reset email sent to: {}", toEmail);
+
+            } catch (Exception e) {
+                logger.warn("Non-fatal: SMTP delivery failed for password reset to: {}. Error: {}", toEmail, e.getMessage());
+            }
+        });
     }
 
     /**
      * Sends a 6-digit OTP email for user registration / email verification.
-     *
-     * @param toEmail recipient email address
-     * @param toName  recipient display name
-     * @param otpCode 6-digit numeric verification code
+     * Runs asynchronously in background to ensure zero UI latency.
      */
     public void sendSignupVerificationOtp(String toEmail, String toName, String otpCode) {
-        if (smtpEmail == null || smtpEmail.trim().isEmpty() ||
-                smtpPassword == null || smtpPassword.trim().isEmpty()) {
-            logger.warn("SMTP_EMAIL or SMTP_PASSWORD environment variable not set. " +
-                    "Signup verification OTP NOT sent to {}. OTP code: {}", toEmail, otpCode);
-            return;
-        }
+        mailExecutor.submit(() -> {
+            try {
+                String brevoApiKey = System.getenv("BREVO_API_KEY");
+                String resendApiKey = System.getenv("RESEND_API_KEY");
+                String htmlBody = buildOtpBody(toName, otpCode);
+                String subject = otpCode + " is your ShopKart Verification Code";
 
-        Session session = buildMailSession();
+                if (brevoApiKey != null && !brevoApiKey.trim().isEmpty()) {
+                    sendViaBrevoHttps(brevoApiKey.trim(), toEmail, toName, subject, htmlBody);
+                    return;
+                }
+                if (resendApiKey != null && !resendApiKey.trim().isEmpty()) {
+                    sendViaResendHttps(resendApiKey.trim(), toEmail, subject, htmlBody);
+                    return;
+                }
 
+                if (smtpEmail == null || smtpEmail.trim().isEmpty() ||
+                        smtpPassword == null || smtpPassword.trim().isEmpty()) {
+                    logger.info("🔑 Dev Mode: Signup verification OTP for {}: {}", toEmail, otpCode);
+                    return;
+                }
+
+                Session session = buildMailSession();
+                MimeMessage message = new MimeMessage(session);
+                message.setFrom(new InternetAddress(smtpEmail, fromName));
+                message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
+                message.setSubject(subject);
+                message.setContent(htmlBody, "text/html; charset=UTF-8");
+
+                Transport.send(message);
+                logger.info("Signup verification OTP email sent to: {}", toEmail);
+
+            } catch (Exception e) {
+                logger.warn("Non-fatal: SMTP delivery failed for OTP to: {}. Error: {}", toEmail, e.getMessage());
+            }
+        });
+    }
+
+    private void sendViaBrevoHttps(String apiKey, String toEmail, String toName, String subject, String htmlContent) {
         try {
-            MimeMessage message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(smtpEmail, fromName));
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
-            message.setSubject(otpCode + " is your ShopKart Verification Code");
-            message.setContent(buildOtpBody(toName, otpCode), "text/html; charset=UTF-8");
+            java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
+            String jsonPayload = String.format(
+                    "{\"sender\":{\"name\":\"%s\",\"email\":\"%s\"},\"to\":[{\"email\":\"%s\",\"name\":\"%s\"}],\"subject\":\"%s\",\"htmlContent\":%s}",
+                    fromName,
+                    (smtpEmail != null && !smtpEmail.isEmpty() ? smtpEmail : "no-reply@shopkart.eu.org"),
+                    toEmail,
+                    toName != null ? toName.replace("\"", "") : "",
+                    subject.replace("\"", ""),
+                    escapeJson(htmlContent)
+            );
 
-            Transport.send(message);
-            logger.info("Signup verification OTP email sent to: {}", toEmail);
+            java.net.http.HttpRequest req = java.net.http.HttpRequest.newBuilder()
+                    .uri(java.net.URI.create("https://api.brevo.com/v3/smtp/email"))
+                    .header("api-key", apiKey)
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(jsonPayload))
+                    .build();
 
+            java.net.http.HttpResponse<String> resp = client.send(req, java.net.http.HttpResponse.BodyHandlers.ofString());
+            if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
+                logger.info("Email delivered via Brevo HTTPS API to: {}", toEmail);
+            } else {
+                logger.warn("Brevo API returned status {}: {}", resp.statusCode(), resp.body());
+            }
         } catch (Exception e) {
-            logger.error("Failed to send signup verification OTP email to: {}", toEmail, e);
+            logger.warn("Brevo HTTPS API delivery error: {}", e.getMessage());
         }
+    }
+
+    private void sendViaResendHttps(String apiKey, String toEmail, String subject, String htmlContent) {
+        try {
+            java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
+            String jsonPayload = String.format(
+                    "{\"from\":\"%s <%s>\",\"to\":[\"%s\"],\"subject\":\"%s\",\"html\":%s}",
+                    fromName,
+                    (smtpEmail != null && !smtpEmail.isEmpty() ? smtpEmail : "onboarding@resend.dev"),
+                    toEmail,
+                    subject.replace("\"", ""),
+                    escapeJson(htmlContent)
+            );
+
+            java.net.http.HttpRequest req = java.net.http.HttpRequest.newBuilder()
+                    .uri(java.net.URI.create("https://api.resend.com/emails"))
+                    .header("Authorization", "Bearer " + apiKey)
+                    .header("Content-Type", "application/json")
+                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(jsonPayload))
+                    .build();
+
+            java.net.http.HttpResponse<String> resp = client.send(req, java.net.http.HttpResponse.BodyHandlers.ofString());
+            if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
+                logger.info("Email delivered via Resend HTTPS API to: {}", toEmail);
+            } else {
+                logger.warn("Resend API returned status {}: {}", resp.statusCode(), resp.body());
+            }
+        } catch (Exception e) {
+            logger.warn("Resend HTTPS API delivery error: {}", e.getMessage());
+        }
+    }
+
+    private String escapeJson(String str) {
+        if (str == null) return "\"\"";
+        StringBuilder sb = new StringBuilder("\"");
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            switch (c) {
+                case '"' -> sb.append("\\\"");
+                case '\\' -> sb.append("\\\\");
+                case '\b' -> sb.append("\\b");
+                case '\f' -> sb.append("\\f");
+                case '\n' -> sb.append("\\n");
+                case '\r' -> sb.append("\\r");
+                case '\t' -> sb.append("\\t");
+                default -> {
+                    if (c < ' ') {
+                        sb.append(String.format("\\u%04x", (int) c));
+                    } else {
+                        sb.append(c);
+                    }
+                }
+            }
+        }
+        sb.append("\"");
+        return sb.toString();
     }
 
     private Session buildMailSession() {
