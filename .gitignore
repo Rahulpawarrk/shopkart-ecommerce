@@ -1,9 +1,11 @@
 # ── Build output ──────────────────────────────────────────────────────────
+
 target/
 *.war
 *.jar
 
-# ── IDE files ──────────────────────────────────────────────────────────────
+# ── IDE files ─────────────────────────────────────────────────────────────
+
 .idea/
 *.iml
 .classpath
@@ -12,18 +14,37 @@ target/
 *.launch
 
 # ── OS junk ───────────────────────────────────────────────────────────────
+
 .DS_Store
 Thumbs.db
 
-# ── Secrets — NEVER commit these ──────────────────────────────────────────
+# ── Secrets / credentials — NEVER commit ─────────────────────────────────
+
 setenv.bat
 setenv.sh
 .env
 *.env
-db.properties.local
+*.properties.local
+*.secret
+*.secrets
+credentials.json
+secrets.json
 
-# ── Application Logs ────────────────────────────────────────────────────────
+# ── Private keys / certificates ───────────────────────────────────────────
+
+*.key
+*.pem
+*.p12
+*.pfx
+
+# ── Application logs ──────────────────────────────────────────────────────
+
 logs/
 *.log
 *.log.gz
 
+# ── Local/runtime files ───────────────────────────────────────────────────
+
+cookies.txt
+bore.log
+bore.err
