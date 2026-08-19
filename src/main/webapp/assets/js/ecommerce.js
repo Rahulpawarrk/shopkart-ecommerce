@@ -383,14 +383,6 @@ function initPincodeChecker() {
             openPinCodeModal(false);
         });
     });
-
-    // Automatic first-visit location onboarding prompt
-    const prompted = localStorage.getItem('shopkart_location_prompted') || sessionStorage.getItem('shopkart_location_prompted');
-    if (!prompted) {
-        setTimeout(() => {
-            openPinCodeModal(true);
-        }, 400);
-    }
 }
 
 function updateHeaderPincode(pin, city) {

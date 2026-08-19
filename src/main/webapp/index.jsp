@@ -1,93 +1,93 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-    <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-        <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
-            <c:if test="${empty featuredProducts and empty catalogError}">
-                <c:redirect
-                    url="/home${not empty pageContext.request.queryString ? '?'.concat(pageContext.request.queryString) : ''}" />
-            </c:if>
-            <!DOCTYPE html>
-            <html lang="en">
-
-            <head>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<c:if test="${empty featuredProducts and empty catalogError}">
+    <c:redirect url="/home${not empty pageContext.request.queryString ? '?'.concat(pageContext.request.queryString) : ''}" />
+</c:if>
+<!DOCTYPE html>
+<html lang="en">
+<head>
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="${pageContext.request.contextPath}/assets/images/favicon.svg">
     <link rel="shortcut icon" href="${pageContext.request.contextPath}/favicon.svg">
     <link rel="apple-touch-icon" href="${pageContext.request.contextPath}/assets/images/favicon.svg">
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <meta name="contextPath" content="${pageContext.request.contextPath}">
-                <title>ShopKart | India's Premier Online Shopping Destination</title>
-                <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css?v=5.0">
-                <link rel="preconnect" href="https://fonts.googleapis.com">
-                <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-                <link
-                    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap"
-                    rel="stylesheet">
-            </head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="contextPath" content="${pageContext.request.contextPath}">
+    <title>ShopKart | India's Premier Online Shopping Destination</title>
+    <meta name="description" content="ShopKart India - Discover top deals on smartphones, laptops, electronics, audio, and fashion. Free express delivery, verified reviews, and secure checkout.">
+    <meta name="keywords" content="ShopKart, online shopping India, electronics, smartphones, laptops, headphones, deals, fashion, discounts">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#2563eb">
 
-            <body>
+    <!-- OpenGraph Social Sharing -->
+    <meta property="og:title" content="ShopKart | India's Premier Online Shopping Destination">
+    <meta property="og:description" content="Discover top deals on smartphones, laptops, audio & fashion with instant express delivery.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://shopkart-ecommerce-1m2n.onrender.com/">
+    <meta property="og:image" content="${pageContext.request.contextPath}/assets/images/logo.svg">
 
-                <!-- Registration Welcome Banner -->
-                <c:if test="${param.registered == 'true' or param.welcome == 'true'}">
-                    <div
-                        style="background: linear-gradient(90deg, #10b981, #059669); color: white; padding: 0.75rem 1.5rem; text-align: center; font-weight: 700; font-size: 0.95rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                        🎉 Welcome to ShopKart,
-                        <c:out value="${sessionScope.currentUser.firstName}" />! Your account has been created and you
-                        are now signed in.
-                    </div>
-                </c:if>
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "ShopKart",
+      "url": "https://shopkart-ecommerce-1m2n.onrender.com/",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://shopkart-ecommerce-1m2n.onrender.com/products?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
 
-                <!-- 0. ADMIN STOREFRONT NOTIFICATION BAR -->
-                <c:if test="${sessionScope.currentUser.admin}">
-                    <div class="admin-storefront-bar">
-                        <div class="admin-bar-left">
-                            <span class="admin-crown-badge">👑 ADMIN MODE</span>
-                            <span>ShopKart Control Center &bull; Logged in as
-                                <strong>${sessionScope.currentUser.fullName}</strong></span>
-                        </div>
-                        <div class="admin-bar-actions">
-                            <a href="${pageContext.request.contextPath}/admin/dashboard"
-                                class="admin-bar-btn admin-bar-btn-primary">⚙️ Admin Console</a>
-                            <a href="${pageContext.request.contextPath}/admin/products" class="admin-bar-btn">📦
-                                Catalog</a>
-                            <a href="${pageContext.request.contextPath}/admin/orders" class="admin-bar-btn">🛒
-                                Orders</a>
-                            <a href="${pageContext.request.contextPath}/admin/reports/sales" class="admin-bar-btn">📊
-                                Sales</a>
-                        </div>
-                    </div>
-                </c:if>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css?v=5.1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- 0. ADMIN STOREFRONT NOTIFICATION BAR -->
+    <c:if test="${sessionScope.currentUser.admin}">
+        <div class="admin-storefront-bar">
+            <div class="admin-bar-left">
+                <span class="admin-crown-badge">👑 ADMIN MODE</span>
+                <span>ShopKart Control Center &bull; Logged in as <strong>${sessionScope.currentUser.fullName}</strong></span>
+            </div>
+            <div class="admin-bar-actions">
+                <a href="${pageContext.request.contextPath}/admin/dashboard" class="admin-bar-btn admin-bar-btn-primary">⚙️ Admin Console</a>
+                <a href="${pageContext.request.contextPath}/admin/products" class="admin-bar-btn">📦 Catalog</a>
+                <a href="${pageContext.request.contextPath}/admin/orders" class="admin-bar-btn">🛒 Orders</a>
+                <a href="${pageContext.request.contextPath}/admin/reports/sales" class="admin-bar-btn">📊 Sales</a>
+            </div>
+        </div>
+    </c:if>
 
-                <!-- 1. TOP ANNOUNCEMENT TICKER (Meesho / Flipkart style) -->
-                <header class="top-ticker">
-                    <div class="ticker-text">
-                        <a href="${pageContext.request.contextPath}/products?deals=true" style="color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
-                            <span class="ticker-badge">⚡ ShopKart Mega Sale</span>
-                            <span>Grand Festive Carnival: Up to 50% Off Top Brands + Extra 20% Off with Code <strong>SAVE20</strong> &bull; Explore Deals &rarr;</span>
-                        </a>
-                    </div>
-                    <div class="ticker-links">
-                        <c:if test="${sessionScope.currentUser.admin}">
-                            <a href="${pageContext.request.contextPath}/admin/dashboard"
-                                style="color: #fbbf24; font-weight: 700;">⚙️ Admin Console</a>
-                            <a href="${pageContext.request.contextPath}/health"
-                                style="color: #38bdf8; font-weight: 700;">🩺 System Health</a>
-                        </c:if>
-                        <a href="${pageContext.request.contextPath}/products?brand=Apple">Brand Store</a>
-                    </div>
-                </header>
+    <!-- 1. TOP ANNOUNCEMENT TICKER -->
+    <header class="top-ticker">
+        <div class="ticker-text">
+            <a href="${pageContext.request.contextPath}/products?deals=true" style="color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
+                <span class="ticker-badge">⚡ ShopKart Mega Sale</span>
+                <span>Grand Festive Carnival: Up to 50% Off Top Brands + Extra 20% Off with Code <strong>SAVE20</strong> &bull; Explore Deals &rarr;</span>
+            </a>
+        </div>
+        <div class="ticker-links">
+            <c:if test="${sessionScope.currentUser.admin}">
+                <a href="${pageContext.request.contextPath}/admin/dashboard" style="color: #fbbf24; font-weight: 700;">⚙️ Admin Console</a>
+                <a href="${pageContext.request.contextPath}/health" style="color: #38bdf8; font-weight: 700;">🩺 System Health</a>
+            </c:if>
+            <a href="${pageContext.request.contextPath}/products?brand=Apple">Brand Store</a>
+        </div>
+    </header>
 
-                <!-- 2. MAIN HEADER -->
-                <nav class="main-header">
-                    <div class="brand-group">
-                        <a href="${pageContext.request.contextPath}/" class="brand-logo"
-                            title="ShopKart - Premier Online Shopping">
-                            <img src="${pageContext.request.contextPath}/assets/images/logo.svg" alt="ShopKart"
-                                class="logo-img">
-                        </a>
-
-                        <!-- Delivery Locator (Pin Code Trigger) -->
-                        <div class="delivery-locator" id="headerDeliveryTrigger" onclick="openPinCodeModal()"
+    <!-- 2. MAIN HEADER -->
+    <nav class="main-header">
+        <div class="brand-group">
+            <a href="${pageContext.request.contextPath}/" class="brand-logo" title="ShopKart - Premier Online Shopping">
+                <img src="${pageContext.request.contextPath}/assets/images/logo.svg" alt="ShopKart" class="logo-img">
+            </a>
+<div class="delivery-locator" id="headerDeliveryTrigger" onclick="openPinCodeModal()"
                             title="Change delivery location">
                             <span class="loc-icon">📍</span>
                             <div class="loc-text">
