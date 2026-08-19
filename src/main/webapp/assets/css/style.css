@@ -4,14 +4,12 @@
    Font: Inter (Google Fonts) | Full Responsiveness | Micro-animations
    ============================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-
 :root {
     /* Amazon & Flipkart Modern Palette */
-    --primary: #2874f0;            /* Flipkart Blue */
-    --primary-color: #2874f0;
-    --primary-dark: #1e5bc6;
-    --primary-light: #e8f2fe;
+    --primary: #2563eb;            /* Vivid Navy/Royal Blue */
+    --primary-color: #2563eb;
+    --primary-dark: #1d4ed8;
+    --primary-light: #eff6ff;
     --amazon-dark: #131921;        /* Amazon Navy Header */
     --amazon-subnav: #232f3e;      /* Amazon Subnav */
     --amazon-yellow: #febd69;      /* Amazon Yellow CTA */
@@ -19,26 +17,26 @@
     --amazon-orange: #fa8900;      /* Amazon Orange Buy Now */
     --amazon-orange-hover: #e07b00;
     
-    --accent: #ff6161;            /* Meesho / Flash Sale Coral */
-    --accent-glow: rgba(255, 97, 97, 0.25);
-    --success: #388e3c;           /* E-Commerce Green Price / Stock */
-    --success-color: #388e3c;
-    --success-light: #e8f5e9;
-    --warning: #ff9f00;           /* Rating & Deal Orange */
-    --warning-color: #ff9f00;
-    --danger: #d32f2f;
-    --danger-color: #d32f2f;
+    --accent: #e11d48;            /* High-Contrast Rose/Coral */
+    --accent-glow: rgba(225, 29, 72, 0.25);
+    --success: #15803d;           /* WCAG AA Compliant E-Commerce Green */
+    --success-color: #15803d;
+    --success-light: #f0fdf4;
+    --warning: #d97706;           /* High-Contrast Amber */
+    --warning-color: #d97706;
+    --danger: #dc2626;
+    --danger-color: #dc2626;
     
-    --bg-body: #f1f3f6;           /* Flipkart Clean Gray Backdrop */
+    --bg-body: #f1f3f6;           /* Clean Backdrop */
     --bg-surface: #ffffff;
     --bg-muted: #f8fafc;
     --bg-light: #f8fafc;
     
-    --text-primary: #212121;
-    --text-secondary: #565656;
-    --text-muted: #878787;
-    --border-color: #e0e0e0;
-    --border-light: #f0f0f0;
+    --text-primary: #0f172a;
+    --text-secondary: #334155;     /* WCAG AAA Contrast (9.5:1) */
+    --text-muted: #475569;         /* WCAG AA Contrast (5.4:1) */
+    --border-color: #cbd5e1;
+    --border-light: #e2e8f0;
     
     --radius-sm: 4px;
     --radius-md: 8px;
@@ -51,9 +49,22 @@
     --shadow-lg: 0 12px 24px -4px rgba(0, 0, 0, 0.12);
     --shadow-xl: 0 20px 30px -6px rgba(0, 0, 0, 0.16);
     
-    --font-main: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-main: 'Outfit', 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --transition-fast: 0.15s ease;
     --transition-smooth: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Screen reader only utility for accessibility audits */
+.sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
 }
 
 * {
