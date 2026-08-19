@@ -1,7 +1,6 @@
 package com.example.ecommerce.logistics.service;
 
 import com.example.ecommerce.config.DBConnection;
-import com.example.ecommerce.exception.ResourceNotFoundException;
 import com.example.ecommerce.logistics.model.CourierPartner;
 import com.example.ecommerce.logistics.model.TrackingResult;
 import com.example.ecommerce.logistics.provider.*;
@@ -20,7 +19,8 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Orchestrator service routing multi-carrier live tracking requests and webhook callbacks.
+ * Orchestrator service routing multi-carrier live tracking requests and webhook
+ * callbacks.
  */
 public class LogisticsService {
     private static final Logger logger = LoggerFactory.getLogger(LogisticsService.class);
@@ -53,7 +53,8 @@ public class LogisticsService {
     }
 
     /**
-     * Resolves appropriate logistics provider by courier partner name or tracking number format.
+     * Resolves appropriate logistics provider by courier partner name or tracking
+     * number format.
      */
     public LogisticsProvider getProvider(String courierPartnerName, String trackingNumber) {
         CourierPartner partner = CourierPartner.fromName(courierPartnerName);
@@ -64,7 +65,8 @@ public class LogisticsService {
     }
 
     /**
-     * Queries carrier tracking API for real-time order telemetry and updates internal milestones if advanced.
+     * Queries carrier tracking API for real-time order telemetry and updates
+     * internal milestones if advanced.
      */
     public TrackingResult trackLiveShipment(Order order) {
         if (order == null) {
@@ -79,7 +81,8 @@ public class LogisticsService {
         LogisticsProvider provider = getProvider(order.getCourierPartner(), trackingNumber);
         TrackingResult result = provider.track(trackingNumber, order);
 
-        // If carrier reports progress beyond DB order milestone, auto-advance fulfillment state
+        // If carrier reports progress beyond DB order milestone, auto-advance
+        // fulfillment state
         if (result != null && result.isSuccess() && result.getNormalizedStatus() != null) {
             advanceMilestoneIfProgressed(order, result);
         }
@@ -88,24 +91,30 @@ public class LogisticsService {
     }
 
     /**
-     * Advances internal order fulfillment milestone only if carrier indicates true forward progress.
+     * Advances internal order fulfillment milestone only if carrier indicates true
+     * forward progress.
      */
     private void advanceMilestoneIfProgressed(Order order, TrackingResult result) {
         OrderStatus currentStatus = order.getOrderStatus();
         OrderStatus carrierStatus = result.getNormalizedStatus();
 
         if (carrierStatus != null && currentStatus != null) {
-            // Strict forward progression: only advance if carrier milestone step is strictly higher
+            // Strict forward progression: only advance if carrier milestone step is
+            // strictly higher
             if (carrierStatus.getMilestoneStep() > currentStatus.getMilestoneStep() && !currentStatus.isTerminal()) {
                 try (Connection conn = DBConnection.getConnection()) {
                     conn.setAutoCommit(false);
                     try {
-                        String agentPhone = result.getDeliveryAgentPhone() != null ? result.getDeliveryAgentPhone() : order.getDeliveryAgentPhone();
-                        String courier = result.getCourierName() != null ? result.getCourierName() : order.getCourierPartner();
+                        String agentPhone = result.getDeliveryAgentPhone() != null ? result.getDeliveryAgentPhone()
+                                : order.getDeliveryAgentPhone();
+                        String courier = result.getCourierName() != null ? result.getCourierName()
+                                : order.getCourierPartner();
 
-                        orderDAO.updateOrderFulfillment(order.getOrderId(), carrierStatus, courier, result.getTrackingNumber(), agentPhone, conn);
+                        orderDAO.updateOrderFulfillment(order.getOrderId(), carrierStatus, courier,
+                                result.getTrackingNumber(), agentPhone, conn);
 
-                        if (carrierStatus == OrderStatus.DELIVERED && order.getPaymentStatus() == PaymentStatus.PENDING) {
+                        if (carrierStatus == OrderStatus.DELIVERED
+                                && order.getPaymentStatus() == PaymentStatus.PENDING) {
                             orderDAO.updatePaymentStatus(order.getOrderId(), PaymentStatus.PAID, conn);
                         }
 
@@ -114,18 +123,24 @@ public class LogisticsService {
                                 currentStatus,
                                 carrierStatus,
                                 0, // Automated Carrier System ID
-                                "Live Telemetry Sync [" + (result.getCourierPartner() != null ? result.getCourierPartner().getDisplayName() : "Carrier") + "]: " + 
-                                (result.getRemarks() != null ? result.getRemarks() : "Milestone advanced to " + carrierStatus.getDisplayName())
-                        );
+                                "Live Telemetry Sync ["
+                                        + (result.getCourierPartner() != null
+                                                ? result.getCourierPartner().getDisplayName()
+                                                : "Carrier")
+                                        + "]: " +
+                                        (result.getRemarks() != null ? result.getRemarks()
+                                                : "Milestone advanced to " + carrierStatus.getDisplayName()));
                         orderDAO.createStatusHistory(history, conn);
 
                         conn.commit();
                         order.setOrderStatus(carrierStatus);
-                        logger.info("Order [{}] fulfillment milestone auto-advanced from [{}] to [{}] via Live Carrier Telemetry", 
+                        logger.info(
+                                "Order [{}] fulfillment milestone auto-advanced from [{}] to [{}] via Live Carrier Telemetry",
                                 order.getOrderId(), currentStatus, carrierStatus);
                     } catch (SQLException e) {
                         conn.rollback();
-                        logger.warn("Failed to auto-advance order fulfillment milestone for order: {}", order.getOrderId(), e);
+                        logger.warn("Failed to auto-advance order fulfillment milestone for order: {}",
+                                order.getOrderId(), e);
                     }
                 } catch (SQLException e) {
                     logger.warn("Database error during live telemetry sync for order: {}", order.getOrderId(), e);
@@ -135,7 +150,8 @@ public class LogisticsService {
     }
 
     /**
-     * Processes live push webhooks from logistics carriers (BlueDart, Delhivery, DTDC, Shiprocket).
+     * Processes live push webhooks from logistics carriers (BlueDart, Delhivery,
+     * DTDC, Shiprocket).
      */
     public TrackingResult processCarrierWebhook(String carrierCode, String payload, String signature) {
         CourierPartner partner = CourierPartner.fromName(carrierCode);

@@ -17,7 +17,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Data Access Object for high-level administrative business intelligence and revenue metrics.
+ * Data Access Object for high-level administrative business intelligence and
+ * revenue metrics.
+ * Revenue and sales rankings are strictly recognized only for DELIVERED orders.
  */
 public class DashboardDAO {
 
@@ -26,19 +28,24 @@ public class DashboardDAO {
     public DashboardStats getDashboardKPIs() {
         DashboardStats stats = new DashboardStats();
 
+        // Revenue is calculated ONLY for DELIVERED orders
         String sql = "SELECT " +
-                     "(SELECT COALESCE(SUM(total_amount), 0) FROM dbo.orders WHERE (payment_status = 'PAID' OR order_status = 'DELIVERED') AND order_status != 'CANCELLED') AS total_revenue, " +
-                     "(SELECT COALESCE(SUM(total_amount), 0) FROM dbo.orders WHERE (payment_status = 'PAID' OR order_status = 'DELIVERED') AND order_status != 'CANCELLED' AND CAST(created_at AS DATE) = CAST(CURRENT_TIMESTAMP AS DATE)) AS today_revenue, " +
-                     "(SELECT COUNT(*) FROM dbo.orders WHERE order_status != 'CANCELLED') AS total_orders, " +
-                     "(SELECT COUNT(*) FROM dbo.orders WHERE order_status != 'CANCELLED' AND CAST(created_at AS DATE) = CAST(CURRENT_TIMESTAMP AS DATE)) AS today_orders, " +
-                     "(SELECT COUNT(*) FROM dbo.orders WHERE order_status IN ('PLACED', 'CONFIRMED', 'PROCESSING', 'DISPATCHED', 'IN_TRANSIT', 'OUT_FOR_DELIVERY')) AS pending_orders, " +
-                     "(SELECT COUNT(*) FROM dbo.products WHERE status = 'ACTIVE') AS total_products, " +
-                     "(SELECT COUNT(*) FROM dbo.inventory WHERE quantity <= low_stock_threshold) AS low_stock_products, " +
-                     "(SELECT COUNT(DISTINCT ur.user_id) FROM dbo.user_roles ur INNER JOIN dbo.roles r ON ur.role_id = r.role_id WHERE r.role_name = 'CUSTOMER') AS total_customers";
+                "(SELECT COALESCE(SUM(total_amount), 0) FROM dbo.orders WHERE order_status = 'DELIVERED') AS total_revenue, "
+                +
+                "(SELECT COALESCE(SUM(total_amount), 0) FROM dbo.orders WHERE order_status = 'DELIVERED' AND CAST(updated_at AS DATE) = CAST(CURRENT_TIMESTAMP AS DATE)) AS today_revenue, "
+                +
+                "(SELECT COUNT(*) FROM dbo.orders WHERE order_status != 'CANCELLED') AS total_orders, " +
+                "(SELECT COUNT(*) FROM dbo.orders WHERE order_status != 'CANCELLED' AND CAST(created_at AS DATE) = CAST(CURRENT_TIMESTAMP AS DATE)) AS today_orders, "
+                +
+                "(SELECT COUNT(*) FROM dbo.orders WHERE order_status IN ('PLACED', 'CONFIRMED', 'PROCESSING', 'DISPATCHED', 'IN_TRANSIT', 'OUT_FOR_DELIVERY')) AS pending_orders, "
+                +
+                "(SELECT COUNT(*) FROM dbo.products WHERE status = 'ACTIVE') AS total_products, " +
+                "(SELECT COUNT(*) FROM dbo.inventory WHERE quantity <= low_stock_threshold) AS low_stock_products, " +
+                "(SELECT COUNT(DISTINCT ur.user_id) FROM dbo.user_roles ur INNER JOIN dbo.roles r ON ur.role_id = r.role_id WHERE r.role_name = 'CUSTOMER') AS total_customers";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
             if (rs.next()) {
                 stats.setTotalRevenue(rs.getBigDecimal("total_revenue"));
                 stats.setTodayRevenue(rs.getBigDecimal("today_revenue"));
@@ -60,16 +67,16 @@ public class DashboardDAO {
     public List<SalesReportItem> getMonthlySalesReport(int year) {
         List<SalesReportItem> list = new ArrayList<>();
         String sql = "SELECT " +
-                     "TO_CHAR(created_at, 'YYYY-MM') AS month_label, " +
-                     "COUNT(order_id) AS order_count, " +
-                     "COALESCE(SUM(total_amount), 0) AS total_sales " +
-                     "FROM dbo.orders " +
-                     "WHERE EXTRACT(YEAR FROM created_at) = ? AND (payment_status = 'PAID' OR order_status = 'DELIVERED') AND order_status != 'CANCELLED' " +
-                     "GROUP BY TO_CHAR(created_at, 'YYYY-MM') " +
-                     "ORDER BY month_label ASC";
+                "TO_CHAR(created_at, 'YYYY-MM') AS month_label, " +
+                "COUNT(order_id) AS order_count, " +
+                "COALESCE(SUM(total_amount), 0) AS total_sales " +
+                "FROM dbo.orders " +
+                "WHERE EXTRACT(YEAR FROM created_at) = ? AND order_status = 'DELIVERED' " +
+                "GROUP BY TO_CHAR(created_at, 'YYYY-MM') " +
+                "ORDER BY month_label ASC";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, year);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -90,21 +97,21 @@ public class DashboardDAO {
     public List<SalesReportItem> getCategoryRevenueReport() {
         List<SalesReportItem> list = new ArrayList<>();
         String sql = "SELECT " +
-                     "c.category_name, " +
-                     "COUNT(DISTINCT oi.order_id) AS order_count, " +
-                     "SUM(oi.quantity) AS units_sold, " +
-                     "SUM(oi.line_total) AS category_sales " +
-                     "FROM dbo.order_items oi " +
-                     "INNER JOIN dbo.products p ON oi.product_id = p.product_id " +
-                     "INNER JOIN dbo.categories c ON p.category_id = c.category_id " +
-                     "INNER JOIN dbo.orders o ON oi.order_id = o.order_id " +
-                     "WHERE (o.payment_status = 'PAID' OR o.order_status = 'DELIVERED') AND o.order_status != 'CANCELLED' " +
-                     "GROUP BY c.category_name " +
-                     "ORDER BY category_sales DESC";
+                "c.category_name, " +
+                "COUNT(DISTINCT oi.order_id) AS order_count, " +
+                "SUM(oi.quantity) AS units_sold, " +
+                "SUM(oi.line_total) AS category_sales " +
+                "FROM dbo.order_items oi " +
+                "INNER JOIN dbo.products p ON oi.product_id = p.product_id " +
+                "INNER JOIN dbo.categories c ON p.category_id = c.category_id " +
+                "INNER JOIN dbo.orders o ON oi.order_id = o.order_id " +
+                "WHERE o.order_status = 'DELIVERED' " +
+                "GROUP BY c.category_name " +
+                "ORDER BY category_sales DESC";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 SalesReportItem item = new SalesReportItem();
                 item.setLabel(rs.getString("category_name"));
@@ -123,19 +130,19 @@ public class DashboardDAO {
     public List<Map<String, Object>> getTopSellingProducts(int limit) {
         List<Map<String, Object>> list = new ArrayList<>();
         String sql = "SELECT " +
-                     "p.product_id, p.product_name, p.sku, " +
-                     "SUM(oi.quantity) AS total_units_sold, " +
-                     "SUM(oi.line_total) AS total_revenue " +
-                     "FROM dbo.order_items oi " +
-                     "INNER JOIN dbo.products p ON oi.product_id = p.product_id " +
-                     "INNER JOIN dbo.orders o ON oi.order_id = o.order_id " +
-                     "WHERE (o.payment_status = 'PAID' OR o.order_status = 'DELIVERED') AND o.order_status != 'CANCELLED' " +
-                     "GROUP BY p.product_id, p.product_name, p.sku " +
-                     "ORDER BY total_revenue DESC " +
-                     "LIMIT ?";
+                "p.product_id, p.product_name, p.sku, " +
+                "SUM(oi.quantity) AS total_units_sold, " +
+                "SUM(oi.line_total) AS total_revenue " +
+                "FROM dbo.order_items oi " +
+                "INNER JOIN dbo.products p ON oi.product_id = p.product_id " +
+                "INNER JOIN dbo.orders o ON oi.order_id = o.order_id " +
+                "WHERE o.order_status = 'DELIVERED' " +
+                "GROUP BY p.product_id, p.product_name, p.sku " +
+                "ORDER BY total_revenue DESC " +
+                "LIMIT ?";
 
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, limit);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {

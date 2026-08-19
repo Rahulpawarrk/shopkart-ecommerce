@@ -20,23 +20,24 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
+
 import java.util.List;
 
 /**
  * Controller managing 3-Step Guided Checkout workflow:
  * 1. /checkout or /checkout/address -> Step 1: Select or Add Delivery Address
- * 2. /checkout/summary -> Step 2: Order Items Summary, Delivery Notes & Apply Coupon
- * 3. /checkout/payment -> Step 3: Select Payment Channel (COD, UPI, Card, NetBanking) & Confirm
+ * 2. /checkout/summary -> Step 2: Order Items Summary, Delivery Notes & Apply
+ * Coupon
+ * 3. /checkout/payment -> Step 3: Select Payment Channel (COD, UPI, Card,
+ * NetBanking) & Confirm
  * 
  * Supports both Standard Persistent Cart and Instant Direct "Buy Now".
  * Protected by AuthFilter.
  */
-@WebServlet(name = "CheckoutServlet", urlPatterns = {"/checkout", "/checkout/address", "/checkout/summary", "/checkout/payment"})
+@WebServlet(name = "CheckoutServlet", urlPatterns = { "/checkout", "/checkout/address", "/checkout/summary",
+        "/checkout/payment" })
 public class CheckoutServlet extends HttpServlet {
 
     private static final Logger logger = LoggerFactory.getLogger(CheckoutServlet.class);
@@ -58,9 +59,9 @@ public class CheckoutServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         HttpSession session = request.getSession(false);
         UserSession user = (UserSession) session.getAttribute("currentUser");
 
@@ -80,13 +81,16 @@ public class CheckoutServlet extends HttpServlet {
                 if (qtyParam != null && !qtyParam.trim().isEmpty()) {
                     try {
                         directQuantity = Integer.parseInt(qtyParam.trim());
-                    } catch (NumberFormatException ignored) {}
+                    } catch (NumberFormatException ignored) {
+                    }
                 }
-                if (directQuantity <= 0) directQuantity = 1;
+                if (directQuantity <= 0)
+                    directQuantity = 1;
 
                 Product product = productService.getProductById(directProductId);
                 if (!product.isActive() || product.getStockQuantity() < directQuantity) {
-                    request.setAttribute("error", "Product '" + product.getProductName() + "' is out of stock or unavailable.");
+                    request.setAttribute("error",
+                            "Product '" + product.getProductName() + "' is out of stock or unavailable.");
                 }
                 cart = Cart.createDirectBuyCart(user.getUserId(), product, directQuantity);
             } catch (Exception e) {
@@ -137,29 +141,32 @@ public class CheckoutServlet extends HttpServlet {
         }
     }
 
-    private void handleAddressStep(HttpServletRequest request, HttpServletResponse response, List<Address> addresses) 
+    private void handleAddressStep(HttpServletRequest request, HttpServletResponse response, List<Address> addresses)
             throws ServletException, IOException {
         String addressIdParam = request.getParameter("addressId");
         if (addressIdParam != null && !addressIdParam.trim().isEmpty()) {
             try {
                 request.setAttribute("selectedAddressId", Integer.parseInt(addressIdParam.trim()));
-            } catch (NumberFormatException ignored) {}
+            } catch (NumberFormatException ignored) {
+            }
         }
         request.getRequestDispatcher("/WEB-INF/views/order/checkout-address.jsp").forward(request, response);
     }
 
-    private void handleSummaryStep(HttpServletRequest request, HttpServletResponse response, UserSession user, 
-                                  List<Address> addresses, boolean isDirectBuy, int directProductId, int directQuantity) 
+    private void handleSummaryStep(HttpServletRequest request, HttpServletResponse response, UserSession user,
+            List<Address> addresses, boolean isDirectBuy, int directProductId, int directQuantity)
             throws ServletException, IOException {
         if (addresses == null || addresses.isEmpty()) {
-            String addressReturn = "/checkout/address" + (isDirectBuy ? "?buyNowProductId=" + directProductId + "&quantity=" + directQuantity : "");
+            String addressReturn = "/checkout/address"
+                    + (isDirectBuy ? "?buyNowProductId=" + directProductId + "&quantity=" + directQuantity : "");
             response.sendRedirect(request.getContextPath() + addressReturn);
             return;
         }
 
         Address selectedAddress = resolveSelectedAddress(request, user, addresses);
         if (selectedAddress == null) {
-            String addressReturn = "/checkout/address" + (isDirectBuy ? "?buyNowProductId=" + directProductId + "&quantity=" + directQuantity : "");
+            String addressReturn = "/checkout/address"
+                    + (isDirectBuy ? "?buyNowProductId=" + directProductId + "&quantity=" + directQuantity : "");
             response.sendRedirect(request.getContextPath() + addressReturn);
             return;
         }
@@ -168,18 +175,20 @@ public class CheckoutServlet extends HttpServlet {
         request.getRequestDispatcher("/WEB-INF/views/order/checkout-summary.jsp").forward(request, response);
     }
 
-    private void handlePaymentStep(HttpServletRequest request, HttpServletResponse response, UserSession user, 
-                                  List<Address> addresses, boolean isDirectBuy, int directProductId, int directQuantity) 
+    private void handlePaymentStep(HttpServletRequest request, HttpServletResponse response, UserSession user,
+            List<Address> addresses, boolean isDirectBuy, int directProductId, int directQuantity)
             throws ServletException, IOException {
         if (addresses == null || addresses.isEmpty()) {
-            String addressReturn = "/checkout/address" + (isDirectBuy ? "?buyNowProductId=" + directProductId + "&quantity=" + directQuantity : "");
+            String addressReturn = "/checkout/address"
+                    + (isDirectBuy ? "?buyNowProductId=" + directProductId + "&quantity=" + directQuantity : "");
             response.sendRedirect(request.getContextPath() + addressReturn);
             return;
         }
 
         Address selectedAddress = resolveSelectedAddress(request, user, addresses);
         if (selectedAddress == null) {
-            String addressReturn = "/checkout/address" + (isDirectBuy ? "?buyNowProductId=" + directProductId + "&quantity=" + directQuantity : "");
+            String addressReturn = "/checkout/address"
+                    + (isDirectBuy ? "?buyNowProductId=" + directProductId + "&quantity=" + directQuantity : "");
             response.sendRedirect(request.getContextPath() + addressReturn);
             return;
         }
@@ -207,7 +216,8 @@ public class CheckoutServlet extends HttpServlet {
                         return a;
                     }
                 }
-            } catch (NumberFormatException ignored) {}
+            } catch (NumberFormatException ignored) {
+            }
         }
 
         // Fallback: Default address or first address
@@ -220,9 +230,9 @@ public class CheckoutServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         HttpSession session = request.getSession(false);
         UserSession user = (UserSession) session.getAttribute("currentUser");
 
@@ -250,15 +260,19 @@ public class CheckoutServlet extends HttpServlet {
                 if (qtyParam != null && !qtyParam.trim().isEmpty()) {
                     try {
                         quantity = Integer.parseInt(qtyParam.trim());
-                    } catch (NumberFormatException ignored) {}
+                    } catch (NumberFormatException ignored) {
+                    }
                 }
-                if (quantity <= 0) quantity = 1;
+                if (quantity <= 0)
+                    quantity = 1;
 
-                confirmedOrder = orderService.processDirectBuyCheckout(user.getUserId(), addressId, productId, quantity, paymentMethod, notes, sessionCoupon);
+                confirmedOrder = orderService.processDirectBuyCheckout(user.getUserId(), addressId, productId, quantity,
+                        paymentMethod, notes, sessionCoupon);
                 session.removeAttribute("appliedCoupon");
                 session.removeAttribute("checkoutNotes");
             } else {
-                confirmedOrder = orderService.processCheckout(user.getUserId(), addressId, paymentMethod, notes, sessionCoupon);
+                confirmedOrder = orderService.processCheckout(user.getUserId(), addressId, paymentMethod, notes,
+                        sessionCoupon);
 
                 // Clean up applied coupon & notes, and update session cart
                 session.removeAttribute("appliedCoupon");
@@ -268,12 +282,16 @@ public class CheckoutServlet extends HttpServlet {
             }
 
             if ("COD".equalsIgnoreCase(confirmedOrder.getPaymentMethod())) {
-                // Save order in session flash attribute and redirect to home to show celebratory modal popup
+                // Save order in session flash attribute and redirect to home to show
+                // celebratory modal popup
                 session.setAttribute("justPlacedOrder", confirmedOrder);
-                response.sendRedirect(request.getContextPath() + "/home?orderPlaced=true&orderNumber=" + confirmedOrder.getOrderNumber());
+                response.sendRedirect(request.getContextPath() + "/home?orderPlaced=true&orderNumber="
+                        + confirmedOrder.getOrderNumber());
             } else {
-                // Redirect to interactive Simulated Payment Gateway for UPI, Credit Card, Net Banking
-                response.sendRedirect(request.getContextPath() + "/payment/gateway?orderId=" + confirmedOrder.getOrderId());
+                // Redirect to interactive Simulated Payment Gateway for UPI, Credit Card, Net
+                // Banking
+                response.sendRedirect(
+                        request.getContextPath() + "/payment/gateway?orderId=" + confirmedOrder.getOrderId());
             }
 
         } catch (ValidationException ve) {

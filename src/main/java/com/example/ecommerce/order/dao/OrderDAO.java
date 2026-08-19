@@ -24,7 +24,8 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Data Access Object for Orders, Order Line Items, and Lifecycle Status Histories.
+ * Data Access Object for Orders, Order Line Items, and Lifecycle Status
+ * Histories.
  */
 public class OrderDAO {
 
@@ -35,11 +36,11 @@ public class OrderDAO {
      */
     public int createOrder(Order order, Connection conn) throws SQLException {
         String sql = "INSERT INTO dbo.orders (order_number, user_id, order_status, payment_status, " +
-                     "payment_method, subtotal, discount_amount, tax_amount, shipping_amount, total_amount, " +
-                     "coupon_id, shipping_full_name, shipping_phone, shipping_address_line1, shipping_address_line2, " +
-                     "shipping_city, shipping_state, shipping_postal_code, shipping_country, billing_address_snapshot, " +
-                     "notes, created_at, updated_at) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, SYSDATETIME(), SYSDATETIME())";
+                "payment_method, subtotal, discount_amount, tax_amount, shipping_amount, total_amount, " +
+                "coupon_id, shipping_full_name, shipping_phone, shipping_address_line1, shipping_address_line2, " +
+                "shipping_city, shipping_state, shipping_postal_code, shipping_country, billing_address_snapshot, " +
+                "notes, created_at, updated_at) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, SYSDATETIME(), SYSDATETIME())";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, order.getOrderNumber());
@@ -85,8 +86,8 @@ public class OrderDAO {
      */
     public void createOrderItem(OrderItem item, Connection conn) throws SQLException {
         String sql = "INSERT INTO dbo.order_items (order_id, product_id, product_name, sku, unit_price, " +
-                     "discount_amount, tax_amount, line_total, quantity, created_at) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, SYSDATETIME())";
+                "discount_amount, tax_amount, line_total, quantity, created_at) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, SYSDATETIME())";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, item.getOrderId());
@@ -107,7 +108,7 @@ public class OrderDAO {
      */
     public void createStatusHistory(OrderStatusHistory history, Connection conn) throws SQLException {
         String sql = "INSERT INTO dbo.order_status_history (order_id, previous_status, new_status, " +
-                     "changed_by, remarks, created_at) VALUES (?, ?, ?, ?, ?, SYSDATETIME())";
+                "changed_by, remarks, created_at) VALUES (?, ?, ?, ?, ?, SYSDATETIME())";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, history.getOrderId());
@@ -128,11 +129,11 @@ public class OrderDAO {
      */
     public Optional<Order> findById(int orderId) {
         String sql = "SELECT o.*, u.first_name, u.last_name, u.email " +
-                     "FROM dbo.orders o " +
-                     "INNER JOIN dbo.users u ON o.user_id = u.user_id " +
-                     "WHERE o.order_id = ?";
+                "FROM dbo.orders o " +
+                "INNER JOIN dbo.users u ON o.user_id = u.user_id " +
+                "WHERE o.order_id = ?";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, orderId);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -154,11 +155,11 @@ public class OrderDAO {
      */
     public Optional<Order> findByOrderNumber(String orderNumber) {
         String sql = "SELECT o.*, u.first_name, u.last_name, u.email " +
-                     "FROM dbo.orders o " +
-                     "INNER JOIN dbo.users u ON o.user_id = u.user_id " +
-                     "WHERE o.order_number = ?";
+                "FROM dbo.orders o " +
+                "INNER JOIN dbo.users u ON o.user_id = u.user_id " +
+                "WHERE o.order_number = ?";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, orderNumber);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -183,11 +184,11 @@ public class OrderDAO {
             return Optional.empty();
         }
         String sql = "SELECT o.*, u.first_name, u.last_name, u.email " +
-                     "FROM dbo.orders o " +
-                     "INNER JOIN dbo.users u ON o.user_id = u.user_id " +
-                     "WHERE o.tracking_number = ?";
+                "FROM dbo.orders o " +
+                "INNER JOIN dbo.users u ON o.user_id = u.user_id " +
+                "WHERE o.tracking_number = ?";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, trackingNumber.trim());
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -237,12 +238,13 @@ public class OrderDAO {
         String countSql = "SELECT COUNT(*) FROM dbo.orders o " + where;
         int total = 0;
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement countStmt = conn.prepareStatement(countSql)) {
+                PreparedStatement countStmt = conn.prepareStatement(countSql)) {
             for (int i = 0; i < params.size(); i++) {
                 countStmt.setObject(i + 1, params.get(i));
             }
             try (ResultSet rs = countStmt.executeQuery()) {
-                if (rs.next()) total = rs.getInt(1);
+                if (rs.next())
+                    total = rs.getInt(1);
             }
         } catch (SQLException e) {
             logger.error("Error counting user orders", e);
@@ -265,15 +267,15 @@ public class OrderDAO {
         }
 
         String dataSql = "SELECT o.*, u.first_name, u.last_name, u.email " +
-                         "FROM dbo.orders o " +
-                         "INNER JOIN dbo.users u ON o.user_id = u.user_id " +
-                         where +
-                         orderByClause +
-                         "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+                "FROM dbo.orders o " +
+                "INNER JOIN dbo.users u ON o.user_id = u.user_id " +
+                where +
+                orderByClause +
+                "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
         List<Order> list = new ArrayList<>();
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(dataSql)) {
+                PreparedStatement stmt = conn.prepareStatement(dataSql)) {
             int paramIndex = 1;
             for (Object param : params) {
                 stmt.setObject(paramIndex++, param);
@@ -320,11 +322,13 @@ public class OrderDAO {
         String countSql = "SELECT COUNT(*) FROM dbo.orders o INNER JOIN dbo.users u ON o.user_id = u.user_id " + where;
         int total = 0;
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement countStmt = conn.prepareStatement(countSql)) {
+                PreparedStatement countStmt = conn.prepareStatement(countSql)) {
             int idx = 1;
-            for (Object p : params) countStmt.setObject(idx++, p);
+            for (Object p : params)
+                countStmt.setObject(idx++, p);
             try (ResultSet rs = countStmt.executeQuery()) {
-                if (rs.next()) total = rs.getInt(1);
+                if (rs.next())
+                    total = rs.getInt(1);
             }
         } catch (SQLException e) {
             logger.error("Error counting admin orders", e);
@@ -336,17 +340,18 @@ public class OrderDAO {
         }
 
         String dataSql = "SELECT o.*, u.first_name, u.last_name, u.email " +
-                         "FROM dbo.orders o " +
-                         "INNER JOIN dbo.users u ON o.user_id = u.user_id " +
-                         where +
-                         " ORDER BY o.created_at DESC " +
-                         "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+                "FROM dbo.orders o " +
+                "INNER JOIN dbo.users u ON o.user_id = u.user_id " +
+                where +
+                " ORDER BY o.created_at DESC " +
+                "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
         List<Order> list = new ArrayList<>();
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(dataSql)) {
+                PreparedStatement stmt = conn.prepareStatement(dataSql)) {
             int idx = 1;
-            for (Object p : params) stmt.setObject(idx++, p);
+            for (Object p : params)
+                stmt.setObject(idx++, p);
             stmt.setInt(idx++, (page - 1) * pageSize);
             stmt.setInt(idx, pageSize);
 
@@ -367,8 +372,8 @@ public class OrderDAO {
 
     public List<OrderItem> getOrderItems(int orderId, Connection conn) throws SQLException {
         String sql = "SELECT order_item_id, order_id, product_id, product_name, sku, unit_price, " +
-                     "discount_amount, tax_amount, line_total, quantity, created_at " +
-                     "FROM dbo.order_items WHERE order_id = ?";
+                "discount_amount, tax_amount, line_total, quantity, created_at " +
+                "FROM dbo.order_items WHERE order_id = ?";
         List<OrderItem> items = new ArrayList<>();
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, orderId);
@@ -385,7 +390,9 @@ public class OrderDAO {
                     item.setTaxAmount(rs.getBigDecimal("tax_amount"));
                     item.setLineTotal(rs.getBigDecimal("line_total"));
                     item.setQuantity(rs.getInt("quantity"));
-                    item.setCreatedAt(rs.getTimestamp("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null);
+                    item.setCreatedAt(
+                            rs.getTimestamp("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime()
+                                    : null);
                     items.add(item);
                 }
             }
@@ -395,10 +402,10 @@ public class OrderDAO {
 
     public List<OrderStatusHistory> getStatusHistory(int orderId, Connection conn) throws SQLException {
         String sql = "SELECT osh.history_id, osh.order_id, osh.previous_status, osh.new_status, " +
-                     "osh.changed_by, osh.remarks, osh.created_at, u.first_name, u.last_name " +
-                     "FROM dbo.order_status_history osh " +
-                     "LEFT JOIN dbo.users u ON osh.changed_by = u.user_id " +
-                     "WHERE osh.order_id = ? ORDER BY osh.created_at ASC";
+                "osh.changed_by, osh.remarks, osh.created_at, u.first_name, u.last_name " +
+                "FROM dbo.order_status_history osh " +
+                "LEFT JOIN dbo.users u ON osh.changed_by = u.user_id " +
+                "WHERE osh.order_id = ? ORDER BY osh.created_at ASC";
         List<OrderStatusHistory> histories = new ArrayList<>();
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, orderId);
@@ -408,13 +415,17 @@ public class OrderDAO {
                     h.setHistoryId(rs.getInt("history_id"));
                     h.setOrderId(rs.getInt("order_id"));
                     String prev = rs.getString("previous_status");
-                    if (prev != null) h.setPreviousStatus(OrderStatus.valueOf(prev));
+                    if (prev != null)
+                        h.setPreviousStatus(OrderStatus.valueOf(prev));
                     h.setNewStatus(OrderStatus.valueOf(rs.getString("new_status")));
                     int cb = rs.getInt("changed_by");
-                    if (!rs.wasNull()) h.setChangedBy(cb);
+                    if (!rs.wasNull())
+                        h.setChangedBy(cb);
                     h.setRemarks(rs.getString("remarks"));
-                    h.setCreatedAt(rs.getTimestamp("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null);
-                    
+                    h.setCreatedAt(
+                            rs.getTimestamp("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime()
+                                    : null);
+
                     String fn = rs.getString("first_name");
                     String ln = rs.getString("last_name");
                     if (fn != null || ln != null) {
@@ -431,8 +442,8 @@ public class OrderDAO {
 
     public void updateOrderStatus(int orderId, OrderStatus newStatus, Connection conn) throws SQLException {
         String sql = "UPDATE dbo.orders SET order_status = ?, " +
-                     "delivered_at = CASE WHEN ? = 'DELIVERED' THEN SYSDATETIME() ELSE delivered_at END, " +
-                     "updated_at = SYSDATETIME() WHERE order_id = ?";
+                "delivered_at = CASE WHEN ? = 'DELIVERED' THEN SYSDATETIME() ELSE delivered_at END, " +
+                "updated_at = SYSDATETIME() WHERE order_id = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, newStatus.name());
             stmt.setString(2, newStatus.name());
@@ -441,19 +452,23 @@ public class OrderDAO {
         }
     }
 
-    public void updateOrderFulfillment(int orderId, OrderStatus newStatus, String courierPartner, 
-                                       String trackingNumber, String deliveryAgentPhone, Connection conn) throws SQLException {
+    public void updateOrderFulfillment(int orderId, OrderStatus newStatus, String courierPartner,
+            String trackingNumber, String deliveryAgentPhone, Connection conn) throws SQLException {
         String sql = "UPDATE dbo.orders SET order_status = ?, " +
-                     "courier_partner = COALESCE(?, courier_partner), " +
-                     "tracking_number = COALESCE(?, tracking_number), " +
-                     "delivery_agent_phone = COALESCE(?, delivery_agent_phone), " +
-                     "delivered_at = CASE WHEN ? = 'DELIVERED' THEN SYSDATETIME() ELSE delivered_at END, " +
-                     "updated_at = SYSDATETIME() WHERE order_id = ?";
+                "courier_partner = COALESCE(?, courier_partner), " +
+                "tracking_number = COALESCE(?, tracking_number), " +
+                "delivery_agent_phone = COALESCE(?, delivery_agent_phone), " +
+                "delivered_at = CASE WHEN ? = 'DELIVERED' THEN SYSDATETIME() ELSE delivered_at END, " +
+                "updated_at = SYSDATETIME() WHERE order_id = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, newStatus.name());
-            stmt.setString(2, courierPartner != null && !courierPartner.trim().isEmpty() ? courierPartner.trim() : null);
-            stmt.setString(3, trackingNumber != null && !trackingNumber.trim().isEmpty() ? trackingNumber.trim() : null);
-            stmt.setString(4, deliveryAgentPhone != null && !deliveryAgentPhone.trim().isEmpty() ? deliveryAgentPhone.trim() : null);
+            stmt.setString(2,
+                    courierPartner != null && !courierPartner.trim().isEmpty() ? courierPartner.trim() : null);
+            stmt.setString(3,
+                    trackingNumber != null && !trackingNumber.trim().isEmpty() ? trackingNumber.trim() : null);
+            stmt.setString(4,
+                    deliveryAgentPhone != null && !deliveryAgentPhone.trim().isEmpty() ? deliveryAgentPhone.trim()
+                            : null);
             stmt.setString(5, newStatus.name());
             stmt.setInt(6, orderId);
             stmt.executeUpdate();
@@ -479,9 +494,11 @@ public class OrderDAO {
                         checkStmt.setInt(1, orderId);
                         try (ResultSet rs = checkStmt.executeQuery()) {
                             if (rs.next() && rs.getInt(1) == 0) {
-                                String insertPay = "INSERT INTO dbo.payments (order_id, payment_method, transaction_reference, amount, payment_status, gateway_response, created_at, updated_at) " +
-                                                  "SELECT order_id, payment_method, 'PAY-' + UPPER(payment_method) + '-ORD' + CAST(order_id AS VARCHAR), total_amount, 'SUCCESS', 'Settled order payment', created_at, SYSDATETIME() " +
-                                                  "FROM dbo.orders WHERE order_id = ?";
+                                String insertPay = "INSERT INTO dbo.payments (order_id, payment_method, transaction_reference, amount, payment_status, gateway_response, created_at, updated_at) "
+                                        +
+                                        "SELECT order_id, payment_method, 'PAY-' + UPPER(payment_method) + '-ORD' + CAST(order_id AS VARCHAR), total_amount, 'SUCCESS', 'Settled order payment', created_at, SYSDATETIME() "
+                                        +
+                                        "FROM dbo.orders WHERE order_id = ?";
                                 try (PreparedStatement insStmt = conn.prepareStatement(insertPay)) {
                                     insStmt.setInt(1, orderId);
                                     insStmt.executeUpdate();
@@ -494,36 +511,40 @@ public class OrderDAO {
         }
     }
 
+    /**
+     * Calculates comprehensive order lifecycle metrics for admin reporting.
+     */
     public Map<String, Object> getOrderSummaryStats() {
         Map<String, Object> stats = new HashMap<>();
         String sql = "SELECT " +
-                     "COUNT(*) AS total_orders, " +
-                     "SUM(CASE WHEN order_status = 'PENDING' OR order_status = 'CONFIRMED' THEN 1 ELSE 0 END) AS pending_orders, " +
-                     "SUM(CASE WHEN order_status = 'PROCESSING' THEN 1 ELSE 0 END) AS processing_orders, " +
-                     "SUM(CASE WHEN order_status = 'DISPATCHED' THEN 1 ELSE 0 END) AS dispatched_orders, " +
-                     "SUM(CASE WHEN order_status = 'SHIPPED' OR order_status = 'IN_TRANSIT' THEN 1 ELSE 0 END) AS in_transit_orders, " +
-                     "SUM(CASE WHEN order_status = 'OUT_FOR_DELIVERY' THEN 1 ELSE 0 END) AS out_for_delivery_orders, " +
-                     "SUM(CASE WHEN order_status = 'DELIVERED' THEN 1 ELSE 0 END) AS delivered_orders, " +
-                     "SUM(CASE WHEN order_status = 'CANCELLED' THEN 1 ELSE 0 END) AS cancelled_orders, " +
-                     "ISNULL(SUM(CASE WHEN order_status != 'CANCELLED' THEN total_amount ELSE 0 END), 0) AS total_revenue " +
-                     "FROM dbo.orders";
+                "COUNT(order_id) AS total_orders, " +
+                "COALESCE(SUM(total_amount), 0) AS gross_sales, " +
+                "SUM(CASE WHEN order_status = 'DELIVERED' THEN 1 ELSE 0 END) AS delivered_count, " +
+                "SUM(CASE WHEN order_status = 'CANCELLED' THEN 1 ELSE 0 END) AS cancelled_count, " +
+                "SUM(CASE WHEN order_status IN ('PLACED', 'CONFIRMED', 'PROCESSING', 'DISPATCHED', 'IN_TRANSIT', 'OUT_FOR_DELIVERY') THEN 1 ELSE 0 END) AS pending_count, "
+                +
+                "SUM(CASE WHEN payment_status = 'PAID' THEN 1 ELSE 0 END) AS paid_count, " +
+                "SUM(CASE WHEN payment_status = 'PENDING' THEN 1 ELSE 0 END) AS pending_payment_count, " +
+                "COALESCE(SUM(CASE WHEN order_status = 'DELIVERED' THEN total_amount ELSE 0 END), 0) AS delivered_revenue "
+                +
+                "FROM dbo.orders";
+
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
             if (rs.next()) {
                 stats.put("totalOrders", rs.getInt("total_orders"));
-                stats.put("pendingOrders", rs.getInt("pending_orders"));
-                stats.put("processingOrders", rs.getInt("processing_orders"));
-                stats.put("dispatchedOrders", rs.getInt("dispatched_orders"));
-                stats.put("shippedOrders", rs.getInt("in_transit_orders"));
-                stats.put("inTransitOrders", rs.getInt("in_transit_orders"));
-                stats.put("outForDeliveryOrders", rs.getInt("out_for_delivery_orders"));
-                stats.put("deliveredOrders", rs.getInt("delivered_orders"));
-                stats.put("cancelledOrders", rs.getInt("cancelled_orders"));
-                stats.put("totalRevenue", rs.getBigDecimal("total_revenue"));
+                stats.put("grossSales", rs.getBigDecimal("gross_sales"));
+                stats.put("deliveredCount", rs.getInt("delivered_count"));
+                stats.put("cancelledCount", rs.getInt("cancelled_count"));
+                stats.put("pendingCount", rs.getInt("pending_count"));
+                stats.put("paidCount", rs.getInt("paid_count"));
+                stats.put("pendingPaymentCount", rs.getInt("pending_payment_count"));
+                stats.put("deliveredRevenue", rs.getBigDecimal("delivered_revenue"));
             }
         } catch (SQLException e) {
             logger.error("Error calculating order statistics", e);
+            throw new DatabaseException("Failed to calculate order statistics", e);
         }
         return stats;
     }
@@ -542,8 +563,9 @@ public class OrderDAO {
         o.setShippingAmount(rs.getBigDecimal("shipping_amount"));
         o.setTotalAmount(rs.getBigDecimal("total_amount"));
         int cid = rs.getInt("coupon_id");
-        if (!rs.wasNull()) o.setCouponId(cid);
-        
+        if (!rs.wasNull())
+            o.setCouponId(cid);
+
         o.setShippingFullName(rs.getString("shipping_full_name"));
         o.setShippingPhone(rs.getString("shipping_phone"));
         o.setShippingAddressLine1(rs.getString("shipping_address_line1"));

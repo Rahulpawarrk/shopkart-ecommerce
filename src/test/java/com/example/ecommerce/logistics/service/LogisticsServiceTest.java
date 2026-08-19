@@ -2,7 +2,6 @@ package com.example.ecommerce.logistics.service;
 
 import com.example.ecommerce.logistics.model.CourierPartner;
 import com.example.ecommerce.logistics.model.TrackingResult;
-import com.example.ecommerce.logistics.provider.*;
 import com.example.ecommerce.order.dao.OrderDAO;
 import com.example.ecommerce.order.model.Order;
 import com.example.ecommerce.order.model.OrderStatus;
@@ -14,10 +13,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("Logistics Multi-Carrier Service & Provider Unit Tests")
