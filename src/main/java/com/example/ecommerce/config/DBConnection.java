@@ -71,6 +71,9 @@ public final class DBConnection {
             
             String jdbcUrl = System.getenv("DB_URL");
             if (jdbcUrl == null || jdbcUrl.trim().isEmpty()) {
+                jdbcUrl = System.getenv("DATABASE_URL");
+            }
+            if (jdbcUrl == null || jdbcUrl.trim().isEmpty()) {
                 jdbcUrl = props.getProperty("db.url");
             }
             if (jdbcUrl != null) {
@@ -88,7 +91,7 @@ public final class DBConnection {
                 if (jdbcUrl != null && jdbcUrl.startsWith("jdbc:postgresql:")) {
                     driver = "org.postgresql.Driver";
                 } else {
-                    driver = props.getProperty("db.driver", "com.microsoft.sqlserver.jdbc.SQLServerDriver");
+                    driver = props.getProperty("db.driver", "org.postgresql.Driver");
                 }
             }
             config.setDriverClassName(driver);
@@ -98,13 +101,17 @@ public final class DBConnection {
             if (username == null || username.trim().isEmpty()) {
                 username = props.getProperty("db.user");
             }
-            config.setUsername(username);
+            if (username != null && !username.trim().isEmpty()) {
+                config.setUsername(username);
+            }
 
             String password = System.getenv("DB_PASSWORD");
             if (password == null || password.trim().isEmpty()) {
                 password = props.getProperty("db.password");
             }
-            config.setPassword(password);
+            if (password != null && !password.trim().isEmpty()) {
+                config.setPassword(password);
+            }
 
             // Pool Sizing and Timeouts
             config.setPoolName(props.getProperty("hikaricp.poolName", "EcommerceHikariPool"));
@@ -586,15 +593,18 @@ public final class DBConnection {
     }
 
     /**
-     * Loads database configuration properties from classpath.
+     * Loads database configuration properties from classpath (optional fallback).
      */
-    private static Properties loadProperties() throws IOException {
+    private static Properties loadProperties() {
         Properties props = new Properties();
         try (InputStream in = DBConnection.class.getClassLoader().getResourceAsStream("db.properties")) {
-            if (in == null) {
-                throw new IOException("db.properties file not found in classpath");
+            if (in != null) {
+                props.load(in);
+            } else {
+                logger.info("db.properties not found in classpath; relying on environment variables (DB_URL / DATABASE_URL).");
             }
-            props.load(in);
+        } catch (Exception e) {
+            logger.warn("Could not read db.properties file: {}", e.getMessage());
         }
         return props;
     }
