@@ -20,11 +20,14 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 
 /**
- * Controller handling 6-digit Email Verification OTP verification prior to final account creation.
- * GET  /verify-email -> Renders OTP verification screen or handles resend request.
- * POST /verify-email -> Validates OTP, creates active User account, starts login session, redirects to home.
+ * Controller handling 6-digit Email Verification OTP verification prior to
+ * final account creation.
+ * GET /verify-email -> Renders OTP verification screen or handles resend
+ * request.
+ * POST /verify-email -> Validates OTP, creates active User account, starts
+ * login session, redirects to home.
  */
-@WebServlet(name = "VerifyEmailServlet", urlPatterns = {"/verify-email"})
+@WebServlet(name = "VerifyEmailServlet", urlPatterns = { "/verify-email" })
 public class VerifyEmailServlet extends HttpServlet {
 
     private static final Logger logger = LoggerFactory.getLogger(VerifyEmailServlet.class);
@@ -41,12 +44,13 @@ public class VerifyEmailServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         HttpSession session = request.getSession(false);
-        PendingRegistration pending = (session != null) ? 
-                (PendingRegistration) session.getAttribute("pendingRegistration") : null;
+        PendingRegistration pending = (session != null)
+                ? (PendingRegistration) session.getAttribute("pendingRegistration")
+                : null;
 
         if (pending == null) {
             response.sendRedirect(request.getContextPath() + "/register");
@@ -61,7 +65,8 @@ public class VerifyEmailServlet extends HttpServlet {
             session.setAttribute("pendingRegistration", pending);
 
             emailService.sendSignupVerificationOtp(pending.getEmail(), pending.getFirstName(), newOtp);
-            request.setAttribute("successMessage", "A new 6-digit verification code has been sent to " + pending.getEmail());
+            request.setAttribute("successMessage",
+                    "A new 6-digit verification code has been sent to " + pending.getEmail());
             logger.info("Resent signup email verification OTP to: {}", pending.getEmail());
         }
 
@@ -77,12 +82,13 @@ public class VerifyEmailServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         HttpSession session = request.getSession(false);
-        PendingRegistration pending = (session != null) ? 
-                (PendingRegistration) session.getAttribute("pendingRegistration") : null;
+        PendingRegistration pending = (session != null)
+                ? (PendingRegistration) session.getAttribute("pendingRegistration")
+                : null;
 
         if (pending == null) {
             response.sendRedirect(request.getContextPath() + "/register");
@@ -102,7 +108,8 @@ public class VerifyEmailServlet extends HttpServlet {
         }
 
         if (pending.isOtpExpired()) {
-            request.setAttribute("error", "Your verification code has expired. Please click 'Resend Code' to receive a new one.");
+            request.setAttribute("error",
+                    "Your verification code has expired. Please click 'Resend Code' to receive a new one.");
             request.setAttribute("pendingEmail", pending.getEmail());
             request.getRequestDispatcher("/WEB-INF/views/auth/verify-email.jsp").forward(request, response);
             return;
@@ -119,13 +126,12 @@ public class VerifyEmailServlet extends HttpServlet {
         // OTP is verified! Complete final registration in Database
         try {
             UserSession userSession = authService.registerCustomer(
-                    pending.getEmail(), 
-                    pending.getPassword(), 
-                    pending.getPassword(), 
-                    pending.getFirstName(), 
-                    pending.getLastName(), 
-                    pending.getPhone()
-            );
+                    pending.getEmail(),
+                    pending.getPassword(),
+                    pending.getPassword(),
+                    pending.getFirstName(),
+                    pending.getLastName(),
+                    pending.getPhone());
 
             // Clean up pending registration state & establish authenticated session
             session.removeAttribute("pendingRegistration");
@@ -142,8 +148,23 @@ public class VerifyEmailServlet extends HttpServlet {
             request.getRequestDispatcher("/WEB-INF/views/auth/verify-email.jsp").forward(request, response);
 
         } catch (Exception e) {
+            // Graceful Fallback: If user was already created during a rapid
+            // double-submission, log them in directly
+            try {
+                UserSession existingSession = authService.login(pending.getEmail(), pending.getPassword());
+                session.removeAttribute("pendingRegistration");
+                session.setAttribute("currentUser", existingSession);
+                session.setAttribute("cart", new Cart());
+                logger.info("Customer account already created, authenticated directly: {}", pending.getEmail());
+                response.sendRedirect(request.getContextPath() + "/?registered=true&welcome=true");
+                return;
+            } catch (Exception ignored) {
+                // Fall through to standard error handler if login also fails
+            }
+
             logger.error("Unexpected error finalizing customer registration for: {}", pending.getEmail(), e);
-            request.setAttribute("error", "An unexpected system error occurred while creating your account. Please try again.");
+            request.setAttribute("error",
+                    "An unexpected system error occurred while creating your account. Please try again.");
             request.setAttribute("pendingEmail", pending.getEmail());
             request.getRequestDispatcher("/WEB-INF/views/auth/verify-email.jsp").forward(request, response);
         }
