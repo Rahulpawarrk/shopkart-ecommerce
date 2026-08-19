@@ -79,7 +79,7 @@ public class CartDAO {
 
             // Query items joined with live catalog pricing and stock
             String itemsSql = "SELECT ci.cart_item_id, ci.cart_id, ci.product_id, ci.quantity, ci.created_at, ci.updated_at, " +
-                              "p.product_name, p.sku, p.brand, p.price, p.discount_percentage, p.status AS product_status, " +
+                              "p.product_name, p.sku, p.brand, p.price, p.discount_percentage, p.tax_percentage, " +
                               "COALESCE(i.quantity, 0) AS stock_quantity, " +
                               "(SELECT image_url FROM dbo.product_images pi WHERE pi.product_id = p.product_id ORDER BY pi.is_primary DESC, pi.display_order ASC LIMIT 1) AS primary_image_url " +
                               "FROM dbo.cart_items ci " +
@@ -104,9 +104,9 @@ public class CartDAO {
                         item.setProductName(rs.getString("product_name"));
                         item.setSku(rs.getString("sku"));
                         item.setBrand(rs.getString("brand"));
-                        item.setPrice(rs.getBigDecimal("price"));
+                        item.setUnitPrice(rs.getBigDecimal("price"));
                         item.setDiscountPercentage(rs.getBigDecimal("discount_percentage"));
-                        item.setProductStatus(rs.getString("product_status"));
+                        item.setTaxPercentage(rs.getBigDecimal("tax_percentage"));
                         item.setStockQuantity(rs.getInt("stock_quantity"));
                         item.setPrimaryImageUrl(rs.getString("primary_image_url"));
 
