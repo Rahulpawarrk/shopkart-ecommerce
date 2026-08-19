@@ -5,43 +5,52 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Base64;
 
 /**
- * Real SMS Gateway Service powered by TextBee Android Gateway (100% Free via Android SIM).
+ * Real Cloud SMS Gateway Service supporting Twilio Virtual Cloud Gateway and TextBee.
  *
- * <p>Configured via Environment Variables / System Properties:</p>
+ * <p>Twilio Environment Variables:</p>
  * <ul>
- *   <li>{@code TEXTBEE_API_KEY} — API Key from TextBee Dashboard (https://textbee.dev)</li>
- *   <li>{@code TEXTBEE_DEVICE_ID} — Connected Android Device ID from TextBee</li>
+ *   <li>{@code TWILIO_ACCOUNT_SID} — Twilio Account SID (starts with AC...)</li>
+ *   <li>{@code TWILIO_AUTH_TOKEN} or {@code TWILIO_API_KEY_SECRET} — Twilio Auth Token or API Secret</li>
+ *   <li>{@code TWILIO_API_KEY_SID} — Optional API Key SID (starts with SK...)</li>
+ *   <li>{@code TWILIO_FROM_PHONE} — Dedicated Twilio Cloud Phone Number (e.g. +1234567890)</li>
  * </ul>
  */
 public class SmsService {
 
     private static final Logger logger = LoggerFactory.getLogger(SmsService.class);
 
+    private final String twilioAccountSid;
+    private final String twilioAuthUser;
+    private final String twilioAuthSecret;
+    private final String twilioFromPhone;
     private final String textbeeApiKey;
     private final String textbeeDeviceId;
     private final String androidGatewayUrl;
-    private final String twilioSid;
-    private final String twilioToken;
-    private final String twilioFrom;
     private final HttpClient httpClient;
 
     public SmsService() {
+        this.twilioAccountSid = getEnv("TWILIO_ACCOUNT_SID", getEnv("TWILIO_SID", null));
+        String apiKeySid      = getEnv("TWILIO_API_KEY_SID", getEnv("TWILIO_KEY_SID", null));
+        this.twilioAuthUser   = (apiKeySid != null && !apiKeySid.trim().isEmpty()) ? apiKeySid.trim() : this.twilioAccountSid;
+        this.twilioAuthSecret = getEnv("TWILIO_AUTH_TOKEN", getEnv("TWILIO_API_KEY_SECRET", getEnv("TWILIO_SECRET", null)));
+        this.twilioFromPhone  = getEnv("TWILIO_FROM_PHONE", getEnv("TWILIO_PHONE_NUMBER", getEnv("TWILIO_FROM", null)));
+
         this.textbeeApiKey     = getEnv("TEXTBEE_API_KEY", null);
         this.textbeeDeviceId   = getEnv("TEXTBEE_DEVICE_ID", null);
         this.androidGatewayUrl = getEnv("ANDROID_SMS_GATEWAY_URL", null);
-        this.twilioSid         = getEnv("TWILIO_ACCOUNT_SID", null);
-        this.twilioToken       = getEnv("TWILIO_AUTH_TOKEN", null);
-        this.twilioFrom        = getEnv("TWILIO_FROM_PHONE", null);
-        this.httpClient        = HttpClient.newBuilder()
-                                    .connectTimeout(Duration.ofSeconds(10))
-                                    .build();
+
+        this.httpClient = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(12))
+                .build();
     }
 
     /**
@@ -54,7 +63,7 @@ public class SmsService {
     /**
      * Sends a 6-digit OTP SMS with a purpose-tailored concise message.
      *
-     * @param phoneNumber 10-digit mobile number (e.g. 7021317291)
+     * @param phoneNumber 10-digit mobile number (e.g. 9503705064)
      * @param otpCode     6-digit numeric OTP (e.g. 592814)
      * @param purpose     "REGISTRATION" or "PASSWORD_RESET"
      * @return true if dispatched successfully
@@ -65,8 +74,9 @@ public class SmsService {
             throw new ValidationException("Please provide a valid mobile number.");
         }
 
-        String cleanPhone = phoneNumber.trim().replaceAll("[^0-9]", "");
-        
+        String cleanDigits = phoneNumber.trim().replaceAll("[^0-9]", "");
+        String cleanPhone = cleanDigits.length() == 12 && cleanDigits.startsWith("91") ? cleanDigits.substring(2) : cleanDigits;
+
         String message;
         if ("REGISTRATION".equalsIgnoreCase(purpose)) {
             message = "ShopKart OTP: " + otpCode + ". Valid for 10 mins. Welcome!";
@@ -74,7 +84,21 @@ public class SmsService {
             message = "ShopKart OTP: " + otpCode + ". Valid for 10 mins.";
         }
 
-        // 1. TextBee Free Android Gateway (Primary)
+        // 1. Twilio Cloud Gateway (Primary - 100% Private Cloud)
+        if (twilioAccountSid != null && !twilioAccountSid.trim().isEmpty() &&
+            twilioAuthSecret != null && !twilioAuthSecret.trim().isEmpty() &&
+            twilioFromPhone != null && !twilioFromPhone.trim().isEmpty()) {
+            
+            logger.info("Dispatching [{}] SMS via Twilio Cloud to +91-{}...", purpose, cleanPhone);
+            boolean sent = sendViaTwilio(cleanPhone, message);
+            if (sent) {
+                return true;
+            }
+            logger.error("Twilio dispatch failed. Please check Twilio account balance or credentials.");
+            throw new ValidationException("Failed to deliver SMS via Twilio. Please check your Twilio configuration or trial verified numbers.");
+        }
+
+        // 2. TextBee Android Gateway (Secondary)
         if (textbeeApiKey != null && !textbeeApiKey.trim().isEmpty() &&
             textbeeDeviceId != null && !textbeeDeviceId.trim().isEmpty()) {
             
@@ -87,7 +111,7 @@ public class SmsService {
             throw new ValidationException("Failed to send SMS via mobile gateway. Please ensure your TextBee device is connected.");
         }
 
-        // 2. Local Android SMS Gateway (Secondary)
+        // 3. Local Android SMS Gateway
         if (androidGatewayUrl != null && !androidGatewayUrl.trim().isEmpty()) {
             boolean sent = sendViaAndroidGateway(cleanPhone, message);
             if (sent) {
@@ -96,32 +120,54 @@ public class SmsService {
             throw new ValidationException("Failed to send SMS via local Android SMS gateway.");
         }
 
-        // 3. Twilio Gateway (Optional Cloud Fallback)
-        if (twilioSid != null && twilioToken != null && twilioFrom != null) {
-            boolean sent = sendViaTwilio(cleanPhone, message);
-            if (sent) {
-                return true;
-            }
-            throw new ValidationException("Failed to send SMS via Twilio.");
-        }
-
         // If no real gateway is configured
-        logger.error("No SMS Gateway configured! Please set TEXTBEE_API_KEY and TEXTBEE_DEVICE_ID.");
-        throw new ValidationException("SMS service is not configured on the server. Please use Email OTP or configure TextBee.");
+        logger.error("No SMS Gateway configured! Please set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN and TWILIO_FROM_PHONE.");
+        throw new ValidationException("SMS service is not configured on the server. Please use Email OTP or configure Twilio.");
+    }
+
+    private boolean sendViaTwilio(String phone, String message) {
+        try {
+            // E.164 destination format for Twilio (e.g. +919503705064)
+            String toPhone = phone.startsWith("+") ? phone : (phone.length() == 10 ? "+91" + phone : "+" + phone);
+            String url = "https://api.twilio.com/2010-04-01/Accounts/" + twilioAccountSid.trim() + "/Messages.json";
+
+            String formData = "To=" + URLEncoder.encode(toPhone, StandardCharsets.UTF_8) +
+                              "&From=" + URLEncoder.encode(twilioFromPhone.trim(), StandardCharsets.UTF_8) +
+                              "&Body=" + URLEncoder.encode(message, StandardCharsets.UTF_8);
+
+            String credentials = twilioAuthUser.trim() + ":" + twilioAuthSecret.trim();
+            String basicAuth = Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .timeout(Duration.ofSeconds(15))
+                    .header("Authorization", "Basic " + basicAuth)
+                    .header("Content-Type", "application/x-www-form-urlencoded")
+                    .POST(HttpRequest.BodyPublishers.ofString(formData))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            logger.info("Twilio API response [{}] body: {}", response.statusCode(), response.body());
+
+            if (response.statusCode() == 200 || response.statusCode() == 201) {
+                logger.info("✓ SMS OTP successfully sent via Twilio Cloud to {}", toPhone);
+                return true;
+            } else {
+                logger.warn("Twilio returned error status {}: {}", response.statusCode(), response.body());
+                return false;
+            }
+        } catch (Exception e) {
+            logger.error("Exception sending SMS via Twilio to {}", phone, e);
+            return false;
+        }
     }
 
     private boolean sendViaTextBee(String phone, String message) {
         try {
-            // Standard 10-digit format for Indian domestic numbers to match phone's native SMS routing
             String cleanDigits = phone.trim().replaceAll("[^0-9]", "");
-            String toPhone;
-            if (cleanDigits.length() == 12 && cleanDigits.startsWith("91")) {
-                toPhone = cleanDigits.substring(2);
-            } else if (cleanDigits.length() == 13 && cleanDigits.startsWith("+91")) {
-                toPhone = cleanDigits.substring(3);
-            } else {
-                toPhone = cleanDigits;
-            }
+            String toPhone = (cleanDigits.length() == 12 && cleanDigits.startsWith("91")) 
+                    ? cleanDigits.substring(2) 
+                    : cleanDigits;
 
             String url = "https://api.textbee.dev/api/v1/gateway/send-sms";
             
@@ -176,32 +222,6 @@ public class SmsService {
             return (response.statusCode() >= 200 && response.statusCode() < 300);
         } catch (Exception e) {
             logger.error("Exception sending SMS via Android Gateway to {}", phone, e);
-            return false;
-        }
-    }
-
-    private boolean sendViaTwilio(String phone, String message) {
-        try {
-            String toPhone = phone.startsWith("+") ? phone : "+91" + phone;
-            String url = "https://api.twilio.com/2010-04-01/Accounts/" + twilioSid + "/Messages.json";
-            String formData = "To=" + java.net.URLEncoder.encode(toPhone, StandardCharsets.UTF_8) +
-                              "&From=" + java.net.URLEncoder.encode(twilioFrom, StandardCharsets.UTF_8) +
-                              "&Body=" + java.net.URLEncoder.encode(message, StandardCharsets.UTF_8);
-
-            String auth = java.util.Base64.getEncoder().encodeToString((twilioSid + ":" + twilioToken).getBytes(StandardCharsets.UTF_8));
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
-                    .timeout(Duration.ofSeconds(15))
-                    .header("Authorization", "Basic " + auth)
-                    .header("Content-Type", "application/x-www-form-urlencoded")
-                    .POST(HttpRequest.BodyPublishers.ofString(formData))
-                    .build();
-
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            return (response.statusCode() == 200 || response.statusCode() == 201);
-        } catch (Exception e) {
-            logger.error("Exception sending SMS via Twilio to {}", phone, e);
             return false;
         }
     }
