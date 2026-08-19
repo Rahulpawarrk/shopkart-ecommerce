@@ -26,14 +26,63 @@ import java.util.List;
 public class ShiprocketLogisticsProvider implements LogisticsProvider {
     private static final Logger logger = LoggerFactory.getLogger(ShiprocketLogisticsProvider.class);
 
-    private final String authToken;
+    private String authToken;
+    private final String email;
+    private final String password;
     private final HttpClient httpClient;
 
     public ShiprocketLogisticsProvider() {
-        this.authToken = System.getenv("SHIPROCKET_AUTH_TOKEN");
+        this.authToken = getEnv("SHIPROCKET_AUTH_TOKEN", null);
+        this.email = getEnv("SHIPROCKET_EMAIL", null);
+        this.password = getEnv("SHIPROCKET_PASSWORD", null);
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(5))
                 .build();
+    }
+
+    private String getEnv(String name, String fallback) {
+        String val = System.getenv(name);
+        if (val == null || val.trim().isEmpty()) {
+            val = System.getProperty(name);
+        }
+        if (val == null || val.trim().isEmpty()) {
+            val = System.getProperty(name.toLowerCase().replace('_', '.'));
+        }
+        return (val != null && !val.trim().isEmpty()) ? val.trim() : fallback;
+    }
+
+    private synchronized String resolveAuthToken() {
+        if (authToken != null && !authToken.trim().isEmpty()) {
+            return authToken.trim();
+        }
+        if (email != null && password != null && !email.trim().isEmpty() && !password.trim().isEmpty()) {
+            try {
+                JSONObject loginPayload = new JSONObject();
+                loginPayload.put("email", email.trim());
+                loginPayload.put("password", password.trim());
+
+                HttpRequest loginReq = HttpRequest.newBuilder()
+                        .uri(URI.create("https://apiv2.shiprocket.in/v1/external/auth/login"))
+                        .header("Content-Type", "application/json")
+                        .POST(HttpRequest.BodyPublishers.ofString(loginPayload.toString()))
+                        .timeout(Duration.ofSeconds(6))
+                        .build();
+
+                HttpResponse<String> resp = httpClient.send(loginReq, HttpResponse.BodyHandlers.ofString());
+                if (resp.statusCode() == 200 && resp.body() != null) {
+                    JSONObject respJson = new JSONObject(resp.body());
+                    if (respJson.has("token")) {
+                        this.authToken = respJson.getString("token");
+                        logger.info("Successfully acquired live Shiprocket API Bearer Token for {}", email);
+                        return this.authToken;
+                    }
+                }
+                logger.warn("Shiprocket auth login failed with status {}: {}", resp.statusCode(), resp.body());
+            } catch (Exception e) {
+                logger.error("Failed to authenticate with Shiprocket API", e);
+            }
+        }
+        return null;
     }
 
     @Override
@@ -48,9 +97,10 @@ public class ShiprocketLogisticsProvider implements LogisticsProvider {
         result.setTrackingNumber(trackingNumber);
         result.setCarrierTrackingUrl(CourierPartner.SHIPROCKET.buildTrackingUrl(trackingNumber));
 
-        if (authToken != null && !authToken.trim().isEmpty()) {
+        String token = resolveAuthToken();
+        if (token != null && !token.trim().isEmpty()) {
             try {
-                return callShiprocketLiveApi(trackingNumber, order);
+                return callShiprocketLiveApi(trackingNumber, order, token);
             } catch (Exception e) {
                 logger.warn("Shiprocket Live API call failed, using fallback: {}", e.getMessage());
             }
@@ -59,13 +109,13 @@ public class ShiprocketLogisticsProvider implements LogisticsProvider {
         return generateRealisticTracking(trackingNumber, order);
     }
 
-    private TrackingResult callShiprocketLiveApi(String trackingNumber, Order order) throws Exception {
+    private TrackingResult callShiprocketLiveApi(String trackingNumber, Order order, String token) throws Exception {
         String url = "https://apiv2.shiprocket.in/v1/external/courier/track/awb/" + trackingNumber.trim();
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
                 .header("Content-Type", "application/json")
-                .header("Authorization", "Bearer " + authToken.trim())
+                .header("Authorization", "Bearer " + token.trim())
                 .GET()
                 .timeout(Duration.ofSeconds(6))
                 .build();

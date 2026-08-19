@@ -47,7 +47,18 @@ public class LogisticsWebhookServlet extends HttpServlet {
         }
         String signature = request.getHeader("X-Carrier-Signature");
         String webhookToken = request.getHeader("X-Webhook-Token");
-        if (webhookToken == null) {
+        String apiKeyHeader = request.getHeader("x-api-key");
+        String authHeader = request.getHeader("Authorization");
+
+        if (apiKeyHeader != null && !apiKeyHeader.trim().isEmpty()) {
+            webhookToken = apiKeyHeader.trim();
+        } else if (authHeader != null && !authHeader.trim().isEmpty()) {
+            String cleanAuth = authHeader.trim();
+            if (cleanAuth.toLowerCase().startsWith("bearer ")) {
+                cleanAuth = cleanAuth.substring(7).trim();
+            }
+            webhookToken = cleanAuth;
+        } else if (webhookToken == null) {
             webhookToken = request.getParameter("token");
         }
 

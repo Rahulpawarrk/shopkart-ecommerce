@@ -62,7 +62,7 @@ public class SmsService {
 
         // 1. Check for Fast2SMS (Indian Gateway)
         if (fast2smsApiKey != null && !fast2smsApiKey.trim().isEmpty()) {
-            return sendViaFast2SMS(cleanPhone, message);
+            return sendViaFast2SMS(cleanPhone, otpCode, message);
         }
 
         // 2. Check for Twilio (Global Gateway)
@@ -79,25 +79,45 @@ public class SmsService {
         return true;
     }
 
-    private boolean sendViaFast2SMS(String phone, String message) {
+    private boolean sendViaFast2SMS(String phone, String otpCode, String message) {
         try {
-            String url = "https://www.fast2sms.com/dev/bulkV2?route=q&message=" + 
-                         URLEncoder.encode(message, StandardCharsets.UTF_8) +
-                         "&language=english&flash=0&numbers=" + URLEncoder.encode(phone, StandardCharsets.UTF_8);
+            // 1. Primary: Use Fast2SMS dedicated 'otp' route (instant delivery, pre-approved DLT template)
+            String otpUrl = "https://www.fast2sms.com/dev/bulkV2?route=otp&variables_values=" + 
+                            URLEncoder.encode(otpCode, StandardCharsets.UTF_8) +
+                            "&numbers=" + URLEncoder.encode(phone, StandardCharsets.UTF_8);
 
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(url))
+                    .uri(URI.create(otpUrl))
+                    .timeout(Duration.ofSeconds(15))
+                    .header("authorization", fast2smsApiKey.trim())
+                    .header("Content-Type", "application/json")
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200 && response.body() != null && response.body().contains("\"return\":true")) {
+                logger.info("SMS OTP successfully sent via Fast2SMS (route=otp) to {}", phone);
+                return true;
+            }
+
+            // 2. Fallback: Use Quick SMS route ('route=q')
+            String quickUrl = "https://www.fast2sms.com/dev/bulkV2?route=q&message=" + 
+                              URLEncoder.encode(message, StandardCharsets.UTF_8) +
+                              "&language=english&flash=0&numbers=" + URLEncoder.encode(phone, StandardCharsets.UTF_8);
+
+            HttpRequest quickRequest = HttpRequest.newBuilder()
+                    .uri(URI.create(quickUrl))
                     .timeout(Duration.ofSeconds(15))
                     .header("authorization", fast2smsApiKey.trim())
                     .GET()
                     .build();
 
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() == 200) {
-                logger.info("SMS successfully sent via Fast2SMS to {}", phone);
+            HttpResponse<String> quickResponse = httpClient.send(quickRequest, HttpResponse.BodyHandlers.ofString());
+            if (quickResponse.statusCode() == 200) {
+                logger.info("SMS successfully sent via Fast2SMS (route=q) to {}", phone);
                 return true;
             } else {
-                logger.warn("Fast2SMS gateway returned status {}: {}", response.statusCode(), response.body());
+                logger.warn("Fast2SMS returned status {}: {}", quickResponse.statusCode(), quickResponse.body());
                 return false;
             }
         } catch (Exception e) {

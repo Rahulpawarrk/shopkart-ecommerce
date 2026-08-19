@@ -72,7 +72,7 @@ public enum CourierPartner {
         if (clean.contains("BLUE") || clean.contains("DART")) return BLUEDART;
         if (clean.contains("DELHIVERY")) return DELHIVERY;
         if (clean.contains("DTDC")) return DTDC;
-        if (clean.contains("SHIPROCKET") || clean.contains("ROCKET")) return SHIPROCKET;
+        if (clean.contains("SHIPROCKET") || clean.contains("ROCKET") || clean.contains("TRACKING") || clean.contains("DELIVERY") || clean.contains("AGGREGATOR") || clean.contains("CARRIER")) return SHIPROCKET;
         if (clean.contains("ECOM")) return ECOM_EXPRESS;
         if (clean.contains("SHADOW")) return SHADOWFAX;
         if (clean.contains("FEDEX")) return FEDEX;
