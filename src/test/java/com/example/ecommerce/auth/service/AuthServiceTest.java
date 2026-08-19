@@ -167,6 +167,26 @@ class AuthServiceTest {
     }
 
     @Test
+    @DisplayName("Should generate 6-digit OTP and send email when email exists")
+    void testInitiateForgotPasswordEmailSuccess() {
+        User mockUser = new User();
+        mockUser.setUserId(20);
+        mockUser.setEmail("emailuser@example.com");
+        mockUser.setFirstName("Alice");
+        mockUser.setStatus("ACTIVE");
+
+        when(userDAO.findByEmail("emailuser@example.com")).thenReturn(Optional.of(mockUser));
+
+        var result = authService.initiateForgotPassword("emailuser@example.com", "http://localhost:8080");
+
+        assertNotNull(result);
+        assertEquals("EMAIL", result.getMethod());
+        assertTrue(result.isUserFound());
+        verify(passwordResetDAO).createOtp(eq(20), anyString());
+        verify(emailService).sendPasswordResetOtp(eq("emailuser@example.com"), eq("Alice"), anyString());
+    }
+
+    @Test
     @DisplayName("Should generate 6-digit OTP when mobile number exists")
     void testInitiateForgotPasswordMobileSuccess() {
         User mockUser = new User();
@@ -182,9 +202,27 @@ class AuthServiceTest {
         assertNotNull(result);
         assertEquals("PHONE", result.getMethod());
         assertTrue(result.isUserFound());
-        assertNotNull(result.getOtpCode());
-        assertEquals(6, result.getOtpCode().length());
         verify(passwordResetDAO).createOtp(eq(20), anyString());
+        verify(smsService).sendOtpSms(eq("9876543210"), anyString());
+    }
+
+    @Test
+    @DisplayName("Should successfully reset password with valid Email OTP")
+    void testResetPasswordWithEmailOtpSuccess() {
+        User mockUser = new User();
+        mockUser.setUserId(25);
+        mockUser.setEmail("user@example.com");
+        mockUser.setStatus("ACTIVE");
+
+        when(userDAO.findByEmail("user@example.com")).thenReturn(Optional.of(mockUser));
+        when(passwordResetDAO.validateOtp(25, "123456")).thenReturn(true);
+
+        assertDoesNotThrow(() ->
+            authService.resetPasswordWithOtp("user@example.com", "123456", "NewPassword@123", "NewPassword@123")
+        );
+
+        verify(userDAO).updatePassword(eq(25), anyString());
+        verify(passwordResetDAO).invalidateToken("123456");
     }
 
     @Test
@@ -207,7 +245,7 @@ class AuthServiceTest {
     }
 
     @Test
-    @DisplayName("Should reject password reset when SMS OTP is invalid")
+    @DisplayName("Should reject password reset when OTP is invalid")
     void testResetPasswordWithOtpInvalid() {
         User mockUser = new User();
         mockUser.setUserId(25);
@@ -222,5 +260,28 @@ class AuthServiceTest {
         );
 
         assertTrue(ex.getMessage().contains("Invalid or expired OTP"));
+    }
+
+    @Test
+    @DisplayName("Should successfully register new Admin through admin dashboard")
+    void testRegisterAdminSuccess() {
+        when(userDAO.existsByEmail("newadmin@shopkart.com")).thenReturn(false);
+        when(userDAO.existsByPhone("9988776655")).thenReturn(false);
+        when(userDAO.createAdminUser(any(User.class))).thenReturn(101);
+
+        User created = authService.registerAdmin(
+                "newadmin@shopkart.com",
+                "AdminSecure@123",
+                "AdminSecure@123",
+                "Admin",
+                "User",
+                "9988776655",
+                1
+        );
+
+        assertNotNull(created);
+        assertEquals(101, created.getUserId());
+        assertEquals("newadmin@shopkart.com", created.getEmail());
+        verify(userDAO).createAdminUser(any(User.class));
     }
 }

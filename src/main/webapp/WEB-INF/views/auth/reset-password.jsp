@@ -135,93 +135,70 @@
         </a>
 
         <div class="auth-card">
+            <h1 class="auth-card-title">Reset Your Password</h1>
+            <p style="color:#6b7280; font-size:0.875rem; margin:0 0 1.25rem;">
+                Enter the 6-digit verification code sent to your email or mobile, then choose a secure new password.
+            </p>
 
-            <c:choose>
-                <%-- Invalid / missing token --%>
-                <c:when test="${invalidToken}">
-                    <h1 class="auth-card-title">Link Expired</h1>
-                    <div class="alert-invalid">
-                        ⏱️ <strong><c:out value="${tokenError}"/></strong><br><br>
-                        Reset links are only valid for <strong>1 hour</strong>. Please request a new one.
+            <c:if test="${not empty error}">
+                <div class="alert-error">⚠️ <c:out value="${error}"/></div>
+            </c:if>
+
+            <form action="${pageContext.request.contextPath}/reset-password" method="POST" id="resetForm" novalidate>
+                <c:if test="${not empty token}">
+                    <input type="hidden" name="token" value="<c:out value='${token}'/>">
+                </c:if>
+
+                <!-- Identifier Field (Email / Mobile) -->
+                <div class="form-group">
+                    <label for="identifier" class="auth-form-label">Registered Email or Mobile Number *</label>
+                    <input type="text" id="identifier" name="identifier" class="auth-form-input"
+                           required placeholder="you@example.com or 10-digit mobile"
+                           value="<c:out value='${identifier}'/>"
+                           <c:if test="${not empty identifier}">readonly style="background-color:#f1f5f9; cursor:not-allowed;"</c:if>>
+                </div>
+
+                <!-- 6-Digit OTP Field -->
+                <div class="form-group">
+                    <label for="otpCode" class="auth-form-label">6-Digit Verification OTP Code *</label>
+                    <input type="text" id="otpCode" name="otpCode"
+                           class="auth-form-input" required maxlength="6" pattern="[0-9]{6}"
+                           placeholder="123456" autocomplete="one-time-code" autofocus
+                           value="<c:out value='${otpCode}'/>"
+                           style="font-size: 1.3rem; letter-spacing: 6px; text-align: center; font-weight: 800; font-family: monospace;">
+                </div>
+
+                <!-- New Password -->
+                <div class="form-group">
+                    <label for="newPassword" class="auth-form-label">New Password * (Min 8 Characters)</label>
+                    <div class="pwd-wrapper">
+                        <input type="password" id="newPassword" name="newPassword"
+                               class="auth-form-input" required minlength="8"
+                               placeholder="Enter new password" autocomplete="new-password"
+                               oninput="checkStrength(this.value)">
+                        <button type="button" class="pwd-toggle" onclick="togglePwd('newPassword', this)" title="Show/hide">👁</button>
                     </div>
-                    <a href="${pageContext.request.contextPath}/forgot-password"
-                       class="btn-auth-submit"
-                       style="display:block; text-align:center; text-decoration:none; padding:0.75rem;">
-                        Request New Reset Link
-                    </a>
-                </c:when>
+                    <div id="strengthBar" class="password-strength-bar" style="background:#e5e7eb;"></div>
+                    <div id="strengthHint" class="strength-hint" style="color:#9ca3af;"></div>
+                </div>
 
-                <%-- Valid token or OTP mode — show reset password form --%>
-                <c:otherwise>
-                    <c:choose>
-                        <c:when test="${isOtpMode}">
-                            <h1 class="auth-card-title">Verify SMS OTP</h1>
-                            <p style="color:#6b7280; font-size:0.875rem; margin:0 0 1.25rem;">
-                                Enter the <strong>6-digit OTP</strong> sent to mobile <strong>+91-<c:out value="${phone}"/></strong> and set your new password.
-                            </p>
-                        </c:when>
-                        <c:otherwise>
-                            <h1 class="auth-card-title">Set New Password</h1>
-                            <p style="color:#6b7280; font-size:0.875rem; margin:0 0 1.25rem;">
-                                Choose a strong password with at least <strong>8 characters</strong>.
-                            </p>
-                        </c:otherwise>
-                    </c:choose>
+                <!-- Confirm Password -->
+                <div class="form-group">
+                    <label for="confirmPassword" class="auth-form-label">Confirm New Password *</label>
+                    <div class="pwd-wrapper">
+                        <input type="password" id="confirmPassword" name="confirmPassword"
+                               class="auth-form-input" required minlength="8"
+                               placeholder="Confirm new password" autocomplete="new-password"
+                               oninput="checkMatch()">
+                        <button type="button" class="pwd-toggle" onclick="togglePwd('confirmPassword', this)" title="Show/hide">👁</button>
+                    </div>
+                    <div id="matchHint" class="strength-hint"></div>
+                </div>
 
-                    <c:if test="${not empty error}">
-                        <div class="alert-error">⚠️ <c:out value="${error}"/></div>
-                    </c:if>
-
-                    <form action="${pageContext.request.contextPath}/reset-password" method="POST" id="resetForm" novalidate>
-                        <c:choose>
-                            <c:when test="${isOtpMode}">
-                                <input type="hidden" name="phone" value="<c:out value='${phone}'/>">
-                                
-                                <div class="form-group">
-                                    <label for="otpCode" class="auth-form-label">6-Digit SMS OTP Code *</label>
-                                    <input type="text" id="otpCode" name="otpCode"
-                                           class="auth-form-input" required maxlength="6" pattern="[0-9]{6}"
-                                           placeholder="Enter 6-digit OTP" autocomplete="one-time-code" autofocus
-                                           value="<c:out value='${otpCode}'/>"
-                                           style="font-size: 1.2rem; letter-spacing: 4px; text-align: center; font-weight: 800;">
-                                </div>
-                            </c:when>
-                            <c:otherwise>
-                                <input type="hidden" name="token" value="<c:out value='${token}'/>">
-                            </c:otherwise>
-                        </c:choose>
-
-                        <div class="form-group">
-                            <label for="newPassword" class="auth-form-label">New Password *</label>
-                            <div class="pwd-wrapper">
-                                <input type="password" id="newPassword" name="newPassword"
-                                       class="auth-form-input" required minlength="8"
-                                       placeholder="Min 8 characters" autocomplete="new-password"
-                                       oninput="checkStrength(this.value)">
-                                <button type="button" class="pwd-toggle" onclick="togglePwd('newPassword', this)" title="Show/hide">👁</button>
-                            </div>
-                            <div id="strengthBar" class="password-strength-bar" style="background:#e5e7eb;"></div>
-                            <div id="strengthHint" class="strength-hint" style="color:#9ca3af;"></div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="confirmPassword" class="auth-form-label">Confirm New Password *</label>
-                            <div class="pwd-wrapper">
-                                <input type="password" id="confirmPassword" name="confirmPassword"
-                                       class="auth-form-input" required minlength="8"
-                                       placeholder="Repeat password" autocomplete="new-password"
-                                       oninput="checkMatch()">
-                                <button type="button" class="pwd-toggle" onclick="togglePwd('confirmPassword', this)" title="Show/hide">👁</button>
-                            </div>
-                            <div id="matchHint" class="strength-hint"></div>
-                        </div>
-
-                        <button type="submit" class="btn-auth-submit" id="resetBtn">
-                            🔒 Verify &amp; Update Password
-                        </button>
-                    </form>
-                </c:otherwise>
-            </c:choose>
+                <button type="submit" class="btn-auth-submit" id="resetBtn">
+                    🔒 Verify Code &amp; Update Password
+                </button>
+            </form>
 
             <a href="${pageContext.request.contextPath}/login" class="back-link">← Back to Sign In</a>
         </div>

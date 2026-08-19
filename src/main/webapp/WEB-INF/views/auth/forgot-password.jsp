@@ -187,53 +187,34 @@
             <c:choose>
                 <%-- State 2: Form submitted — show confirmation --%>
                 <c:when test="${submitted}">
-                    <c:choose>
-                        <c:when test="${methodType == 'PHONE'}">
-                            <div class="alert-success">
-                                <strong>✓ 6-Digit SMS OTP Sent!</strong><br>
-                                A verification code has been dispatched to <strong>+91-<c:out value="${destination}"/></strong>.
-                                The OTP is valid for <strong>10 minutes</strong>.
-                            </div>
+                    <div class="alert-success">
+                        <strong>✓ 6-Digit Verification Code Sent!</strong><br>
+                        <c:choose>
+                            <c:when test="${methodType == 'PHONE'}">
+                                A 6-digit verification code has been dispatched to <strong>+91-<c:out value="${destination}"/></strong>.
+                            </c:when>
+                            <c:otherwise>
+                                If an account exists for <strong><c:out value="${destination}"/></strong>, we've sent a 6-digit verification code to your email.
+                            </c:otherwise>
+                        </c:choose>
+                        The code is valid for <strong>10 minutes</strong>.
+                    </div>
 
-                            <c:if test="${not empty otpCode}">
-                                <div class="simulation-box">
-                                    <strong>📱 SMS Received (Sandbox Preview):</strong><br>
-                                    Your 6-Digit Verification Code is: <span style="font-size: 1.25rem; font-weight: 900; letter-spacing: 3px; color: #b45309;"><c:out value="${otpCode}"/></span>
-                                </div>
-                            </c:if>
+                    <a href="${pageContext.request.contextPath}/reset-password?identifier=<c:out value='${rawIdentifier}'/>" 
+                       class="btn-auth-submit"
+                       style="display:block; text-align:center; text-decoration:none; padding:0.75rem; margin-top:1.25rem;">
+                        Enter OTP &amp; Reset Password →
+                    </a>
 
-                            <a href="${pageContext.request.contextPath}/reset-password?phone=<c:out value='${rawPhone}'/><c:if test='${not empty otpCode}'>&amp;otpCode=<c:out value='${otpCode}'/></c:if>" 
-                               class="btn-auth-submit"
-                               style="display:block; text-align:center; text-decoration:none; padding:0.75rem; margin-top:1.25rem;">
-                                Enter OTP &amp; Reset Password →
-                            </a>
-                        </c:when>
-                        <c:otherwise>
-                            <div class="alert-success">
-                                <strong>✓ Check your inbox!</strong><br>
-                                If an account is registered with <strong><c:out value="${destination}"/></strong>,
-                                we've sent a password reset link. The link expires in <strong>1 hour</strong>.
-                            </div>
-
-                            <c:if test="${not empty resetLink}">
-                                <div class="simulation-box">
-                                    <strong>⚡ Direct Reset Link (Preview):</strong><br>
-                                    <a href="<c:out value='${resetLink}'/>">Click here to reset password →</a>
-                                </div>
-                            </c:if>
-
-                            <a href="${pageContext.request.contextPath}/forgot-password" class="btn-auth-submit"
-                               style="display:block; text-align:center; text-decoration:none; padding:0.75rem; margin-top:1.25rem;">
-                                Request Another Reset
-                            </a>
-                        </c:otherwise>
-                    </c:choose>
+                    <a href="${pageContext.request.contextPath}/forgot-password" class="back-link" style="margin-top:1rem;">
+                        Didn't receive code? Resend OTP
+                    </a>
                 </c:when>
 
                 <%-- State 1: Show dual-method input form --%>
                 <c:otherwise>
                     <p class="auth-subtitle">
-                        Choose your preferred verification method to reset your ShopKart account password.
+                        Enter your registered email address or mobile number to receive a 6-digit OTP code to reset your password.
                     </p>
 
                     <!-- Dual Method Tabs -->
@@ -247,11 +228,11 @@
                     </div>
 
                     <div class="steps-hint" id="hintBox">
-                        <strong>Reset via Email:</strong>
+                        <strong>Reset via Email OTP:</strong>
                         <ol>
                             <li>Enter your registered email address</li>
-                            <li>Check your inbox for a secure reset link</li>
-                            <li>Click the link &amp; set a new password</li>
+                            <li>Check your inbox for a 6-digit OTP verification code</li>
+                            <li>Enter the OTP &amp; set your new password</li>
                         </ol>
                     </div>
 
@@ -266,7 +247,7 @@
                             <label for="emailInput" class="auth-form-label">Registered Email Address *</label>
                             <input type="email" id="emailInput" name="identifier" class="auth-form-input"
                                    placeholder="you@example.com" autofocus
-                                   value="<c:out value='${param.email}'/>">
+                                   value="<c:out value='${identifier}'/>">
                         </div>
 
                         <!-- Mobile Input Group (hidden by default) -->
@@ -278,7 +259,7 @@
                         </div>
 
                         <button type="submit" class="btn-auth-submit" id="forgotSubmitBtn">
-                            Send Reset Link →
+                            Send 6-Digit OTP Code →
                         </button>
                     </form>
                 </c:otherwise>
@@ -318,11 +299,11 @@
                 emailInput.name = 'identifier';
                 phoneInput.name = '';
                 emailInput.focus();
-                hintBox.innerHTML = '<strong>Reset via Email:</strong>' +
+                hintBox.innerHTML = '<strong>Reset via Email OTP:</strong>' +
                     '<ol>' +
                     '<li>Enter your registered email address</li>' +
-                    '<li>Check your inbox for a secure reset link</li>' +
-                    '<li>Click the link &amp; set a new password</li>' +
+                    '<li>Check your inbox for a 6-digit OTP verification code</li>' +
+                    '<li>Enter the OTP &amp; set your new password</li>' +
                     '</ol>';
             } else {
                 tabPhone.classList.add('active');
@@ -332,11 +313,11 @@
                 phoneInput.name = 'identifier';
                 emailInput.name = '';
                 phoneInput.focus();
-                hintBox.innerHTML = '<strong>Reset via Mobile Number:</strong>' +
+                hintBox.innerHTML = '<strong>Reset via Mobile SMS OTP:</strong>' +
                     '<ol>' +
                     '<li>Enter your registered 10-digit mobile number</li>' +
-                    '<li>We will verify your account &amp; issue a reset link</li>' +
-                    '<li>Set your new secure password immediately</li>' +
+                    '<li>Check your phone for a 6-digit SMS verification code</li>' +
+                    '<li>Enter the OTP &amp; set your new password</li>' +
                     '</ol>';
             }
         }
@@ -363,7 +344,7 @@
                 }
 
                 btn.disabled = true;
-                btn.textContent = 'Processing…';
+                btn.textContent = 'Generating OTP…';
             });
         }
     </script>

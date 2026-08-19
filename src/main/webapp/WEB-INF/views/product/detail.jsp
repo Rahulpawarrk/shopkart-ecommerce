@@ -743,9 +743,9 @@
                                     </c:choose>
                                 </span>
                             </div>
-                            <c:if test="${canReview}">
+                            <c:if test="${canReview && empty existingReview}">
                                 <a href="#writeReviewForm" class="btn-write-review-hero">
-                                    <span>${not empty existingReview ? '✏️' : '⭐'}</span> ${not empty existingReview ? 'Edit Your Review' : 'Write a Product Review'}
+                                    <span>⭐</span> Write a Product Review
                                 </a>
                             </c:if>
                         </div>
@@ -836,49 +836,12 @@
                                     </div>
                                 </div>
 
-                                <!-- Current User's Existing Review Card -->
-                                <c:if test="${not empty existingReview}">
-                                    <div class="user-existing-review-card">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                                            <span style="font-size: 0.85rem; font-weight: 800; color: #1e40af; display: flex; align-items: center; gap: 0.35rem;">
-                                                <span>⭐</span> Your Review
-                                            </span>
-                                            <span style="color: #f59e0b; font-size: 0.95rem; font-weight: 800;">
-                                                <c:forEach begin="1" end="${existingReview.rating}">★</c:forEach><c:forEach begin="${existingReview.rating + 1}" end="5">☆</c:forEach>
-                                            </span>
-                                        </div>
-                                        <div style="font-size: 0.92rem; font-weight: 800; color: #0f172a; margin-bottom: 0.35rem;">
-                                            <c:out value="${existingReview.title}" />
-                                        </div>
-                                        <div style="font-size: 0.84rem; color: #334155; line-height: 1.5; margin-bottom: 0.75rem;">
-                                            <c:out value="${existingReview.comment}" />
-                                        </div>
-                                        <c:if test="${not empty existingReview.imageUrl || not empty existingReview.imageUrls}">
-                                            <div style="display: flex; gap: 0.4rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
-                                                <c:choose>
-                                                    <c:when test="${not empty existingReview.imageUrls}">
-                                                        <c:forEach var="img" items="${existingReview.imageUrls}">
-                                                            <img src="${img}" alt="Your review photo" style="width: 44px; height: 44px; object-fit: cover; border-radius: 6px; border: 1px solid #bfdbfe; cursor: pointer;" onclick="openReviewLightbox('${img}', '<c:out value="${existingReview.title}" />')">
-                                                        </c:forEach>
-                                                    </c:when>
-                                                    <c:when test="${not empty existingReview.imageUrl}">
-                                                        <img src="${existingReview.imageUrl}" alt="Your review photo" style="width: 44px; height: 44px; object-fit: cover; border-radius: 6px; border: 1px solid #bfdbfe; cursor: pointer;" onclick="openReviewLightbox('${existingReview.imageUrl}', '<c:out value="${existingReview.title}" />')">
-                                                    </c:when>
-                                                </c:choose>
-                                            </div>
-                                        </c:if>
-                                        <a href="#writeReviewForm" style="display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.82rem; font-weight: 800; color: #2563eb; text-decoration: none;">
-                                            ✏️ Edit / Update Your Review &rarr;
-                                        </a>
-                                    </div>
-                                </c:if>
-
                                 <!-- Verified Buyer Guarantee Banner -->
                                 <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem; margin-top: 1.25rem; font-size: 0.82rem; color: #475569; line-height: 1.6;">
                                     <div style="font-weight: 800; color: #0f172a; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.4rem;">
                                         <span>🛡️</span> Verified Purchase Guarantee
                                     </div>
-                                    Reviews with the <span style="color:#15803d; font-weight:700;">✓ Verified Delivered Buyer</span> badge are submitted exclusively by verified customers after successful order delivery.
+                                    Reviews with the <span style="color:#15803d; font-weight:700;">✓ Verified</span> badge are submitted exclusively by verified customers after successful order delivery.
                                 </div>
                             </div>
 
@@ -907,14 +870,21 @@
                                                             ${not empty rev.customerName ? rev.customerName.substring(0, 1).toUpperCase() : 'U'}
                                                         </div>
                                                         <div>
-                                                            <div class="review-author-name">
-                                                                ${not empty rev.customerName ? rev.customerName : 'Verified Customer'}
-                                                            </div>
-                                                            <c:if test="${rev.verifiedPurchase}">
-                                                                <span class="verified-buyer-chip">
-                                                                    <span>✓</span> Verified Delivered Buyer
+                                                            <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+                                                                <span class="review-author-name">
+                                                                    ${not empty rev.customerName ? rev.customerName : 'Verified Customer'}
                                                                 </span>
-                                                            </c:if>
+                                                                <c:if test="${rev.verifiedPurchase}">
+                                                                    <span class="verified-buyer-chip">
+                                                                        <span>✓</span> Verified
+                                                                    </span>
+                                                                </c:if>
+                                                                <c:if test="${not empty sessionScope.currentUser && rev.userId == sessionScope.currentUser.userId}">
+                                                                    <button type="button" onclick="toggleEditReviewForm()" style="background: #eff6ff; color: #2563eb; border: 1.5px solid #bfdbfe; border-radius: 6px; padding: 0.2rem 0.6rem; font-size: 0.75rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem; transition: all 0.15s;" onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">
+                                                                        <span>✏️</span> Edit Review
+                                                                    </button>
+                                                                </c:if>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     <div class="review-date-label">
@@ -975,7 +945,7 @@
 
                                 <!-- Write / Edit Review Form for Verified Buyers -->
                                 <c:if test="${canReview}">
-                                    <div id="writeReviewForm" class="pdp-write-review-card">
+                                    <div id="writeReviewForm" class="pdp-write-review-card" style="${not empty existingReview ? 'display: none;' : ''}">
                                         <div style="border-bottom: 1.5px solid #e2e8f0; padding-bottom: 1rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
                                             <div>
                                                 <h3 style="font-size: 1.25rem; font-weight: 900; color: #0f172a; margin: 0 0 0.25rem; display: flex; align-items: center; gap: 0.5rem;">
@@ -986,7 +956,7 @@
                                                 </p>
                                             </div>
                                             <span class="verified-buyer-chip" style="font-size: 0.8rem; padding: 0.3rem 0.75rem;">
-                                                <span>✓</span> Verified Delivery
+                                                <span>✓</span> Verified
                                             </span>
                                         </div>
 
@@ -1097,6 +1067,19 @@
                 </div>
 
                 <script>
+                    function toggleEditReviewForm() {
+                        const formCard = document.getElementById('writeReviewForm');
+                        if (formCard) {
+                            if (formCard.style.display === 'none' || !formCard.style.display) {
+                                formCard.style.display = 'block';
+                                formCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                document.getElementById('pdpReviewTitle')?.focus();
+                            } else {
+                                formCard.style.display = 'none';
+                            }
+                        }
+                    }
+
                     function openReviewLightbox(src, caption) {
                         const modal = document.getElementById('reviewLightboxModal');
                         document.getElementById('reviewLightboxImg').src = src;

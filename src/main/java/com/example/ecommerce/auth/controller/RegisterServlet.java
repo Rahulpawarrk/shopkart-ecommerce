@@ -1,6 +1,5 @@
 package com.example.ecommerce.auth.controller;
 
-import com.example.ecommerce.auth.model.UserSession;
 import com.example.ecommerce.auth.service.AuthService;
 import com.example.ecommerce.exception.ValidationException;
 import jakarta.servlet.ServletException;
@@ -16,10 +15,11 @@ import java.io.IOException;
 
 /**
  * Controller handling customer registration.
- * GET /register  -> Renders registration form.
- * POST /register -> Processes customer registration, initiates session, redirects to home/profile.
+ * GET /register -> Renders registration form.
+ * POST /register -> Processes customer registration, initiates session,
+ * redirects to home/profile.
  */
-@WebServlet(name = "RegisterServlet", urlPatterns = {"/register", "/auth/register"})
+@WebServlet(name = "RegisterServlet", urlPatterns = { "/register" })
 public class RegisterServlet extends HttpServlet {
 
     private static final Logger logger = LoggerFactory.getLogger(RegisterServlet.class);
@@ -32,9 +32,9 @@ public class RegisterServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         // If already logged in, redirect to home
         HttpSession session = request.getSession(false);
         if (session != null && session.getAttribute("currentUser") != null) {
@@ -46,9 +46,9 @@ public class RegisterServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         String email = request.getParameter("email");
         String password = request.getParameter("password");
         String confirmPassword = request.getParameter("confirmPassword");
@@ -64,16 +64,14 @@ public class RegisterServlet extends HttpServlet {
             String otpCode = String.format("%06d", new java.security.SecureRandom().nextInt(1000000));
             java.time.LocalDateTime otpExpiry = java.time.LocalDateTime.now().plusMinutes(10);
 
-            com.example.ecommerce.auth.model.PendingRegistration pendingRegistration = 
-                    new com.example.ecommerce.auth.model.PendingRegistration(
-                            email.trim().toLowerCase(), 
-                            password, 
-                            firstName.trim(), 
-                            lastName.trim(), 
-                            phone.trim(), 
-                            otpCode, 
-                            otpExpiry
-                    );
+            com.example.ecommerce.auth.model.PendingRegistration pendingRegistration = new com.example.ecommerce.auth.model.PendingRegistration(
+                    email.trim().toLowerCase(),
+                    password,
+                    firstName.trim(),
+                    lastName.trim(),
+                    phone.trim(),
+                    otpCode,
+                    otpExpiry);
 
             // Send verification code via Email
             com.example.ecommerce.util.EmailService emailService = new com.example.ecommerce.util.EmailService();

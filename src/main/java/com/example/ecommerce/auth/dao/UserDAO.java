@@ -11,6 +11,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -217,6 +219,94 @@ public class UserDAO {
         } catch (SQLException e) {
             logger.error("Error updating password for userId: {}", userId, e);
             throw new DatabaseException("Error updating user password", e);
+        }
+    }
+
+    /**
+     * Retrieves all administrator accounts (users with ADMIN / ROLE_ADMIN role).
+     */
+    public List<User> findAllAdmins() {
+        String sql = "SELECT DISTINCT u.user_id, u.email, u.password_hash, u.first_name, u.last_name, u.phone, u.status, u.created_at, u.updated_at " +
+                     "FROM dbo.users u " +
+                     "INNER JOIN dbo.user_roles ur ON u.user_id = ur.user_id " +
+                     "INNER JOIN dbo.roles r ON ur.role_id = r.role_id " +
+                     "WHERE UPPER(r.role_name) IN ('ADMIN', 'ROLE_ADMIN') " +
+                     "ORDER BY u.created_at DESC";
+        List<User> list = new ArrayList<>();
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                User user = mapResultSetToUser(rs);
+                user.setRoles(roleDAO.getRolesByUserId(user.getUserId()));
+                list.add(user);
+            }
+        } catch (SQLException e) {
+            logger.error("Error retrieving admin users", e);
+            throw new DatabaseException("Error retrieving admin accounts", e);
+        }
+        return list;
+    }
+
+    /**
+     * Atomically creates a new Administrator account with strictly the ADMIN role.
+     * Note: Admins are not provisioned with shopping carts or customer order capabilities.
+     *
+     * @param adminUser User model populated with first_name, last_name, email, phone, passwordHash
+     * @return generated user_id
+     */
+    public int createAdminUser(User adminUser) {
+        String insertUserSql = "INSERT INTO dbo.users (email, password_hash, first_name, last_name, phone, status, created_at, updated_at) " +
+                               "VALUES (?, ?, ?, ?, ?, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
+        String findRoleSql = "SELECT role_id FROM dbo.roles WHERE UPPER(role_name) IN ('ADMIN', 'ROLE_ADMIN') LIMIT 1";
+
+        try (Connection conn = DBConnection.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                int generatedUserId;
+                try (PreparedStatement stmt = conn.prepareStatement(insertUserSql, Statement.RETURN_GENERATED_KEYS)) {
+                    stmt.setString(1, adminUser.getEmail().trim().toLowerCase());
+                    stmt.setString(2, adminUser.getPasswordHash());
+                    stmt.setString(3, adminUser.getFirstName().trim());
+                    stmt.setString(4, adminUser.getLastName().trim());
+                    stmt.setString(5, adminUser.getPhone() != null ? adminUser.getPhone().trim() : null);
+
+                    int affected = stmt.executeUpdate();
+                    if (affected == 0) throw new SQLException("Failed to insert admin user record.");
+
+                    try (ResultSet keys = stmt.getGeneratedKeys()) {
+                        if (keys.next()) {
+                            generatedUserId = keys.getInt(1);
+                            adminUser.setUserId(generatedUserId);
+                        } else {
+                            throw new SQLException("Failed to obtain generated user_id for admin.");
+                        }
+                    }
+                }
+
+                // Resolve Admin Role ID
+                int adminRoleId = 1; // Default
+                try (PreparedStatement rStmt = conn.prepareStatement(findRoleSql);
+                     ResultSet rRs = rStmt.executeQuery()) {
+                    if (rRs.next()) {
+                        adminRoleId = rRs.getInt(1);
+                    }
+                }
+
+                // Assign ONLY the Admin Role (NO customer roles, NO cart/wishlist)
+                roleDAO.assignRoleToUser(generatedUserId, adminRoleId, conn);
+
+                conn.commit();
+                logger.info("Admin account successfully created with userId: {}", generatedUserId);
+                return generatedUserId;
+
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            }
+        } catch (SQLException e) {
+            logger.error("Error creating admin user: {}", adminUser.getEmail(), e);
+            throw new DatabaseException("Error creating admin user account", e);
         }
     }
 

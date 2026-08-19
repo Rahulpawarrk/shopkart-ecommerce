@@ -59,7 +59,49 @@ public class EmailService {
     }
 
     /**
-     * Sends a forgot-password email with the secure reset link.
+     * Sends a 6-digit OTP email for secure Password Reset.
+     */
+    public void sendPasswordResetOtp(String toEmail, String toName, String otpCode) {
+        mailExecutor.submit(() -> {
+            try {
+                String brevoApiKey = System.getenv("BREVO_API_KEY");
+                String resendApiKey = System.getenv("RESEND_API_KEY");
+                String htmlBody = buildPasswordResetOtpBody(toName, otpCode);
+                String subject = otpCode + " is your ShopKart Password Reset Code";
+
+                if (brevoApiKey != null && !brevoApiKey.trim().isEmpty()) {
+                    sendViaBrevoHttps(brevoApiKey.trim(), toEmail, toName, subject, htmlBody);
+                    return;
+                }
+                if (resendApiKey != null && !resendApiKey.trim().isEmpty()) {
+                    sendViaResendHttps(resendApiKey.trim(), toEmail, subject, htmlBody);
+                    return;
+                }
+
+                if (smtpEmail.isEmpty() || smtpPassword.isEmpty()) {
+                    logger.info("🔑 Password reset OTP for {}: {}", toEmail, otpCode);
+                    return;
+                }
+
+                Session session = buildMailSession();
+                MimeMessage message = new MimeMessage(session);
+                message.setFrom(new InternetAddress(smtpEmail, fromName));
+                message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
+                message.setSubject(subject);
+                message.setContent(htmlBody, "text/html; charset=UTF-8");
+
+                Transport.send(message);
+                logger.info("Password reset OTP email sent to: {}", toEmail);
+
+            } catch (Exception e) {
+                logger.warn("Non-fatal: SMTP delivery failed for password reset OTP to: {}. Error: {}", toEmail,
+                        e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Sends a forgot-password email with the secure reset link (legacy fallback).
      */
     public void sendPasswordResetEmail(String toEmail, String toName, String resetLink) {
         mailExecutor.submit(() -> {
@@ -354,6 +396,25 @@ public class EmailService {
                 + otpCode + "</div>" +
                 "<p style='color:#94a3b8; font-size:12px; margin:0;'>This code expires in 10 minutes. If you did not request this code, please ignore this email.</p>"
                 +
+                "</td></tr></table></td></tr></table></body></html>";
+    }
+
+    private String buildPasswordResetOtpBody(String name, String otpCode) {
+        return "<!DOCTYPE html><html><head><meta charset='UTF-8'></head><body style='font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif; background:#f8fafc; margin:0; padding:20px;'>"
+                +
+                "<table width='100%' cellpadding='0' cellspacing='0'><tr><td align='center'>" +
+                "<table width='500' cellpadding='0' cellspacing='0' style='background:#fff; border-radius:12px; border:1px solid #e2e8f0; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.05);'>"
+                +
+                "<tr><td style='background:#0f172a; padding:24px 32px; text-align:center;'><h1 style='color:#f59e0b; font-size:24px; margin:0;'>🛒 ShopKart</h1></td></tr>"
+                +
+                "<tr><td style='padding:28px 32px; text-align:center;'>" +
+                "<h2 style='font-size:20px; color:#0f172a; margin:0 0 12px;'>Password Reset Verification Code</h2>" +
+                "<p style='color:#475569; font-size:14px; margin:0 0 20px;'>Hi " + (name != null ? escapeHtml(name) : "Customer")
+                + ", use the 6-digit verification code below to reset your ShopKart account password:</p>" +
+                "<div style='display:inline-block; background:#fef3c7; border:2px dashed #f59e0b; border-radius:8px; padding:12px 28px; font-size:30px; font-weight:900; letter-spacing:8px; color:#b45309; font-family:monospace; margin-bottom:20px;'>"
+                + otpCode + "</div>" +
+                "<p style='color:#64748b; font-size:13px; margin:0 0 8px;'>This code is valid for <strong>10 minutes</strong>.</p>" +
+                "<p style='color:#94a3b8; font-size:12px; margin:0;'>If you did not request a password reset, please ignore this email or secure your account.</p>" +
                 "</td></tr></table></td></tr></table></body></html>";
     }
 

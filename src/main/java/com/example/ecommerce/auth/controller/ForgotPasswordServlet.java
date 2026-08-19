@@ -69,6 +69,12 @@ public class ForgotPasswordServlet extends HttpServlet {
         ForgotPasswordResult result = null;
         try {
             result = authService.initiateForgotPassword(identifier, appBaseUrl);
+        } catch (com.example.ecommerce.exception.ValidationException ve) {
+            request.setAttribute("error", ve.getMessage());
+            request.setAttribute("identifier", identifier);
+            request.getRequestDispatcher("/WEB-INF/views/auth/forgot-password.jsp")
+                   .forward(request, response);
+            return;
         } catch (Exception e) {
             logger.error("Unexpected error during forgot-password for identifier: {}", identifier, e);
             result = new ForgotPasswordResult(
@@ -85,9 +91,7 @@ public class ForgotPasswordServlet extends HttpServlet {
         request.setAttribute("identifier", identifier);
         request.setAttribute("methodType", result != null ? result.getMethod() : "EMAIL");
         request.setAttribute("destination", result != null ? result.getMaskedDestination() : identifier);
-        request.setAttribute("rawPhone", result != null ? result.getRawDestination() : identifier);
-        request.setAttribute("resetLink", result != null ? result.getResetLink() : null);
-        request.setAttribute("otpCode", result != null ? result.getOtpCode() : null);
+        request.setAttribute("rawIdentifier", result != null ? result.getRawDestination() : identifier);
         request.setAttribute("userFound", result != null && result.isUserFound());
 
         request.getRequestDispatcher("/WEB-INF/views/auth/forgot-password.jsp")

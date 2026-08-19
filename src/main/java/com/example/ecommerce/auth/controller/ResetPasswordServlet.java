@@ -37,19 +37,17 @@ public class ResetPasswordServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        String token = request.getParameter("token");
-        String phone = request.getParameter("phone");
-
-        if (phone != null && !phone.trim().isEmpty()) {
-            request.setAttribute("isOtpMode", true);
-            request.setAttribute("phone", phone.trim());
-        } else if (token != null && !token.trim().isEmpty()) {
-            request.setAttribute("isOtpMode", false);
-            request.setAttribute("token", token.trim());
-        } else {
-            request.setAttribute("invalidToken", true);
-            request.setAttribute("tokenError", "No reset token or mobile number provided. Please request a new reset code.");
+        String identifier = request.getParameter("identifier");
+        if (identifier == null || identifier.trim().isEmpty()) {
+            identifier = request.getParameter("email");
         }
+        if (identifier == null || identifier.trim().isEmpty()) {
+            identifier = request.getParameter("phone");
+        }
+        String token = request.getParameter("token");
+
+        request.setAttribute("identifier", identifier != null ? identifier.trim() : "");
+        request.setAttribute("token", token != null ? token.trim() : "");
 
         request.getRequestDispatcher("/WEB-INF/views/auth/reset-password.jsp")
                .forward(request, response);
@@ -59,26 +57,34 @@ public class ResetPasswordServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        String identifier      = request.getParameter("identifier");
+        if (identifier == null || identifier.trim().isEmpty()) {
+            identifier = request.getParameter("email");
+        }
+        if (identifier == null || identifier.trim().isEmpty()) {
+            identifier = request.getParameter("phone");
+        }
+
         String token           = request.getParameter("token");
-        String phone           = request.getParameter("phone");
         String otpCode         = request.getParameter("otpCode");
         String newPassword     = request.getParameter("newPassword");
         String confirmPassword = request.getParameter("confirmPassword");
-        boolean isOtpMode      = (otpCode != null && !otpCode.trim().isEmpty()) || (phone != null && !phone.trim().isEmpty());
 
         try {
-            if (isOtpMode) {
-                authService.resetPasswordWithOtp(phone, otpCode, newPassword, confirmPassword);
-            } else {
+            if (otpCode != null && !otpCode.trim().isEmpty()) {
+                authService.resetPasswordWithOtp(identifier, otpCode, newPassword, confirmPassword);
+            } else if (token != null && !token.trim().isEmpty()) {
                 authService.resetPassword(token, newPassword, confirmPassword);
+            } else {
+                throw new ValidationException("Please enter the 6-digit verification OTP code.");
             }
+            
             // Success: redirect to login with success message
             response.sendRedirect(request.getContextPath() + "/login?reset=success");
 
         } catch (ValidationException ve) {
-            request.setAttribute("isOtpMode", isOtpMode);
+            request.setAttribute("identifier", identifier);
             request.setAttribute("token", token);
-            request.setAttribute("phone", phone);
             request.setAttribute("otpCode", otpCode);
             request.setAttribute("error", ve.getMessage());
             request.getRequestDispatcher("/WEB-INF/views/auth/reset-password.jsp")
@@ -86,9 +92,8 @@ public class ResetPasswordServlet extends HttpServlet {
 
         } catch (Exception e) {
             logger.error("Unexpected error during password reset", e);
-            request.setAttribute("isOtpMode", isOtpMode);
+            request.setAttribute("identifier", identifier);
             request.setAttribute("token", token);
-            request.setAttribute("phone", phone);
             request.setAttribute("otpCode", otpCode);
             request.setAttribute("error", "An unexpected error occurred. Please try again or request a new reset code.");
             request.getRequestDispatcher("/WEB-INF/views/auth/reset-password.jsp")

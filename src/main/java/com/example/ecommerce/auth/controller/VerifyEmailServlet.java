@@ -59,20 +59,21 @@ public class VerifyEmailServlet extends HttpServlet {
 
         // Handle Resend Request
         if ("true".equalsIgnoreCase(request.getParameter("resend"))) {
-            String newOtp = String.format("%06d", secureRandom.nextInt(1000000));
-            pending.setOtpCode(newOtp);
-            pending.setOtpExpiry(LocalDateTime.now().plusMinutes(10));
-            session.setAttribute("pendingRegistration", pending);
+            try {
+                com.example.ecommerce.auth.service.OtpRateLimiter.checkAndIncrement(pending.getEmail(), "REGISTRATION");
 
-            emailService.sendSignupVerificationOtp(pending.getEmail(), pending.getFirstName(), newOtp);
-            request.setAttribute("successMessage",
-                    "A new 6-digit verification code has been sent to " + pending.getEmail());
-            logger.info("Resent signup email verification OTP to: {}", pending.getEmail());
-        }
+                String newOtp = String.format("%06d", secureRandom.nextInt(1000000));
+                pending.setOtpCode(newOtp);
+                pending.setOtpExpiry(LocalDateTime.now().plusMinutes(10));
+                session.setAttribute("pendingRegistration", pending);
 
-        String smtpEmail = System.getenv("SMTP_EMAIL");
-        if (smtpEmail == null || smtpEmail.trim().isEmpty()) {
-            request.setAttribute("demoOtp", pending.getOtpCode());
+                emailService.sendSignupVerificationOtp(pending.getEmail(), pending.getFirstName(), newOtp);
+                request.setAttribute("successMessage",
+                        "A new 6-digit verification code has been sent to " + pending.getEmail());
+                logger.info("Resent signup email verification OTP to: {}", pending.getEmail());
+            } catch (ValidationException ve) {
+                request.setAttribute("error", ve.getMessage());
+            }
         }
 
         request.setAttribute("pendingEmail", pending.getEmail());
@@ -137,6 +138,7 @@ public class VerifyEmailServlet extends HttpServlet {
             session.removeAttribute("pendingRegistration");
             session.setAttribute("currentUser", userSession);
             session.setAttribute("cart", new Cart());
+            com.example.ecommerce.auth.service.OtpRateLimiter.reset(pending.getEmail(), "REGISTRATION");
 
             logger.info("Email verified successfully! Registered and authenticated customer: {}", pending.getEmail());
             response.sendRedirect(request.getContextPath() + "/?registered=true&welcome=true");

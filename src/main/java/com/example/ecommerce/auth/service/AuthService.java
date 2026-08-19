@@ -252,10 +252,43 @@ public class AuthService {
     }
 
     /**
-     * Initiates the forgot-password flow supporting both EMAIL and MOBILE PHONE SMS OTP.
+     * Registers a new Administrator account directly from the Admin Dashboard.
+     * The account is granted strictly administrative access and cannot place customer orders.
+     */
+    public User registerAdmin(String email, String password, String confirmPassword,
+                              String firstName, String lastName, String phone, int createdByAdminUserId) {
+        validateRegistrationDetails(email, password, confirmPassword, firstName, lastName, phone);
+
+        String hashedPassword = PasswordUtil.hashPassword(password);
+
+        User adminUser = new User();
+        adminUser.setEmail(email.trim().toLowerCase());
+        adminUser.setPasswordHash(hashedPassword);
+        adminUser.setFirstName(firstName.trim());
+        adminUser.setLastName(lastName.trim());
+        adminUser.setPhone(phone != null && !phone.trim().isEmpty() ? phone.trim() : null);
+        adminUser.setStatus("ACTIVE");
+
+        int adminId = userDAO.createAdminUser(adminUser);
+        adminUser.setUserId(adminId);
+
+        logger.info("Admin account {} (ID: {}) created by Admin ID: {}", email, adminId, createdByAdminUserId);
+        return adminUser;
+    }
+
+    /**
+     * Retrieves all registered administrator accounts for the Admin Dashboard.
+     */
+    public java.util.List<User> getAllAdmins() {
+        return userDAO.findAllAdmins();
+    }
+
+    /**
+     * Initiates the forgot-password flow supporting 6-digit OTP over EMAIL and MOBILE PHONE.
+     * Enforces rate limiting (max 3 attempts, 1-hour block).
      *
      * @param identifier   email address OR 10-digit mobile number
-     * @param appBaseUrl   full base URL used to build the reset link
+     * @param appBaseUrl   full base URL (optional)
      * @return ForgotPasswordResult with method, masked info, and verification details
      */
     public ForgotPasswordResult initiateForgotPassword(String identifier, String appBaseUrl) {
@@ -266,6 +299,9 @@ public class AuthService {
         String input = identifier.trim();
         boolean isEmail = input.contains("@");
         String method = isEmail ? "EMAIL" : "PHONE";
+
+        // Check OTP Rate Limiter (Max 3 attempts, 1-hour block)
+        OtpRateLimiter.checkAndIncrement(input, "PASSWORD_RESET");
 
         Optional<User> userOpt;
         if (isEmail) {
@@ -286,35 +322,23 @@ public class AuthService {
             return new ForgotPasswordResult(method, isEmail ? maskEmail(input) : maskPhone(input), input, null, null, false);
         }
 
+        // Generate 6-Digit Numeric OTP (10-minute expiry)
+        int randomOtp = 100000 + SECURE_RANDOM.nextInt(900000);
+        String otpCode = String.valueOf(randomOtp);
+
+        passwordResetDAO.createOtp(user.getUserId(), otpCode);
+
         if (isEmail) {
-            // Email Token Generation (48-byte token, 1-hour expiry)
-            byte[] bytes = new byte[48];
-            SECURE_RANDOM.nextBytes(bytes);
-            String token = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-
-            passwordResetDAO.createToken(user.getUserId(), token);
-
-            String resetLink = appBaseUrl + "/reset-password?token=" + token;
-
             if (user.getEmail() != null && !user.getEmail().trim().isEmpty()) {
-                emailService.sendPasswordResetEmail(user.getEmail(), user.getFirstName(), resetLink);
+                emailService.sendPasswordResetOtp(user.getEmail(), user.getFirstName(), otpCode);
             }
-
-            logger.info("Forgot-password token issued via EMAIL for userId: {}", user.getUserId());
-            return new ForgotPasswordResult("EMAIL", maskEmail(user.getEmail()), user.getEmail(), resetLink, null, true);
-
+            logger.info("Forgot-password 6-digit OTP issued via EMAIL for userId: {}", user.getUserId());
+            return new ForgotPasswordResult("EMAIL", maskEmail(user.getEmail()), user.getEmail(), null, null, true);
         } else {
-            // Mobile SMS 6-digit numeric OTP Generation (10-minute expiry)
-            int randomOtp = 100000 + SECURE_RANDOM.nextInt(900000);
-            String otpCode = String.valueOf(randomOtp);
-
-            passwordResetDAO.createOtp(user.getUserId(), otpCode);
-
             String userPhone = user.getPhone() != null ? user.getPhone() : input;
             smsService.sendOtpSms(userPhone, otpCode);
-
-            logger.info("Forgot-password OTP [{}] issued via SMS to +91-{} for userId: {}", otpCode, userPhone, user.getUserId());
-            return new ForgotPasswordResult("PHONE", maskPhone(userPhone), userPhone, null, otpCode, true);
+            logger.info("Forgot-password 6-digit OTP issued via SMS to +91-{} for userId: {}", userPhone, user.getUserId());
+            return new ForgotPasswordResult("PHONE", maskPhone(userPhone), userPhone, null, null, true);
         }
     }
 
@@ -341,10 +365,7 @@ public class AuthService {
 
     /**
      * Validates a reset token and updates the user's password, then invalidates the token.
-     *
-     * @param token              the reset token from the email link
-     * @param newPassword        new plain-text password
-     * @param confirmPassword    confirmation field
+     * (Retained for backwards compatibility)
      */
     public void resetPassword(String token, String newPassword, String confirmPassword) {
         if (token == null || token.trim().isEmpty()) {
@@ -369,16 +390,16 @@ public class AuthService {
     }
 
     /**
-     * Validates a 6-digit SMS OTP and updates the user's password.
+     * Validates a 6-digit OTP (received via Email or SMS) and securely updates the user's password.
      *
-     * @param phone              10-digit mobile number
-     * @param otpCode            6-digit OTP code received via SMS
+     * @param identifier         email address or 10-digit mobile number
+     * @param otpCode            6-digit OTP verification code
      * @param newPassword        new plain-text password
      * @param confirmPassword    confirmation password
      */
-    public void resetPasswordWithOtp(String phone, String otpCode, String newPassword, String confirmPassword) {
-        if (phone == null || phone.trim().isEmpty()) {
-            throw new ValidationException("Mobile number is required.");
+    public void resetPasswordWithOtp(String identifier, String otpCode, String newPassword, String confirmPassword) {
+        if (identifier == null || identifier.trim().isEmpty()) {
+            throw new ValidationException("Email address or mobile number is required.");
         }
         if (otpCode == null || otpCode.trim().length() < 6) {
             throw new ValidationException("Please enter the 6-digit OTP verification code.");
@@ -390,9 +411,16 @@ public class AuthService {
             throw new ValidationException("Passwords do not match.");
         }
 
-        String cleanPhone = phone.trim().replaceAll("[^0-9]", "");
-        User user = userDAO.findByPhone(cleanPhone)
-                .orElseThrow(() -> new ValidationException("No account found with this mobile number."));
+        String input = identifier.trim();
+        Optional<User> userOpt;
+        if (input.contains("@")) {
+            userOpt = userDAO.findByEmail(input.toLowerCase());
+        } else {
+            String cleanPhone = input.replaceAll("[^0-9]", "");
+            userOpt = userDAO.findByPhone(cleanPhone);
+        }
+
+        User user = userOpt.orElseThrow(() -> new ValidationException("No account found with this email or mobile number."));
 
         boolean isValid = passwordResetDAO.validateOtp(user.getUserId(), otpCode.trim());
         if (!isValid) {
@@ -402,7 +430,8 @@ public class AuthService {
         String newHash = PasswordUtil.hashPassword(newPassword);
         userDAO.updatePassword(user.getUserId(), newHash);
         passwordResetDAO.invalidateToken(otpCode.trim());
+        OtpRateLimiter.reset(input, "PASSWORD_RESET");
 
-        logger.info("Password successfully reset via SMS OTP for userId: {}", user.getUserId());
+        logger.info("Password successfully reset via OTP for userId: {}", user.getUserId());
     }
 }
