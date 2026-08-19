@@ -52,6 +52,26 @@
             <!-- Main Content Area -->
             <section>
                 
+                <c:if test="${not empty param.error}">
+                    <div style="background: #fffbeb; border: 1.5px solid #f59e0b; border-radius: var(--radius-md); padding: 1rem 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.85rem; color: #92400e; font-size: 0.9rem; font-weight: 600; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.1);">
+                        <span style="font-size: 1.4rem;">🔒</span>
+                        <div>
+                            <strong style="color: #78350f;">Role Restriction Notice:</strong>
+                            <c:choose>
+                                <c:when test="${param.error == 'admin_cannot_shop' || param.error == 'admin_restricted'}">
+                                    Administrator accounts are restricted to the Admin Console and cannot add items to cart, checkout, or place customer orders.
+                                </c:when>
+                                <c:when test="${param.error == 'admin_cannot_manage_addresses'}">
+                                    Customer delivery addresses cannot be added by admin accounts. Admins manage store logistics via the Admin Console.
+                                </c:when>
+                                <c:otherwise>
+                                    <c:out value="${param.error}" />
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+                    </div>
+                </c:if>
+
                 <!-- Welcome & Actions Banner -->
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; background: #ffffff; padding: 1.25rem 1.5rem; border-radius: var(--radius-md); border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
                     <div>

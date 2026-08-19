@@ -21,8 +21,16 @@ import java.io.IOException;
  * 1. Restricts /admin and /admin/* strictly to users with the 'ADMIN' role.
  * 2. Restricts /checkout, /cart, and customer /orders away from 'ADMIN' users.
  */
-@WebFilter(filterName = "RoleFilter", urlPatterns = { "/admin", "/admin/*", "/checkout", "/checkout/*", "/cart",
-        "/cart/*" })
+@WebFilter(filterName = "RoleFilter", urlPatterns = {
+        "/admin", "/admin/*",
+        "/checkout", "/checkout/*",
+        "/cart", "/cart/*",
+        "/addresses", "/addresses/*",
+        "/wishlist", "/wishlist/*",
+        "/orders", "/orders/*",
+        "/order", "/order/*",
+        "/product/review", "/order/review"
+})
 public class RoleFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(RoleFilter.class);
@@ -42,9 +50,10 @@ public class RoleFilter implements Filter {
         HttpSession session = httpRequest.getSession(false);
         UserSession userSession = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
         String uri = httpRequest.getRequestURI();
+        String path = httpRequest.getServletPath();
 
         // 1. Admin Routes Protection (/admin/*)
-        if (uri.contains("/admin")) {
+        if (path.startsWith("/admin")) {
             if (userSession == null || !userSession.isAdmin()) {
                 logger.warn("Access denied to [{}]. User '{}' lacks ADMIN role.",
                         uri, (userSession != null ? userSession.getEmail() : "ANONYMOUS"));
@@ -57,15 +66,31 @@ public class RoleFilter implements Filter {
             return;
         }
 
-        // 2. Customer Shopping Routes Protection (/checkout/*, /cart/*)
-        // Disallow logged-in ADMIN from shopping/ordering
+        // 2. Customer Modules Protection (Admin cannot access customer shopping, cart, wishlist, addresses, or place orders)
         if (userSession != null && userSession.isAdmin()) {
-            logger.info("Admin user '{}' blocked from accessing customer route: {}", userSession.getEmail(), uri);
-            httpResponse.sendRedirect(httpRequest.getContextPath() + "/admin/dashboard?error=admin_cannot_shop");
+            logger.info("Admin user '{}' blocked from accessing customer module: {}", userSession.getEmail(), uri);
+
+            boolean isAjax = "XMLHttpRequest".equalsIgnoreCase(httpRequest.getHeader("X-Requested-With"))
+                    || "true".equalsIgnoreCase(httpRequest.getParameter("ajax"));
+
+            if (isAjax) {
+                httpResponse.setContentType("application/json");
+                httpResponse.setCharacterEncoding("UTF-8");
+                httpResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                httpResponse.getWriter().write("{\"success\":false,\"message\":\"Admin accounts are restricted from customer shopping, cart, wishlist, and address modules.\"}");
+                return;
+            }
+
+            if (path.startsWith("/orders") || path.startsWith("/order")) {
+                httpResponse.sendRedirect(httpRequest.getContextPath() + "/admin/orders");
+                return;
+            }
+
+            httpResponse.sendRedirect(httpRequest.getContextPath() + "/admin/dashboard?error=admin_restricted");
             return;
         }
 
-        // Customer or Guest proceeding to shopping routes
+        // Customer or Guest proceeding to customer routes
         chain.doFilter(request, response);
     }
 

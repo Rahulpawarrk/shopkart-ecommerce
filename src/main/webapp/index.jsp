@@ -351,14 +351,24 @@
                                     <div class="delivery-tag">FREE Delivery by <strong>Tomorrow</strong></div>
 
                                     <div class="card-action-group">
-                                        <button class="card-add-cart-btn"
-                                            onclick="quickAddToCart('${deal.productId}', 1, event)" title="Add to Cart">
-                                            🛒 Add Cart
-                                        </button>
-                                        <button class="card-buy-now-btn"
-                                            onclick="quickBuyNow('${deal.productId}', 1, event)" title="Buy Now">
-                                            ⚡ Buy
-                                        </button>
+                                        <c:choose>
+                                            <c:when test="${sessionScope.currentUser.admin}">
+                                                <a href="${pageContext.request.contextPath}/admin/products/edit?id=${deal.productId}" 
+                                                   style="display: flex; align-items: center; justify-content: center; gap: 0.35rem; width: 100%; padding: 0.5rem; font-size: 0.8rem; font-weight: 700; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; border-radius: 8px; text-decoration: none;">
+                                                    ✏️ Edit in Admin Console
+                                                </a>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <button class="card-add-cart-btn"
+                                                    onclick="quickAddToCart('${deal.productId}', 1, event)" title="Add to Cart">
+                                                    🛒 Add Cart
+                                                </button>
+                                                <button class="card-buy-now-btn"
+                                                    onclick="quickBuyNow('${deal.productId}', 1, event)" title="Buy Now">
+                                                    ⚡ Buy
+                                                </button>
+                                            </c:otherwise>
+                                        </c:choose>
                                     </div>
                                 </div>
                             </c:forEach>
@@ -647,14 +657,24 @@
                                     <div class="delivery-tag">FREE Delivery by <strong>Tomorrow</strong></div>
 
                                     <div class="card-action-group">
-                                        <button class="card-add-cart-btn"
-                                            onclick="quickAddToCart('${item.productId}', 1, event)" title="Add to Cart">
-                                            🛒 Add Cart
-                                        </button>
-                                        <button class="card-buy-now-btn"
-                                            onclick="quickBuyNow('${item.productId}', 1, event)" title="Buy Now">
-                                            ⚡ Buy Now
-                                        </button>
+                                        <c:choose>
+                                            <c:when test="${sessionScope.currentUser.admin}">
+                                                <a href="${pageContext.request.contextPath}/admin/products/edit?id=${item.productId}" 
+                                                   style="display: flex; align-items: center; justify-content: center; gap: 0.35rem; width: 100%; padding: 0.5rem; font-size: 0.8rem; font-weight: 700; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; border-radius: 8px; text-decoration: none;">
+                                                    ✏️ Edit in Admin Console
+                                                </a>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <button class="card-add-cart-btn"
+                                                    onclick="quickAddToCart('${item.productId}', 1, event)" title="Add to Cart">
+                                                    🛒 Add Cart
+                                                </button>
+                                                <button class="card-buy-now-btn"
+                                                    onclick="quickBuyNow('${item.productId}', 1, event)" title="Buy Now">
+                                                    ⚡ Buy Now
+                                                </button>
+                                            </c:otherwise>
+                                        </c:choose>
                                     </div>
                                 </div>
                             </c:forEach>

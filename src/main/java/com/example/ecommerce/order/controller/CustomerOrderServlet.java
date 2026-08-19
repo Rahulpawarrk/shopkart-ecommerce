@@ -42,6 +42,13 @@ public class CustomerOrderServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
+        HttpSession session = request.getSession(false);
+        UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+        if (user != null && user.isAdmin()) {
+            response.sendRedirect(request.getContextPath() + "/admin/orders");
+            return;
+        }
+
         String path = request.getServletPath();
 
         if ("/order".equals(path)) {
@@ -55,6 +62,13 @@ public class CustomerOrderServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
+        HttpSession session = request.getSession(false);
+        UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+        if (user != null && user.isAdmin()) {
+            response.sendRedirect(request.getContextPath() + "/admin/orders");
+            return;
+        }
+
         String path = request.getServletPath();
 
         if ("/order/cancel".equals(path)) {

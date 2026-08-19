@@ -38,6 +38,13 @@ public class WishlistServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
+        HttpSession session = request.getSession(false);
+        UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+        if (user != null && user.isAdmin()) {
+            response.sendRedirect(request.getContextPath() + "/admin/dashboard?error=admin_restricted");
+            return;
+        }
+
         String path = request.getServletPath();
 
         if ("/wishlist/remove".equals(path)) {
@@ -51,6 +58,22 @@ public class WishlistServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
+        HttpSession session = request.getSession(false);
+        UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+        if (user != null && user.isAdmin()) {
+            boolean isAjax = "XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With")) 
+                          || "true".equalsIgnoreCase(request.getParameter("ajax"));
+            if (isAjax) {
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("{\"success\":false,\"message\":\"Admin accounts cannot manage customer wishlists.\"}");
+                return;
+            }
+            response.sendRedirect(request.getContextPath() + "/admin/dashboard?error=admin_restricted");
+            return;
+        }
+
         String path = request.getServletPath();
 
         switch (path) {

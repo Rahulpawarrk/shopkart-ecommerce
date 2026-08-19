@@ -655,33 +655,50 @@
                             Sold by <strong>TechZone Official Retail</strong> (4.9 ★)
                         </div>
 
-                        <!-- Quantity Stepper -->
-                        <div class="buy-box-qty-row">
-                            <span>Quantity:</span>
-                            <div class="qty-stepper">
-                                <button type="button" class="qty-btn qty-minus">-</button>
-                                <input type="text" id="pdpQtyInput" class="qty-input" value="1" readonly>
-                                <button type="button" class="qty-btn qty-plus">+</button>
-                            </div>
-                        </div>
+                        <c:choose>
+                            <c:when test="${sessionScope.currentUser.admin}">
+                                <div style="background: #eff6ff; border: 1.5px solid #93c5fd; border-radius: 12px; padding: 1.25rem 1rem; text-align: center; margin-top: 1rem; box-shadow: 0 2px 8px rgba(37,99,235,0.08);">
+                                    <div style="font-size: 1.3rem; margin-bottom: 0.35rem;">👑</div>
+                                    <strong style="color: #1e40af; font-size: 0.95rem; display: block; margin-bottom: 0.35rem;">Administrator View</strong>
+                                    <p style="color: #64748b; font-size: 0.8rem; line-height: 1.4; margin-bottom: 1rem;">
+                                        Customer shopping, cart, and ordering actions are disabled for admin accounts.
+                                    </p>
+                                    <a href="${pageContext.request.contextPath}/admin/products/edit?id=${product.productId}" 
+                                       style="display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; background: #2563eb; color: #ffffff; padding: 0.65rem 1.25rem; border-radius: 8px; font-weight: 700; font-size: 0.85rem; text-decoration: none; width: 100%; box-sizing: border-box;">
+                                        📦 Edit Product in Admin Console &rarr;
+                                    </a>
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <!-- Quantity Stepper -->
+                                <div class="buy-box-qty-row">
+                                    <span>Quantity:</span>
+                                    <div class="qty-stepper">
+                                        <button type="button" class="qty-btn qty-minus">-</button>
+                                        <input type="text" id="pdpQtyInput" class="qty-input" value="1" readonly>
+                                        <button type="button" class="qty-btn qty-plus">+</button>
+                                    </div>
+                                </div>
 
-                        <div class="buy-box-actions" style="display: flex; flex-direction: column; gap: 0.75rem; width: 100%;">
-                            <button type="button" class="btn-add-to-cart" style="width: 100%; box-sizing: border-box;"
-                                onclick="quickAddToCart('${product.productId}', document.getElementById('pdpQtyInput').value, event)">
-                                🛒 Add to Cart
-                            </button>
+                                <div class="buy-box-actions" style="display: flex; flex-direction: column; gap: 0.75rem; width: 100%;">
+                                    <button type="button" class="btn-add-to-cart" style="width: 100%; box-sizing: border-box;"
+                                        onclick="quickAddToCart('${product.productId}', document.getElementById('pdpQtyInput').value, event)">
+                                        🛒 Add to Cart
+                                    </button>
 
-                            <button type="button" class="btn-buy-now" style="width: 100%; box-sizing: border-box;"
-                                onclick="quickBuyNow('${product.productId}', document.getElementById('pdpQtyInput').value, event)">
-                            ⚡ Buy Now
-                            </button>
+                                    <button type="button" class="btn-buy-now" style="width: 100%; box-sizing: border-box;"
+                                        onclick="quickBuyNow('${product.productId}', document.getElementById('pdpQtyInput').value, event)">
+                                    ⚡ Buy Now
+                                    </button>
 
-                            <button type="button" class="hero-cta-btn"
-                                style="width: 100%; box-sizing: border-box; background: transparent; color: var(--primary); border: 1px solid var(--border-color); box-shadow: none; padding: 0.85rem; justify-content: center; font-weight: 700;"
-                                onclick="quickAddToWishlist('${product.productId}', event)">
-                                ❤️ Add to Wishlist
-                            </button>
-                        </div>
+                                    <button type="button" class="hero-cta-btn"
+                                        style="width: 100%; box-sizing: border-box; background: transparent; color: var(--primary); border: 1px solid var(--border-color); box-shadow: none; padding: 0.85rem; justify-content: center; font-weight: 700;"
+                                        onclick="quickAddToWishlist('${product.productId}', event)">
+                                        ❤️ Add to Wishlist
+                                    </button>
+                                </div>
+                            </c:otherwise>
+                        </c:choose>
 
                         <div class="buy-box-secure" style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: #64748b; margin-top: 0.5rem;">
                             <span style="font-size: 1.1rem;">🔒</span>

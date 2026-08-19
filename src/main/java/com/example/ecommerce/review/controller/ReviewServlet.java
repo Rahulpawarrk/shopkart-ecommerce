@@ -59,6 +59,11 @@ public class ReviewServlet extends HttpServlet {
             return;
         }
 
+        if (user.isAdmin()) {
+            response.sendRedirect(request.getContextPath() + "/admin/reviews?error=admin_cannot_review");
+            return;
+        }
+
         String productIdStr = request.getParameter("productId");
         String ratingStr = request.getParameter("rating");
         String title = request.getParameter("title");
