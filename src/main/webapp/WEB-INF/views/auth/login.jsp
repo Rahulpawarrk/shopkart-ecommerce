@@ -288,7 +288,7 @@
                     <div class="auth-terms-note">
                         By continuing, you agree to ShopKart's <a href="#">Conditions of Use</a> and <a href="#">Privacy
                             Notice</a>.
-                    </div></div>
+                    </div>
                 </div>
 
                 <!-- Divider -->
