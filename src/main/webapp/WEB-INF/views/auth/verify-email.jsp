@@ -10,7 +10,7 @@
     <link rel="apple-touch-icon" href="${pageContext.request.contextPath}/assets/images/favicon.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dual Verification (Email &amp; Mobile) | ShopKart</title>
+    <title>Verify Your Email | ShopKart</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,7 +46,7 @@
 
         .auth-card {
             width: 100%;
-            max-width: 490px;
+            max-width: 440px;
             background: #ffffff;
             border: 1px solid #d5d9d9;
             border-radius: var(--radius-md);
@@ -82,100 +82,65 @@
             border: 1px solid #7dd3fc;
         }
 
-        .verification-destinations {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.75rem;
-            margin: 1rem 0 1.25rem;
-        }
-
-        .dest-chip {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 0.65rem 0.75rem;
-            font-size: 0.8rem;
-        }
-
-        .dest-chip-title {
-            font-size: 0.72rem;
-            font-weight: 700;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            display: flex;
-            align-items: center;
-            gap: 0.35rem;
-            margin-bottom: 0.25rem;
-        }
-
-        .dest-chip-val {
-            font-weight: 700;
-            color: #0f172a;
-            word-break: break-all;
-            font-size: 0.85rem;
-        }
-
-        .otp-input-group {
-            background: #fdfdfd;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1.15rem;
-            transition: var(--transition-fast);
-        }
-
-        .otp-input-group:focus-within {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        .otp-group-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-        }
-
-        .otp-group-label {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: #1e293b;
-            display: flex;
+        .email-display-chip {
+            display: inline-flex;
             align-items: center;
             gap: 0.4rem;
-        }
-
-        .otp-resend-link {
-            font-size: 0.75rem;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1d4ed8;
+            padding: 0.45rem 0.85rem;
+            border-radius: 6px;
             font-weight: 700;
-            color: #2563eb;
-            text-decoration: none;
-        }
-
-        .otp-resend-link:hover {
-            text-decoration: underline;
+            font-size: 0.88rem;
+            margin: 0.6rem 0 1.25rem;
+            word-break: break-all;
         }
 
         .otp-input-field {
             width: 100%;
-            padding: 0.65rem;
-            font-size: 1.4rem;
+            padding: 0.85rem;
+            font-size: 1.5rem;
             font-weight: 900;
-            letter-spacing: 8px;
+            letter-spacing: 10px;
             text-align: center;
             color: #0f172a;
             background: #ffffff;
-            border: 1.5px solid #cbd5e1;
-            border-radius: 6px;
+            border: 2px solid #cbd5e1;
+            border-radius: var(--radius-md);
             outline: none;
             transition: var(--transition-fast);
             font-family: monospace;
+            box-sizing: border-box;
         }
 
         .otp-input-field:focus {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(40, 116, 240, 0.15);
+        }
+
+        .btn-auth-submit {
+            width: 100%;
+            background: linear-gradient(180deg, var(--amazon-yellow) 0%, #f0c14b 100%);
+            border: 1px solid #a88734;
+            border-radius: var(--radius-sm);
+            padding: 0.75rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #111827;
+            cursor: pointer;
+            margin-top: 1.25rem;
+            margin-bottom: 1.25rem;
+            transition: var(--transition-fast);
+        }
+
+        .btn-auth-submit:hover {
+            background: linear-gradient(180deg, #f5d378 0%, #eeb933 100%);
+        }
+
+        .btn-auth-submit:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
         }
 
         .auth-footer {
@@ -215,35 +180,28 @@
         <div class="step-progress-bar">
             <span class="step-pill completed">✓ 1. Account Details</span>
             <span>→</span>
-            <span class="step-pill active">🔐 2. Dual Verification (Email &amp; Mobile)</span>
+            <span class="step-pill active">✉️ 2. Email Verification</span>
             <span>→</span>
             <span class="step-pill">🛍️ 3. Shop</span>
         </div>
 
         <div class="auth-card">
             <h1 style="font-size: 1.45rem; font-weight: 800; color: #111827; margin: 0 0 0.4rem;">
-                Verify Email &amp; Mobile Number
+                Verify Your Email Address
             </h1>
-            <p style="color: #4b5563; font-size: 0.84rem; margin: 0; line-height: 1.45;">
-                We've sent two 6-digit verification codes. Enter both codes below to activate your account.
+            <p style="color: #4b5563; font-size: 0.85rem; margin: 0; line-height: 1.45;">
+                We've sent a 6-digit verification code to:
             </p>
 
-            <!-- Verification Targets Box -->
-            <div class="verification-destinations">
-                <div class="dest-chip">
-                    <div class="dest-chip-title"><span>✉️</span> Email Code</div>
-                    <div class="dest-chip-val"><c:out value="${pendingEmail}" /></div>
-                </div>
-                <div class="dest-chip">
-                    <div class="dest-chip-title"><span>📱</span> Mobile SMS Code</div>
-                    <div class="dest-chip-val">+91 <c:out value="${pendingPhone}" /></div>
-                </div>
+            <div class="email-display-chip">
+                <span>✉️</span>
+                <c:out value="${pendingEmail}" />
             </div>
 
             <!-- Error Notification -->
             <c:if test="${not empty error}">
                 <div
-                    style="background: #fef2f2; border-left: 4px solid var(--danger); padding: 0.75rem 1rem; border-radius: var(--radius-sm); margin-bottom: 1.15rem; color: #991b1b; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem;">
+                    style="background: #fef2f2; border-left: 4px solid var(--danger); padding: 0.75rem 1rem; border-radius: var(--radius-sm); margin-bottom: 1.25rem; color: #991b1b; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem;">
                     <span>⚠️</span>
                     <span>
                         <c:out value="${error}" />
@@ -254,7 +212,7 @@
             <!-- Success Notification -->
             <c:if test="${not empty successMessage}">
                 <div
-                    style="background: #f0fdf4; border-left: 4px solid var(--success); padding: 0.75rem 1rem; border-radius: var(--radius-sm); margin-bottom: 1.15rem; color: #166534; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem;">
+                    style="background: #f0fdf4; border-left: 4px solid var(--success); padding: 0.75rem 1rem; border-radius: var(--radius-sm); margin-bottom: 1.25rem; color: #166534; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem;">
                     <span>✓</span>
                     <span>
                         <c:out value="${successMessage}" />
@@ -262,59 +220,37 @@
                 </div>
             </c:if>
 
-            <form action="${pageContext.request.contextPath}/verify-email" method="POST" id="dualVerifyForm">
-                <!-- 1. Email OTP Field -->
-                <div class="otp-input-group">
-                    <div class="otp-group-header">
-                        <label for="emailOtp" class="otp-group-label">
-                            <span>✉️</span> 1. Email Verification Code *
-                        </label>
-                        <a href="${pageContext.request.contextPath}/verify-email?resend=email" class="otp-resend-link">
-                            🔄 Resend Email OTP
-                        </a>
+            <form action="${pageContext.request.contextPath}/verify-email" method="POST" id="verifyEmailForm">
+                <div>
+                    <label for="otp"
+                        style="display: block; font-size: 0.85rem; font-weight: 700; color: #111827; margin-bottom: 0.5rem;">
+                        Enter 6-Digit Verification Code *
+                    </label>
+                    <input type="text" id="otp" name="otp" class="otp-input-field" maxlength="6"
+                        pattern="[0-9]{6}" placeholder="------" autocomplete="one-time-code" autofocus required>
+                    <div
+                        style="font-size: 0.75rem; color: #64748b; margin-top: 0.4rem; display: flex; justify-content: space-between;">
+                        <span>Code expires in 10 minutes</span>
                     </div>
-                    <input type="text" id="emailOtp" name="emailOtp" class="otp-input-field" maxlength="6"
-                        pattern="[0-9]{6}" placeholder="------" autocomplete="one-time-code" autofocus required
-                        value="<c:out value='${emailOtp}' />">
                 </div>
 
-                <!-- 2. Mobile SMS OTP Field -->
-                <div class="otp-input-group">
-                    <div class="otp-group-header">
-                        <label for="mobileOtp" class="otp-group-label">
-                            <span>📱</span> 2. Mobile SMS Verification Code *
-                        </label>
-                        <a href="${pageContext.request.contextPath}/verify-email?resend=mobile" class="otp-resend-link">
-                            🔄 Resend SMS OTP
-                        </a>
-                    </div>
-                    <input type="text" id="mobileOtp" name="mobileOtp" class="otp-input-field" maxlength="6"
-                        pattern="[0-9]{6}" placeholder="------" autocomplete="one-time-code" required
-                        value="<c:out value='${mobileOtp}' />">
-                </div>
-
-                <div style="font-size: 0.75rem; color: #64748b; margin: -0.25rem 0 1.25rem; text-align: center;">
-                    ⏳ Both codes are valid for 10 minutes.
-                </div>
-
-                <button type="submit" id="verifySubmitBtn" class="hero-cta-btn"
-                    style="width: 100%; text-align: center; justify-content: center; padding: 0.8rem; font-size: 1rem; margin-bottom: 1.25rem; font-weight: 700;">
-                    Verify Both Codes &amp; Complete Registration →
+                <button type="submit" id="verifySubmitBtn" class="btn-auth-submit">
+                    Verify &amp; Create Account →
                 </button>
             </form>
 
             <div
                 style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 1rem; font-size: 0.82rem;">
                 <div>
-                    <a href="${pageContext.request.contextPath}/verify-email?resend=all" id="resendAllBtn"
+                    <a href="${pageContext.request.contextPath}/verify-email?resend=true" id="resendBtn"
                         style="color: #2563eb; font-weight: 700; text-decoration: none;">
-                        🔄 Resend Both Codes
+                        🔄 Resend Code
                     </a>
                 </div>
                 <div>
                     <a href="${pageContext.request.contextPath}/register"
                         style="color: #64748b; text-decoration: none;">
-                        ✏️ Change Details
+                        ✏️ Change Email
                     </a>
                 </div>
             </div>
@@ -330,37 +266,28 @@
             <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.6rem; line-height: 1.5;">
                 <div>&copy; 2026 ShopKart Inc. All rights reserved. &bull; 100% Purchase Protection</div>
                 <div style="margin-top: 0.35rem; color: #64748b;">
-                    Designed, Developed &amp; Managed by <strong style="color: #2563eb; font-weight: 700;">Rahul
-                        Pawar</strong>
+                    Designed, Developed &amp; Managed by <strong style="color: #2563eb; font-weight: 700;">Rahul Pawar</strong>
                 </div>
             </div>
         </footer>
     </div>
 
     <script>
-        const emailOtpInput = document.getElementById('emailOtp');
-        const mobileOtpInput = document.getElementById('mobileOtp');
-        const verifyForm = document.getElementById('dualVerifyForm');
+        const otpInput = document.getElementById('otp');
+        const verifyForm = document.getElementById('verifyEmailForm');
         const submitBtn = document.getElementById('verifySubmitBtn');
 
-        [emailOtpInput, mobileOtpInput].forEach(input => {
-            if (input) {
-                input.addEventListener('input', function () {
-                    this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);
-                });
-            }
-        });
+        if (otpInput) {
+            otpInput.addEventListener('input', function () {
+                this.value = this.value.replace(/[^0-9]/g, '').slice(0, 6);
+            });
+        }
 
         if (verifyForm) {
             verifyForm.addEventListener('submit', function (e) {
-                if (emailOtpInput && emailOtpInput.value.length !== 6) {
+                if (otpInput && otpInput.value.length !== 6) {
                     e.preventDefault();
-                    emailOtpInput.focus();
-                    return;
-                }
-                if (mobileOtpInput && mobileOtpInput.value.length !== 6) {
-                    e.preventDefault();
-                    mobileOtpInput.focus();
+                    otpInput.focus();
                     return;
                 }
                 if (submitBtn) {

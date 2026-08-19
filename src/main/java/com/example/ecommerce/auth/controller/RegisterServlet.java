@@ -1,7 +1,9 @@
 package com.example.ecommerce.auth.controller;
 
+import com.example.ecommerce.auth.model.PendingRegistration;
 import com.example.ecommerce.auth.service.AuthService;
 import com.example.ecommerce.exception.ValidationException;
+import com.example.ecommerce.util.EmailService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -12,23 +14,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
 
 /**
- * Controller handling customer registration.
+ * Controller handling customer registration with secure Email OTP verification.
  * GET /register -> Renders registration form.
- * POST /register -> Processes customer registration, initiates session,
- * redirects to home/profile.
+ * POST /register -> Validates details, generates & sends Email OTP, routes to /verify-email.
  */
 @WebServlet(name = "RegisterServlet", urlPatterns = { "/register" })
 public class RegisterServlet extends HttpServlet {
 
     private static final Logger logger = LoggerFactory.getLogger(RegisterServlet.class);
     private AuthService authService;
+    private EmailService emailService;
+    private SecureRandom secureRandom;
 
     @Override
     public void init() throws ServletException {
         super.init();
         this.authService = new AuthService();
+        this.emailService = new EmailService();
+        this.secureRandom = new SecureRandom();
     }
 
     @Override
@@ -60,40 +67,27 @@ public class RegisterServlet extends HttpServlet {
             // Validate all registration details and uniqueness in DB before sending OTP
             authService.validateRegistrationDetails(email, password, confirmPassword, firstName, lastName, phone);
 
-            // Generate secure 6-digit verification OTPs for both Email and Mobile
-            java.security.SecureRandom secureRandom = new java.security.SecureRandom();
+            // Generate secure 6-digit Email Verification OTP
             String emailOtp = String.format("%06d", secureRandom.nextInt(1000000));
-            String mobileOtp = String.format("%06d", secureRandom.nextInt(1000000));
-            java.time.LocalDateTime otpExpiry = java.time.LocalDateTime.now().plusMinutes(10);
+            LocalDateTime otpExpiry = LocalDateTime.now().plusMinutes(10);
 
-            com.example.ecommerce.auth.model.PendingRegistration pendingRegistration = new com.example.ecommerce.auth.model.PendingRegistration(
+            PendingRegistration pendingRegistration = new PendingRegistration(
                     email.trim().toLowerCase(),
                     password,
                     firstName.trim(),
                     lastName.trim(),
                     phone.trim(),
                     emailOtp,
-                    mobileOtp,
                     otpExpiry);
 
             // Send verification code via Email
-            com.example.ecommerce.util.EmailService emailService = new com.example.ecommerce.util.EmailService();
             emailService.sendSignupVerificationOtp(email.trim().toLowerCase(), firstName.trim(), emailOtp);
-
-            // Send verification code via Mobile SMS (TextBee / configured gateway)
-            com.example.ecommerce.util.SmsService smsService = new com.example.ecommerce.util.SmsService();
-            try {
-                smsService.sendOtpSms(phone.trim(), mobileOtp, "REGISTRATION");
-            } catch (Exception e) {
-                logger.warn("SMS dispatch exception during signup for {}: {}", phone, e.getMessage());
-            }
 
             // Store pending registration in session
             HttpSession session = request.getSession(true);
             session.setAttribute("pendingRegistration", pendingRegistration);
 
-            logger.info("Generated signup Email OTP and Mobile SMS OTP for user: {} (phone: {})", 
-                    email.trim().toLowerCase(), phone.trim());
+            logger.info("Generated signup Email OTP for: {}", email.trim().toLowerCase());
             response.sendRedirect(request.getContextPath() + "/verify-email");
 
         } catch (ValidationException ve) {
