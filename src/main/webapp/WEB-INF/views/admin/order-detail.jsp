@@ -177,6 +177,7 @@
                             </c:when>
                             <c:otherwise>
                                 <form action="${pageContext.request.contextPath}/admin/orders/status" method="POST">
+                                    <input type="hidden" name="_csrf" value="${csrfToken}">
                                     <input type="hidden" name="orderId" value="${order.orderId}">
                                     <c:set var="curr" value="${order.orderStatus}" />
                                     
