@@ -112,7 +112,7 @@ public class AddressDAO {
     public int createAddress(Address address) {
         String sql = "INSERT INTO dbo.addresses (user_id, address_type, full_name, phone, address_line1, " +
                      "address_line2, city, state, postal_code, country, is_default, created_at, updated_at) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, SYSDATETIME(), SYSDATETIME())";
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, address.getUserId());
@@ -148,7 +148,7 @@ public class AddressDAO {
     public boolean updateAddress(Address address) {
         String sql = "UPDATE dbo.addresses SET address_type = ?, full_name = ?, phone = ?, " +
                      "address_line1 = ?, address_line2 = ?, city = ?, state = ?, postal_code = ?, " +
-                     "country = ?, updated_at = SYSDATETIME() WHERE address_id = ? AND user_id = ?";
+                     "country = ?, updated_at = CURRENT_TIMESTAMP WHERE address_id = ? AND user_id = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, address.getAddressType());

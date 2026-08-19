@@ -35,7 +35,7 @@ public class AuditLogDAO {
     public long createAuditLog(AuditLog log, Connection conn) throws SQLException {
         String sql = "INSERT INTO dbo.audit_logs (user_id, action, entity_name, entity_id, " +
                      "old_value, new_value, ip_address, created_at) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, SYSDATETIME())";
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)";
         try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             if (log.getUserId() != null) {
                 stmt.setInt(1, log.getUserId());

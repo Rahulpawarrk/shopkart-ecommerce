@@ -40,7 +40,7 @@ public class OrderDAO {
                 "coupon_id, shipping_full_name, shipping_phone, shipping_address_line1, shipping_address_line2, " +
                 "shipping_city, shipping_state, shipping_postal_code, shipping_country, billing_address_snapshot, " +
                 "notes, created_at, updated_at) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, SYSDATETIME(), SYSDATETIME())";
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, order.getOrderNumber());
@@ -87,7 +87,7 @@ public class OrderDAO {
     public void createOrderItem(OrderItem item, Connection conn) throws SQLException {
         String sql = "INSERT INTO dbo.order_items (order_id, product_id, product_name, sku, unit_price, " +
                 "discount_amount, tax_amount, line_total, quantity, created_at) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, SYSDATETIME())";
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, item.getOrderId());
@@ -108,7 +108,7 @@ public class OrderDAO {
      */
     public void createStatusHistory(OrderStatusHistory history, Connection conn) throws SQLException {
         String sql = "INSERT INTO dbo.order_status_history (order_id, previous_status, new_status, " +
-                "changed_by, remarks, created_at) VALUES (?, ?, ?, ?, ?, SYSDATETIME())";
+                "changed_by, remarks, created_at) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, history.getOrderId());
@@ -442,8 +442,8 @@ public class OrderDAO {
 
     public void updateOrderStatus(int orderId, OrderStatus newStatus, Connection conn) throws SQLException {
         String sql = "UPDATE dbo.orders SET order_status = ?, " +
-                "delivered_at = CASE WHEN ? = 'DELIVERED' THEN SYSDATETIME() ELSE delivered_at END, " +
-                "updated_at = SYSDATETIME() WHERE order_id = ?";
+                "delivered_at = CASE WHEN ? = 'DELIVERED' THEN CURRENT_TIMESTAMP ELSE delivered_at END, " +
+                "updated_at = CURRENT_TIMESTAMP WHERE order_id = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, newStatus.name());
             stmt.setString(2, newStatus.name());
@@ -458,8 +458,8 @@ public class OrderDAO {
                 "courier_partner = COALESCE(?, courier_partner), " +
                 "tracking_number = COALESCE(?, tracking_number), " +
                 "delivery_agent_phone = COALESCE(?, delivery_agent_phone), " +
-                "delivered_at = CASE WHEN ? = 'DELIVERED' THEN SYSDATETIME() ELSE delivered_at END, " +
-                "updated_at = SYSDATETIME() WHERE order_id = ?";
+                "delivered_at = CASE WHEN ? = 'DELIVERED' THEN CURRENT_TIMESTAMP ELSE delivered_at END, " +
+                "updated_at = CURRENT_TIMESTAMP WHERE order_id = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, newStatus.name());
             stmt.setString(2,
@@ -476,7 +476,7 @@ public class OrderDAO {
     }
 
     public void updatePaymentStatus(int orderId, PaymentStatus newStatus, Connection conn) throws SQLException {
-        String sql = "UPDATE dbo.orders SET payment_status = ?, updated_at = SYSDATETIME() WHERE order_id = ?";
+        String sql = "UPDATE dbo.orders SET payment_status = ?, updated_at = CURRENT_TIMESTAMP WHERE order_id = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, newStatus.name());
             stmt.setInt(2, orderId);
@@ -484,7 +484,7 @@ public class OrderDAO {
         }
 
         if (newStatus == PaymentStatus.PAID) {
-            String syncPaySql = "UPDATE dbo.payments SET payment_status = 'SUCCESS', updated_at = SYSDATETIME() WHERE order_id = ? AND payment_status = 'PENDING'";
+            String syncPaySql = "UPDATE dbo.payments SET payment_status = 'SUCCESS', updated_at = CURRENT_TIMESTAMP WHERE order_id = ? AND payment_status = 'PENDING'";
             try (PreparedStatement payStmt = conn.prepareStatement(syncPaySql)) {
                 payStmt.setInt(1, orderId);
                 int updatedCount = payStmt.executeUpdate();
@@ -496,7 +496,7 @@ public class OrderDAO {
                             if (rs.next() && rs.getInt(1) == 0) {
                                 String insertPay = "INSERT INTO dbo.payments (order_id, payment_method, transaction_reference, amount, payment_status, gateway_response, created_at, updated_at) "
                                         +
-                                        "SELECT order_id, payment_method, 'PAY-' + UPPER(payment_method) + '-ORD' + CAST(order_id AS VARCHAR), total_amount, 'SUCCESS', 'Settled order payment', created_at, SYSDATETIME() "
+                                        "SELECT order_id, payment_method, CONCAT('PAY-', UPPER(payment_method), '-ORD', CAST(order_id AS VARCHAR)), total_amount, 'SUCCESS', 'Settled order payment', created_at, CURRENT_TIMESTAMP "
                                         +
                                         "FROM dbo.orders WHERE order_id = ?";
                                 try (PreparedStatement insStmt = conn.prepareStatement(insertPay)) {

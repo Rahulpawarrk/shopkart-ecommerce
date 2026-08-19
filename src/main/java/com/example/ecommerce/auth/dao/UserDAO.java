@@ -96,7 +96,7 @@ public class UserDAO {
      */
     public int createUser(User user, Connection conn) throws SQLException {
         String sql = "INSERT INTO dbo.users (email, password_hash, first_name, last_name, phone, status, created_at, updated_at) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, SYSDATETIME(), SYSDATETIME())";
+                     "VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
         
         try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, user.getEmail().trim().toLowerCase());
@@ -127,13 +127,13 @@ public class UserDAO {
      * Provisions initial Cart and Wishlist records for a newly created user in the same transaction.
      */
     public void provisionCartAndWishlist(int userId, Connection conn) throws SQLException {
-        String cartSql = "INSERT INTO dbo.carts (user_id, created_at, updated_at) VALUES (?, SYSDATETIME(), SYSDATETIME())";
+        String cartSql = "INSERT INTO dbo.carts (user_id, created_at, updated_at) VALUES (?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
         try (PreparedStatement stmt = conn.prepareStatement(cartSql)) {
             stmt.setInt(1, userId);
             stmt.executeUpdate();
         }
 
-        String wishlistSql = "INSERT INTO dbo.wishlists (user_id, created_at) VALUES (?, SYSDATETIME())";
+        String wishlistSql = "INSERT INTO dbo.wishlists (user_id, created_at) VALUES (?, CURRENT_TIMESTAMP)";
         try (PreparedStatement stmt = conn.prepareStatement(wishlistSql)) {
             stmt.setInt(1, userId);
             stmt.executeUpdate();
@@ -190,7 +190,7 @@ public class UserDAO {
      * Updates user's first name, last name, and phone.
      */
     public boolean updateProfile(int userId, String firstName, String lastName, String phone) {
-        String sql = "UPDATE dbo.users SET first_name = ?, last_name = ?, phone = ?, updated_at = SYSDATETIME() WHERE user_id = ?";
+        String sql = "UPDATE dbo.users SET first_name = ?, last_name = ?, phone = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, firstName.trim());
@@ -208,7 +208,7 @@ public class UserDAO {
      * Updates the BCrypt password hash for a user.
      */
     public boolean updatePassword(int userId, String newPasswordHash) {
-        String sql = "UPDATE dbo.users SET password_hash = ?, updated_at = SYSDATETIME() WHERE user_id = ?";
+        String sql = "UPDATE dbo.users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, newPasswordHash);

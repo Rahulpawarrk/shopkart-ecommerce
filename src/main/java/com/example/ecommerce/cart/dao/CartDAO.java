@@ -36,7 +36,7 @@ public class CartDAO {
         }
 
         // Insert new cart if none exists
-        String insertSql = "INSERT INTO dbo.carts (user_id, created_at, updated_at) VALUES (?, SYSDATETIME(), SYSDATETIME())";
+        String insertSql = "INSERT INTO dbo.carts (user_id, created_at, updated_at) VALUES (?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
         try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
             insertStmt.setInt(1, userId);
             insertStmt.executeUpdate();
@@ -79,14 +79,14 @@ public class CartDAO {
 
             // Query items joined with live catalog pricing and stock
             String itemsSql = "SELECT ci.cart_item_id, ci.cart_id, ci.product_id, ci.quantity, ci.created_at, ci.updated_at, " +
-                              "p.product_name, p.sku, p.brand, p.price, p.discount_percentage, p.tax_percentage, " +
+                              "p.product_name, p.sku, p.brand, p.price, p.discount_percentage, p.status AS product_status, " +
                               "COALESCE(i.quantity, 0) AS stock_quantity, " +
                               "(SELECT image_url FROM dbo.product_images pi WHERE pi.product_id = p.product_id ORDER BY pi.is_primary DESC, pi.display_order ASC LIMIT 1) AS primary_image_url " +
                               "FROM dbo.cart_items ci " +
                               "INNER JOIN dbo.products p ON ci.product_id = p.product_id " +
                               "LEFT JOIN dbo.inventory i ON p.product_id = i.product_id " +
                               "WHERE ci.cart_id = ? " +
-                              "ORDER BY ci.created_at DESC";
+                              "ORDER BY ci.created_at ASC";
 
             try (PreparedStatement itemStmt = conn.prepareStatement(itemsSql)) {
                 itemStmt.setInt(1, cartId);
@@ -104,9 +104,9 @@ public class CartDAO {
                         item.setProductName(rs.getString("product_name"));
                         item.setSku(rs.getString("sku"));
                         item.setBrand(rs.getString("brand"));
-                        item.setUnitPrice(rs.getBigDecimal("price"));
+                        item.setPrice(rs.getBigDecimal("price"));
                         item.setDiscountPercentage(rs.getBigDecimal("discount_percentage"));
-                        item.setTaxPercentage(rs.getBigDecimal("tax_percentage"));
+                        item.setProductStatus(rs.getString("product_status"));
                         item.setStockQuantity(rs.getInt("stock_quantity"));
                         item.setPrimaryImageUrl(rs.getString("primary_image_url"));
 
@@ -160,7 +160,7 @@ public class CartDAO {
      * Sets exact quantity for a cart item.
      */
     public void updateItemQuantity(int cartId, int productId, int newQuantity) {
-        String sql = "UPDATE dbo.cart_items SET quantity = ?, updated_at = SYSDATETIME() " +
+        String sql = "UPDATE dbo.cart_items SET quantity = ?, updated_at = CURRENT_TIMESTAMP " +
                      "WHERE cart_id = ? AND product_id = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -208,7 +208,7 @@ public class CartDAO {
      * Gets the total count of items in the user's cart for header badge display.
      */
     public int getItemCount(int userId) {
-        String sql = "SELECT ISNULL(SUM(ci.quantity), 0) " +
+        String sql = "SELECT COALESCE(SUM(ci.quantity), 0) " +
                      "FROM dbo.cart_items ci " +
                      "INNER JOIN dbo.carts c ON ci.cart_id = c.cart_id " +
                      "WHERE c.user_id = ?";
@@ -227,7 +227,7 @@ public class CartDAO {
     }
 
     private void updateCartTimestamp(int cartId, Connection conn) {
-        String sql = "UPDATE dbo.carts SET updated_at = SYSDATETIME() WHERE cart_id = ?";
+        String sql = "UPDATE dbo.carts SET updated_at = CURRENT_TIMESTAMP WHERE cart_id = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, cartId);
             stmt.executeUpdate();

@@ -28,7 +28,7 @@ public class OrderReturnDAO {
     public int createReturn(OrderReturn ret) {
         String sql = "INSERT INTO dbo.order_returns (order_id, user_id, return_number, return_reason, " +
                      "resolution_type, comments, image_url, return_status, created_at, updated_at) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, SYSDATETIME(), SYSDATETIME())";
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, ret.getOrderId());
@@ -212,9 +212,9 @@ public class OrderReturnDAO {
 
     public boolean updateStatus(int returnId, String newStatus, String adminNotes, BigDecimal refundAmount) {
         String sql = "UPDATE dbo.order_returns SET return_status = ?, " +
-                     "admin_notes = ISNULL(?, admin_notes), " +
-                     "refund_amount = ISNULL(?, refund_amount), " +
-                     "updated_at = SYSDATETIME() " +
+                     "admin_notes = COALESCE(?, admin_notes), " +
+                     "refund_amount = COALESCE(?, refund_amount), " +
+                     "updated_at = CURRENT_TIMESTAMP " +
                      "WHERE return_id = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {

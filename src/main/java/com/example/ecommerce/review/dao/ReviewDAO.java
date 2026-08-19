@@ -67,7 +67,7 @@ public class ReviewDAO {
     public int createReview(Review review) {
         String sql = "INSERT INTO dbo.reviews (product_id, user_id, rating, review_title, review_text, image_url, " +
                      "status, created_at, updated_at) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, SYSDATETIME(), SYSDATETIME())";
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, review.getProductId());
@@ -100,7 +100,7 @@ public class ReviewDAO {
 
     public void updateReview(Review review) {
         String sql = "UPDATE dbo.reviews SET rating = ?, review_title = ?, review_text = ?, " +
-                     "image_url = ISNULL(?, image_url), updated_at = SYSDATETIME() " +
+                     "image_url = COALESCE(?, image_url), updated_at = CURRENT_TIMESTAMP " +
                      "WHERE review_id = ? AND user_id = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -130,7 +130,7 @@ public class ReviewDAO {
                 delStmt.executeUpdate();
             }
 
-            String insSql = "INSERT INTO dbo.review_images (review_id, image_url, created_at) VALUES (?, ?, SYSDATETIME())";
+            String insSql = "INSERT INTO dbo.review_images (review_id, image_url, created_at) VALUES (?, ?, CURRENT_TIMESTAMP)";
             try (PreparedStatement insStmt = conn.prepareStatement(insSql)) {
                 for (String url : imageUrls) {
                     if (url != null && !url.trim().isEmpty()) {
@@ -277,7 +277,7 @@ public class ReviewDAO {
         summary.setProductId(productId);
 
         String sql = "SELECT " +
-                     "ISNULL(AVG(CAST(rating AS FLOAT)), 0.0) AS avg_rating, " +
+                     "COALESCE(AVG(CAST(rating AS FLOAT)), 0.0) AS avg_rating, " +
                      "COUNT(*) AS total_count, " +
                      "SUM(CASE WHEN rating = 5 THEN 1 ELSE 0 END) AS count_5, " +
                      "SUM(CASE WHEN rating = 4 THEN 1 ELSE 0 END) AS count_4, " +
@@ -308,7 +308,7 @@ public class ReviewDAO {
     }
 
     public void setApprovalStatus(int reviewId, boolean approved) {
-        String sql = "UPDATE dbo.reviews SET status = ?, updated_at = SYSDATETIME() WHERE review_id = ?";
+        String sql = "UPDATE dbo.reviews SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE review_id = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, approved ? "APPROVED" : "REJECTED");

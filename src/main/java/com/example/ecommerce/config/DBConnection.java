@@ -65,7 +65,6 @@ public final class DBConnection {
      */
     private static void initDataSource() {
         try {
-            logger.info("Initializing HikariCP DataSource for Microsoft SQL Server...");
             Properties props = loadProperties();
 
             HikariConfig config = new HikariConfig();
@@ -74,8 +73,13 @@ public final class DBConnection {
             if (jdbcUrl == null || jdbcUrl.trim().isEmpty()) {
                 jdbcUrl = props.getProperty("db.url");
             }
-            if (jdbcUrl != null && jdbcUrl.startsWith("postgresql://")) {
-                jdbcUrl = "jdbc:" + jdbcUrl;
+            if (jdbcUrl != null) {
+                jdbcUrl = jdbcUrl.trim();
+                if (jdbcUrl.startsWith("postgres://")) {
+                    jdbcUrl = "jdbc:postgresql://" + jdbcUrl.substring("postgres://".length());
+                } else if (jdbcUrl.startsWith("postgresql://")) {
+                    jdbcUrl = "jdbc:" + jdbcUrl;
+                }
             }
 
             // Driver and Connection Parameters with Automatic Dialect Detection
@@ -111,10 +115,16 @@ public final class DBConnection {
             config.setConnectionTimeout(Long.parseLong(props.getProperty("hikaricp.connectionTimeout", "30000")));
             config.setLeakDetectionThreshold(Long.parseLong(props.getProperty("hikaricp.leakDetectionThreshold", "60000")));
 
-            // SQL Server specific optimizations
-            config.addDataSourceProperty("cachePrepStmts", "true");
-            config.addDataSourceProperty("prepStmtCacheSize", "250");
-            config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+            boolean isPostgres = (jdbcUrl != null && jdbcUrl.startsWith("jdbc:postgresql:")) || "org.postgresql.Driver".equals(driver);
+            if (isPostgres) {
+                logger.info("Initializing HikariCP DataSource for PostgreSQL / Neon Database...");
+                config.setConnectionTestQuery("SELECT 1");
+            } else {
+                logger.info("Initializing HikariCP DataSource for Microsoft SQL Server...");
+                config.addDataSourceProperty("cachePrepStmts", "true");
+                config.addDataSourceProperty("prepStmtCacheSize", "250");
+                config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+            }
 
             dataSource = new HikariDataSource(config);
             logger.info("HikariCP connection pool [{}] successfully initialized.", config.getPoolName());
@@ -479,6 +489,89 @@ public final class DBConnection {
 
         try (Connection conn = dataSource.getConnection();
              java.sql.Statement stmt = conn.createStatement()) {
+            
+            String dbProduct = "";
+            try {
+                dbProduct = conn.getMetaData().getDatabaseProductName();
+            } catch (Exception ignored) {}
+
+            boolean isPostgres = dbProduct != null && dbProduct.toLowerCase().contains("postgres");
+
+            if (isPostgres) {
+                logger.info("Applying PostgreSQL (Neon) schema migrations and compatibility functions...");
+                String[] pgStatements = new String[] {
+                    "CREATE SCHEMA IF NOT EXISTS dbo;",
+                    "SET search_path TO dbo, public;",
+                    "CREATE OR REPLACE FUNCTION dbo.sysdatetime() RETURNS TIMESTAMP AS $$ SELECT CURRENT_TIMESTAMP; $$ LANGUAGE SQL;",
+                    "CREATE OR REPLACE FUNCTION dbo.getdate() RETURNS TIMESTAMP AS $$ SELECT CURRENT_TIMESTAMP; $$ LANGUAGE SQL;",
+                    "CREATE OR REPLACE FUNCTION dbo.isnull(val anyelement, fallback anyelement) RETURNS anyelement AS $$ SELECT COALESCE(val, fallback); $$ LANGUAGE SQL;",
+                    "CREATE OR REPLACE FUNCTION public.sysdatetime() RETURNS TIMESTAMP AS $$ SELECT CURRENT_TIMESTAMP; $$ LANGUAGE SQL;",
+                    "CREATE OR REPLACE FUNCTION public.getdate() RETURNS TIMESTAMP AS $$ SELECT CURRENT_TIMESTAMP; $$ LANGUAGE SQL;",
+                    "CREATE OR REPLACE FUNCTION public.isnull(val anyelement, fallback anyelement) RETURNS anyelement AS $$ SELECT COALESCE(val, fallback); $$ LANGUAGE SQL;",
+                    "CREATE TABLE IF NOT EXISTS dbo.password_reset_tokens (" +
+                    "    token_id SERIAL PRIMARY KEY, " +
+                    "    user_id INT NOT NULL REFERENCES dbo.users(user_id) ON DELETE CASCADE, " +
+                    "    token VARCHAR(64) NOT NULL UNIQUE, " +
+                    "    expires_at TIMESTAMP NOT NULL, " +
+                    "    is_used BOOLEAN DEFAULT FALSE NOT NULL, " +
+                    "    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL " +
+                    ");",
+                    "CREATE INDEX IF NOT EXISTS ix_prt_token ON dbo.password_reset_tokens(token);",
+                    "CREATE INDEX IF NOT EXISTS ix_prt_user ON dbo.password_reset_tokens(user_id);",
+                    "ALTER TABLE dbo.users ADD COLUMN IF NOT EXISTS phone VARCHAR(20);",
+                    "ALTER TABLE dbo.payments ADD COLUMN IF NOT EXISTS gateway_response VARCHAR(500);",
+                    "ALTER TABLE dbo.payments ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;",
+                    "ALTER TABLE dbo.orders ADD COLUMN IF NOT EXISTS courier_partner VARCHAR(100);",
+                    "ALTER TABLE dbo.orders ADD COLUMN IF NOT EXISTS tracking_number VARCHAR(100);",
+                    "ALTER TABLE dbo.orders ADD COLUMN IF NOT EXISTS delivery_agent_phone VARCHAR(20);",
+                    "ALTER TABLE dbo.orders ADD COLUMN IF NOT EXISTS delivered_at TIMESTAMP;",
+                    "CREATE TABLE IF NOT EXISTS dbo.payment_reconciliation (" +
+                    "    reconciliation_id SERIAL PRIMARY KEY, " +
+                    "    order_id INT NOT NULL REFERENCES dbo.orders(order_id), " +
+                    "    user_id INT NOT NULL REFERENCES dbo.users(user_id), " +
+                    "    transaction_reference VARCHAR(150), " +
+                    "    gateway_order_id VARCHAR(150), " +
+                    "    payment_method VARCHAR(50), " +
+                    "    amount NUMERIC(18,2) DEFAULT 0.00 NOT NULL, " +
+                    "    failure_reason VARCHAR(255), " +
+                    "    gateway_response TEXT, " +
+                    "    reconciliation_status VARCHAR(50) DEFAULT 'PENDING' NOT NULL, " +
+                    "    admin_notes TEXT, " +
+                    "    resolved_by INT REFERENCES dbo.users(user_id), " +
+                    "    resolved_at TIMESTAMP, " +
+                    "    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL, " +
+                    "    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL " +
+                    ");",
+                    "CREATE TABLE IF NOT EXISTS dbo.order_returns (" +
+                    "    return_id SERIAL PRIMARY KEY, " +
+                    "    order_id INT NOT NULL REFERENCES dbo.orders(order_id), " +
+                    "    user_id INT NOT NULL REFERENCES dbo.users(user_id), " +
+                    "    return_number VARCHAR(100) NOT NULL UNIQUE, " +
+                    "    return_reason VARCHAR(200) NOT NULL, " +
+                    "    resolution_type VARCHAR(50) NOT NULL, " +
+                    "    comments VARCHAR(1000), " +
+                    "    image_url VARCHAR(1000), " +
+                    "    return_status VARCHAR(50) DEFAULT 'REQUESTED' NOT NULL, " +
+                    "    refund_amount NUMERIC(18,2), " +
+                    "    admin_notes VARCHAR(1000), " +
+                    "    pickup_date TIMESTAMP, " +
+                    "    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL, " +
+                    "    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL " +
+                    ");"
+                };
+
+                for (String sql : pgStatements) {
+                    try {
+                        stmt.execute(sql);
+                    } catch (SQLException ex) {
+                        logger.warn("Postgres auto-migration notice: {}", ex.getMessage());
+                    }
+                }
+                logger.info("PostgreSQL schema auto-migration checks verified successfully.");
+                return;
+            }
+
+            // Otherwise, SQL Server migration:
             for (String sql : ddlStatements) {
                 try {
                     stmt.execute(sql);
@@ -486,7 +579,7 @@ public final class DBConnection {
                     logger.warn("Auto-migration notice (may already exist): {}", ex.getMessage());
                 }
             }
-            logger.info("Database schema auto-migration checks verified successfully.");
+            logger.info("SQL Server database schema auto-migration checks verified successfully.");
         } catch (SQLException e) {
             logger.warn("Could not run auto-migration checks: {}", e.getMessage());
         }

@@ -67,7 +67,7 @@ public class CouponDAO {
         String sql = "INSERT INTO dbo.coupons (code, description, discount_type, discount_value, " +
                      "min_order_amount, max_discount_amount, start_date, end_date, usage_limit, current_usage, is_active, " +
                      "created_at, updated_at) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, SYSDATETIME(), SYSDATETIME())";
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, coupon.getCode());
@@ -108,7 +108,7 @@ public class CouponDAO {
     public void updateCoupon(Coupon coupon) {
         String sql = "UPDATE dbo.coupons SET code = ?, description = ?, discount_type = ?, " +
                      "discount_value = ?, min_order_amount = ?, max_discount_amount = ?, start_date = ?, " +
-                     "end_date = ?, usage_limit = ?, is_active = ?, updated_at = SYSDATETIME() " +
+                     "end_date = ?, usage_limit = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP " +
                      "WHERE coupon_id = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -140,7 +140,7 @@ public class CouponDAO {
     }
 
     public void incrementUsedCount(int couponId, Connection conn) throws SQLException {
-        String sql = "UPDATE dbo.coupons SET current_usage = current_usage + 1, updated_at = SYSDATETIME() WHERE coupon_id = ?";
+        String sql = "UPDATE dbo.coupons SET current_usage = current_usage + 1, updated_at = CURRENT_TIMESTAMP WHERE coupon_id = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, couponId);
             stmt.executeUpdate();
@@ -148,7 +148,7 @@ public class CouponDAO {
     }
 
     public void setActiveStatus(int couponId, boolean active) {
-        String sql = "UPDATE dbo.coupons SET is_active = ?, updated_at = SYSDATETIME() WHERE coupon_id = ?";
+        String sql = "UPDATE dbo.coupons SET is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE coupon_id = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setBoolean(1, active);
@@ -188,7 +188,7 @@ public class CouponDAO {
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement countStmt = conn.prepareStatement(countSql)) {
             int idx = 1;
-            for (Object p : params) countStmt.setObject(idx++, p);
+            for (Object obj : params) countStmt.setObject(idx++, obj);
             try (ResultSet rs = countStmt.executeQuery()) {
                 if (rs.next()) total = rs.getInt(1);
             }
@@ -202,13 +202,14 @@ public class CouponDAO {
         }
 
         String dataSql = "SELECT * FROM dbo.coupons " + where + 
-                         " ORDER BY created_at DESC OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+                         "ORDER BY created_at DESC " +
+                         "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
         List<Coupon> list = new ArrayList<>();
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(dataSql)) {
             int idx = 1;
-            for (Object p : params) stmt.setObject(idx++, p);
+            for (Object obj : params) stmt.setObject(idx++, obj);
             stmt.setInt(idx++, (page - 1) * pageSize);
             stmt.setInt(idx, pageSize);
 
@@ -229,8 +230,8 @@ public class CouponDAO {
         Map<String, Object> stats = new HashMap<>();
         String sql = "SELECT " +
                      "COUNT(*) AS total_coupons, " +
-                     "SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) AS active_coupons, " +
-                     "ISNULL(SUM(current_usage), 0) AS total_redemptions " +
+                     "SUM(CASE WHEN is_active = true THEN 1 ELSE 0 END) AS active_coupons, " +
+                     "COALESCE(SUM(current_usage), 0) AS total_redemptions " +
                      "FROM dbo.coupons";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);

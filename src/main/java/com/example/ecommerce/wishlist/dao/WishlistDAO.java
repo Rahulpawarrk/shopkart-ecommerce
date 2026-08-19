@@ -32,7 +32,7 @@ public class WishlistDAO {
             }
         }
 
-        String insertSql = "INSERT INTO dbo.wishlists (user_id, created_at) VALUES (?, SYSDATETIME())";
+        String insertSql = "INSERT INTO dbo.wishlists (user_id, created_at) VALUES (?, CURRENT_TIMESTAMP)";
         try (PreparedStatement insertStmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS)) {
             insertStmt.setInt(1, userId);
             insertStmt.executeUpdate();
@@ -109,12 +109,9 @@ public class WishlistDAO {
     }
 
     public void addItem(int wishlistId, int productId) {
-        String sql = "MERGE dbo.wishlist_items AS target " +
-                     "USING (SELECT ? AS wishlist_id, ? AS product_id) AS source " +
-                     "ON target.wishlist_id = source.wishlist_id AND target.product_id = source.product_id " +
-                     "WHEN NOT MATCHED THEN " +
-                     "    INSERT (wishlist_id, product_id, added_at) " +
-                     "    VALUES (source.wishlist_id, source.product_id, SYSDATETIME());";
+        String sql = "INSERT INTO dbo.wishlist_items (wishlist_id, product_id, added_at) " +
+                     "VALUES (?, ?, CURRENT_TIMESTAMP) " +
+                     "ON CONFLICT (wishlist_id, product_id) DO NOTHING";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, wishlistId);
@@ -140,9 +137,9 @@ public class WishlistDAO {
     }
 
     public void removeItemByUserId(int userId, int productId) {
-        String sql = "DELETE wi FROM dbo.wishlist_items wi " +
-                     "INNER JOIN dbo.wishlists w ON wi.wishlist_id = w.wishlist_id " +
-                     "WHERE w.user_id = ? AND wi.product_id = ?";
+        String sql = "DELETE FROM dbo.wishlist_items " +
+                     "WHERE wishlist_id IN (SELECT wishlist_id FROM dbo.wishlists WHERE user_id = ?) " +
+                     "AND product_id = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, userId);

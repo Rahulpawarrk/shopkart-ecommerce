@@ -128,7 +128,7 @@ public class CategoryDAO {
      */
     public int createCategory(Category category) {
         String sql = "INSERT INTO dbo.categories (parent_category_id, category_name, slug, description, is_active, created_at, updated_at) " +
-                     "VALUES (?, ?, ?, ?, ?, SYSDATETIME(), SYSDATETIME())";
+                     "VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             if (category.getParentCategoryId() != null && category.getParentCategoryId() > 0) {
@@ -161,7 +161,7 @@ public class CategoryDAO {
      */
     public boolean updateCategory(Category category) {
         String sql = "UPDATE dbo.categories SET parent_category_id = ?, category_name = ?, slug = ?, " +
-                     "description = ?, is_active = ?, updated_at = SYSDATETIME() WHERE category_id = ?";
+                     "description = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE category_id = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             if (category.getParentCategoryId() != null && category.getParentCategoryId() > 0) {
@@ -186,7 +186,7 @@ public class CategoryDAO {
      * Updates active status (activation/deactivation).
      */
     public boolean updateStatus(int categoryId, boolean active) {
-        String sql = "UPDATE dbo.categories SET is_active = ?, updated_at = SYSDATETIME() WHERE category_id = ?";
+        String sql = "UPDATE dbo.categories SET is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE category_id = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setBoolean(1, active);

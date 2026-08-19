@@ -21,3 +21,9 @@ setenv.sh
 .env
 *.env
 db.properties.local
+
+# ── Application Logs ────────────────────────────────────────────────────────
+logs/
+*.log
+*.log.gz
+

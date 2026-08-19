@@ -26,7 +26,7 @@ public class PaymentReconciliationDAO {
                      "(order_id, user_id, transaction_reference, gateway_order_id, payment_method, " +
                      " amount, failure_reason, gateway_response, reconciliation_status, admin_notes, " +
                      " created_at, updated_at) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, SYSDATETIME(), SYSDATETIME())";
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, recon.getOrderId());
@@ -188,8 +188,8 @@ public class PaymentReconciliationDAO {
     public boolean updateResolution(int reconciliationId, String newStatus, String adminNotes, int adminUserId) {
         String sql = "UPDATE dbo.payment_reconciliation " +
                      "SET reconciliation_status = ?, admin_notes = ?, resolved_by = ?, " +
-                     "    resolved_at = CASE WHEN ? IN ('RESOLVED', 'REFUND_COMPLETED', 'MANUALLY_CREDITED', 'NOT_DEBITED') THEN SYSDATETIME() ELSE resolved_at END, " +
-                     "    updated_at = SYSDATETIME() " +
+                     "    resolved_at = CASE WHEN ? IN ('RESOLVED', 'REFUND_COMPLETED', 'MANUALLY_CREDITED', 'NOT_DEBITED') THEN CURRENT_TIMESTAMP ELSE resolved_at END, " +
+                     "    updated_at = CURRENT_TIMESTAMP " +
                      "WHERE reconciliation_id = ?";
 
         try (Connection conn = DBConnection.getConnection();
@@ -214,7 +214,7 @@ public class PaymentReconciliationDAO {
                      "SUM(CASE WHEN reconciliation_status = 'VERIFIED_DEBITED' THEN 1 ELSE 0 END) AS verified_debited, " +
                      "SUM(CASE WHEN reconciliation_status = 'REFUND_INITIATED' THEN 1 ELSE 0 END) AS refund_initiated, " +
                      "SUM(CASE WHEN reconciliation_status IN ('RESOLVED', 'REFUND_COMPLETED', 'MANUALLY_CREDITED', 'NOT_DEBITED') THEN 1 ELSE 0 END) AS resolved_count, " +
-                     "ISNULL(SUM(amount), 0) AS total_disputed_amount " +
+                     "COALESCE(SUM(amount), 0) AS total_disputed_amount " +
                      "FROM dbo.payment_reconciliation";
 
         try (Connection conn = DBConnection.getConnection();

@@ -221,7 +221,7 @@ public class ProductDAO {
     public int createProduct(Product product, Connection conn) throws SQLException {
         String sql = "INSERT INTO dbo.products (category_id, sku, product_name, slug, description, brand, " +
                 "price, discount_percentage, tax_percentage, weight_kg, status, created_at, updated_at) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, SYSDATETIME(), SYSDATETIME())";
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
         try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, product.getCategoryId());
             stmt.setString(2, product.getSku().trim().toUpperCase());
@@ -253,7 +253,7 @@ public class ProductDAO {
     public boolean updateProduct(Product product, Connection conn) throws SQLException {
         String sql = "UPDATE dbo.products SET category_id = ?, sku = ?, product_name = ?, slug = ?, " +
                 "description = ?, brand = ?, price = ?, discount_percentage = ?, tax_percentage = ?, " +
-                "weight_kg = ?, status = ?, updated_at = SYSDATETIME() WHERE product_id = ?";
+                "weight_kg = ?, status = ?, updated_at = CURRENT_TIMESTAMP WHERE product_id = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, product.getCategoryId());
             stmt.setString(2, product.getSku().trim().toUpperCase());
@@ -276,7 +276,7 @@ public class ProductDAO {
      * Updates product status (e.g. ACTIVE -> INACTIVE or ARCHIVED).
      */
     public boolean updateStatus(int productId, String status) {
-        String sql = "UPDATE dbo.products SET status = ?, updated_at = SYSDATETIME() WHERE product_id = ?";
+        String sql = "UPDATE dbo.products SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE product_id = ?";
         try (Connection conn = DBConnection.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, status);
@@ -318,7 +318,7 @@ public class ProductDAO {
     public void saveProductImage(ProductImage image, Connection conn) throws SQLException {
         String sql = "INSERT INTO dbo.product_images (product_id, image_url, alt_text, display_order, is_primary, created_at) "
                 +
-                "VALUES (?, ?, ?, ?, ?, SYSDATETIME())";
+                "VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, image.getProductId());
             stmt.setString(2, image.getImageUrl().trim());
@@ -346,7 +346,7 @@ public class ProductDAO {
     public void initProductInventory(int productId, int quantity, int lowStockThreshold, Connection conn)
             throws SQLException {
         String sql = "INSERT INTO dbo.inventory (product_id, quantity, low_stock_threshold, last_updated) " +
-                "VALUES (?, ?, ?, SYSDATETIME())";
+                "VALUES (?, ?, ?, CURRENT_TIMESTAMP)";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, productId);
             stmt.setInt(2, Math.max(0, quantity));
@@ -357,7 +357,7 @@ public class ProductDAO {
         if (quantity > 0) {
             String transSql = "INSERT INTO dbo.inventory_transactions (product_id, previous_stock, quantity_changed, " +
                     "new_stock, transaction_type, reference_type, remarks, created_at) " +
-                    "VALUES (?, 0, ?, ?, 'PURCHASE', 'INITIAL_STOCK', 'Product catalog onboarding', SYSDATETIME())";
+                    "VALUES (?, 0, ?, ?, 'PURCHASE', 'INITIAL_STOCK', 'Product catalog onboarding', CURRENT_TIMESTAMP)";
             try (PreparedStatement transStmt = conn.prepareStatement(transSql)) {
                 transStmt.setInt(1, productId);
                 transStmt.setInt(2, quantity);

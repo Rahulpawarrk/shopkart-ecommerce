@@ -128,8 +128,8 @@ ecommerce-web/
 ### 1. Database Setup
 Create and seed the SQL Server database:
 ```bash
-sqlcmd -S localhost -U sa -P YourStrongPassword123! -i src/main/resources/db/schema.sql
-sqlcmd -S localhost -U sa -P YourStrongPassword123! -i src/main/resources/db/seed.sql
+sqlcmd -S localhost  -i src/main/resources/db/schema.sql
+sqlcmd -S localhost  -i src/main/resources/db/seed.sql
 ```
 
 ### 2. Build & Test
@@ -149,15 +149,6 @@ Copy `target/ecommerce-web.war` to Tomcat's `webapps/` folder as `ROOT.war` and 
 - **Product Catalog**: `http://localhost:8080/products`
 - **System Health Diagnostic**: `http://localhost:8080/health`
 - **Admin Console**: `http://localhost:8080/admin/dashboard`
-
----
-
-## 🔑 Default Accounts
-
-| Role | Email | Password |
-|---|---|---|
-| **System Admin** | `admin@ecommerce.com` | `Admin@123` |
-| **Demo Customer** | `customer@ecommerce.com` | `Admin@123` |
 
 ---
 

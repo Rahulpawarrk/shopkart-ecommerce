@@ -32,7 +32,7 @@ public class PaymentDAO {
     public int createPayment(Payment payment, Connection conn) throws SQLException {
         String sql = "INSERT INTO dbo.payments (order_id, payment_method, transaction_reference, " +
                      "amount, payment_status, gateway_response, created_at, updated_at) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, SYSDATETIME(), SYSDATETIME())";
+                     "VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, payment.getOrderId());
@@ -128,7 +128,7 @@ public class PaymentDAO {
     }
 
     public void updatePaymentStatus(int paymentId, PaymentTransactionStatus status, String gatewayResponse, Connection conn) throws SQLException {
-        String sql = "UPDATE dbo.payments SET payment_status = ?, gateway_response = ?, updated_at = SYSDATETIME() " +
+        String sql = "UPDATE dbo.payments SET payment_status = ?, gateway_response = ?, updated_at = CURRENT_TIMESTAMP " +
                      "WHERE payment_id = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, status.name());
@@ -139,7 +139,7 @@ public class PaymentDAO {
     }
 
     public void updatePaymentStatusByOrderId(int orderId, PaymentTransactionStatus status, String gatewayResponse, Connection conn) throws SQLException {
-        String sql = "UPDATE dbo.payments SET payment_status = ?, gateway_response = ?, updated_at = SYSDATETIME() " +
+        String sql = "UPDATE dbo.payments SET payment_status = ?, gateway_response = ?, updated_at = CURRENT_TIMESTAMP " +
                      "WHERE order_id = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, status.name());
@@ -217,7 +217,7 @@ public class PaymentDAO {
                      "SUM(CASE WHEN p.payment_status = 'SUCCESS' OR o.payment_status = 'PAID' OR o.order_status = 'DELIVERED' THEN 1 ELSE 0 END) AS successful_transactions, " +
                      "SUM(CASE WHEN p.payment_status = 'FAILED' AND o.payment_status != 'PAID' THEN 1 ELSE 0 END) AS failed_transactions, " +
                      "SUM(CASE WHEN p.payment_status = 'REFUNDED' THEN 1 ELSE 0 END) AS refunded_transactions, " +
-                     "ISNULL(SUM(CASE WHEN p.payment_status = 'SUCCESS' OR o.payment_status = 'PAID' OR o.order_status = 'DELIVERED' THEN p.amount ELSE 0 END), 0) AS total_collected " +
+                     "COALESCE(SUM(CASE WHEN p.payment_status = 'SUCCESS' OR o.payment_status = 'PAID' OR o.order_status = 'DELIVERED' THEN p.amount ELSE 0 END), 0) AS total_collected " +
                      "FROM dbo.payments p " +
                      "INNER JOIN dbo.orders o ON p.order_id = o.order_id";
         try (Connection conn = DBConnection.getConnection();
