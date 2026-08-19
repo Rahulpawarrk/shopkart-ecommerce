@@ -140,6 +140,12 @@ public class SmsService {
 
     private String getEnv(String name, String fallback) {
         String val = System.getenv(name);
+        if (val == null || val.trim().isEmpty()) {
+            val = System.getProperty(name);
+        }
+        if (val == null || val.trim().isEmpty()) {
+            val = System.getProperty(name.toLowerCase().replace('_', '.'));
+        }
         return (val != null && !val.trim().isEmpty()) ? val.trim() : fallback;
     }
 }

@@ -39,6 +39,12 @@ public class LogisticsWebhookServlet extends HttpServlet {
             throws ServletException, IOException {
         
         String webhookSecret = System.getenv("LOGISTICS_WEBHOOK_SECRET");
+        if (webhookSecret == null || webhookSecret.trim().isEmpty()) {
+            webhookSecret = System.getProperty("LOGISTICS_WEBHOOK_SECRET");
+        }
+        if (webhookSecret == null || webhookSecret.trim().isEmpty()) {
+            webhookSecret = System.getProperty("logistics.webhook.secret");
+        }
         String signature = request.getHeader("X-Carrier-Signature");
         String webhookToken = request.getHeader("X-Webhook-Token");
         if (webhookToken == null) {
