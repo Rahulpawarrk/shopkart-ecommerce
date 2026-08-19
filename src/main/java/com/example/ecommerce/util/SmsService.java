@@ -62,12 +62,20 @@ public class SmsService {
 
         // 1. Check for Fast2SMS (Indian Gateway)
         if (fast2smsApiKey != null && !fast2smsApiKey.trim().isEmpty()) {
-            return sendViaFast2SMS(cleanPhone, otpCode, message);
+            boolean sent = sendViaFast2SMS(cleanPhone, otpCode, message);
+            if (sent) {
+                return true;
+            }
+            logger.warn("Fast2SMS dispatch failed (e.g. uncharged wallet or quota limit). Falling back to SMS Simulator.");
         }
 
         // 2. Check for Twilio (Global Gateway)
         if (twilioSid != null && twilioToken != null && twilioFrom != null) {
-            return sendViaTwilio(cleanPhone, message);
+            boolean sent = sendViaTwilio(cleanPhone, message);
+            if (sent) {
+                return true;
+            }
+            logger.warn("Twilio dispatch failed. Falling back to SMS Simulator.");
         }
 
         // 3. Simulated Sandbox Fallback
