@@ -19,7 +19,7 @@ import java.io.IOException;
  * GET /login  -> Renders login view.
  * POST /login -> Validates credentials, creates secure session, redirects user.
  */
-@WebServlet(name = "LoginServlet", urlPatterns = {"/login"})
+@WebServlet(name = "LoginServlet", urlPatterns = {"/login", "/auth/login"})
 public class LoginServlet extends HttpServlet {
 
     private static final Logger logger = LoggerFactory.getLogger(LoginServlet.class);

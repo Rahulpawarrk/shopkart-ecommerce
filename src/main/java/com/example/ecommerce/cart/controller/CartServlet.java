@@ -17,15 +17,17 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.List;
 
 /**
- * Controller managing customer Shopping Cart operations and Promotional Coupons.
- * Routes: /cart, /cart/add, /cart/update, /cart/remove, /cart/clear, /cart/coupon, /cart/coupon/remove
- * Protected by AuthFilter.
+ * Controller managing customer Shopping Cart operations and Promotional
+ * Coupons.
+ * Routes: /cart, /cart/add, /cart/update, /cart/remove, /cart/clear,
+ * /cart/coupon, /cart/coupon/remove
+ * Administrators are strictly restricted from adding to cart or purchasing.
  */
 @WebServlet(name = "CartServlet", urlPatterns = {
         "/cart",
@@ -51,9 +53,18 @@ public class CartServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
+        HttpSession session = request.getSession(false);
+        UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+
+        // Block Admin from viewing/shopping via customer cart
+        if (user != null && user.isAdmin()) {
+            response.sendRedirect(request.getContextPath() + "/admin/dashboard?error=admin_cannot_shop");
+            return;
+        }
+
         String path = request.getServletPath();
 
         if ("/cart/remove".equals(path)) {
@@ -68,9 +79,27 @@ public class CartServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
+        HttpSession session = request.getSession(false);
+        UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+
+        // Block Admin from adding/mutating items in cart
+        if (user != null && user.isAdmin()) {
+            boolean isAjax = "XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With"))
+                    || "true".equalsIgnoreCase(request.getParameter("ajax"));
+            if (isAjax) {
+                response.setContentType("application/json");
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write(
+                        "{\"success\":false,\"message\":\"Admin accounts cannot add items to cart or place orders.\"}");
+                return;
+            }
+            response.sendRedirect(request.getContextPath() + "/admin/dashboard?error=admin_cannot_shop");
+            return;
+        }
+
         String path = request.getServletPath();
 
         switch (path) {
@@ -84,47 +113,58 @@ public class CartServlet extends HttpServlet {
         }
     }
 
-    private void showCart(HttpServletRequest request, HttpServletResponse response) 
+    private void showCart(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        
+
         HttpSession session = request.getSession(false);
-        UserSession user = (UserSession) session.getAttribute("currentUser");
+        UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/login");
+            return;
+        }
 
         Cart cart = cartService.getCart(user.getUserId());
         if (session != null) {
             session.setAttribute("cart", cart);
         }
 
-
-        // Fetch suggested active products for the Quick Add More Products modal and carousel
+        // Fetch suggested active products for the Quick Add More Products modal and
+        // carousel
         try {
             ProductSearchCriteria criteria = new ProductSearchCriteria();
             criteria.setStatus("ACTIVE");
             criteria.setPageSize(24);
             Pagination<Product> catalogPage = productService.searchCatalog(criteria);
             request.setAttribute("suggestedProducts", catalogPage.getItems());
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         request.setAttribute("cart", cart);
         request.getRequestDispatcher("/WEB-INF/views/cart/cart.jsp").forward(request, response);
     }
 
-    private void handleAdd(HttpServletRequest request, HttpServletResponse response) 
+    private void handleAdd(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
-        
+
         HttpSession session = request.getSession(false);
-        UserSession user = (UserSession) session.getAttribute("currentUser");
+        UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/login");
+            return;
+        }
 
         String[] productIds = request.getParameterValues("productId");
         String[] quantities = request.getParameterValues("quantity");
 
-        boolean isAjax = "XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With")) 
-                      || "true".equalsIgnoreCase(request.getParameter("ajax"));
+        boolean isAjax = "XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With"))
+                || "true".equalsIgnoreCase(request.getParameter("ajax"));
 
         if (productIds == null || productIds.length == 0) {
             String singleId = request.getParameter("productId");
             if (singleId != null && !singleId.trim().isEmpty()) {
-                productIds = new String[]{singleId.trim()};
+                productIds = new String[] { singleId.trim() };
             }
         }
 
@@ -144,20 +184,24 @@ public class CartServlet extends HttpServlet {
 
         for (int i = 0; i < productIds.length; i++) {
             String pidStr = productIds[i];
-            if (pidStr == null || pidStr.trim().isEmpty()) continue;
+            if (pidStr == null || pidStr.trim().isEmpty())
+                continue;
             try {
                 int productId = Integer.parseInt(pidStr.trim());
                 int quantity = 1;
-                if (quantities != null && i < quantities.length && quantities[i] != null && !quantities[i].trim().isEmpty()) {
+                if (quantities != null && i < quantities.length && quantities[i] != null
+                        && !quantities[i].trim().isEmpty()) {
                     try {
                         quantity = Integer.parseInt(quantities[i].trim());
-                    } catch (NumberFormatException ignored) {}
+                    } catch (NumberFormatException ignored) {
+                    }
                 }
                 cartService.addToCart(user.getUserId(), productId, quantity);
                 addedCount++;
             } catch (ValidationException ve) {
                 lastError = ve.getMessage();
-            } catch (NumberFormatException ignored) {}
+            } catch (NumberFormatException ignored) {
+            }
         }
 
         Cart cart = cartService.getCart(user.getUserId());
@@ -170,27 +214,36 @@ public class CartServlet extends HttpServlet {
             response.setCharacterEncoding("UTF-8");
             if (addedCount > 0) {
                 String msg = addedCount > 1 ? (addedCount + " items added to cart!") : "Item added to cart!";
-                response.getWriter().write("{\"success\":true,\"message\":\"" + msg + "\",\"totalItems\":" + cart.getTotalQuantity() + ",\"addedCount\":" + addedCount + "}");
+                response.getWriter().write("{\"success\":true,\"message\":\"" + msg + "\",\"totalItems\":"
+                        + cart.getTotalQuantity() + ",\"addedCount\":" + addedCount + "}");
             } else {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("{\"success\":false,\"message\":\"" + (lastError != null ? lastError.replace("\"", "\\\"") : "Failed to add products to cart") + "\"}");
+                response.getWriter().write("{\"success\":false,\"message\":\""
+                        + (lastError != null ? lastError.replace("\"", "\\\"") : "Failed to add products to cart")
+                        + "\"}");
             }
             return;
         }
 
         String returnUrl = request.getParameter("returnUrl");
-        if (returnUrl != null && !returnUrl.trim().isEmpty() && !returnUrl.contains("\n") && !returnUrl.contains("\r")) {
+        if (returnUrl != null && !returnUrl.trim().isEmpty() && !returnUrl.contains("\n")
+                && !returnUrl.contains("\r")) {
             response.sendRedirect(returnUrl + (returnUrl.contains("?") ? "&" : "?") + "added=true");
         } else {
             response.sendRedirect(request.getContextPath() + "/cart?added=true");
         }
     }
 
-    private void handleUpdate(HttpServletRequest request, HttpServletResponse response) 
+    private void handleUpdate(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
-        
+
         HttpSession session = request.getSession(false);
-        UserSession user = (UserSession) session.getAttribute("currentUser");
+        UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/login");
+            return;
+        }
 
         int productId = Integer.parseInt(request.getParameter("productId"));
         int quantity = Integer.parseInt(request.getParameter("quantity"));
@@ -213,11 +266,16 @@ public class CartServlet extends HttpServlet {
         }
     }
 
-    private void handleRemove(HttpServletRequest request, HttpServletResponse response) 
+    private void handleRemove(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
-        
+
         HttpSession session = request.getSession(false);
-        UserSession user = (UserSession) session.getAttribute("currentUser");
+        UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/login");
+            return;
+        }
 
         int productId = Integer.parseInt(request.getParameter("productId"));
         cartService.removeFromCart(user.getUserId(), productId);
@@ -228,11 +286,16 @@ public class CartServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/cart?removed=true");
     }
 
-    private void handleClear(HttpServletRequest request, HttpServletResponse response) 
+    private void handleClear(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
-        
+
         HttpSession session = request.getSession(false);
-        UserSession user = (UserSession) session.getAttribute("currentUser");
+        UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/login");
+            return;
+        }
 
         cartService.clearCart(user.getUserId());
         if (session != null) {
@@ -242,15 +305,20 @@ public class CartServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/cart?cleared=true");
     }
 
-    private void handleApplyCoupon(HttpServletRequest request, HttpServletResponse response) 
+    private void handleApplyCoupon(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
-        
-        HttpSession session = request.getSession(false);
-        UserSession user = (UserSession) session.getAttribute("currentUser");
-        String couponCode = request.getParameter("couponCode");
 
-        boolean isAjax = "XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With")) 
-                      || "true".equalsIgnoreCase(request.getParameter("ajax"));
+        HttpSession session = request.getSession(false);
+        UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/login");
+            return;
+        }
+
+        String couponCode = request.getParameter("couponCode");
+        boolean isAjax = "XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With"))
+                || "true".equalsIgnoreCase(request.getParameter("ajax"));
 
         Cart cart = cartService.getCart(user.getUserId());
         if (cart.isEmpty()) {
@@ -279,7 +347,11 @@ public class CartServlet extends HttpServlet {
             if (isAjax) {
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
-                response.getWriter().write("{\"success\":true,\"message\":\"Coupon '" + coupon.getCode() + "' applied! You saved ₹" + discount.setScale(0, RoundingMode.HALF_UP) + "\",\"discount\":" + discount + ",\"grandTotal\":" + cart.getGrandTotal() + ",\"couponCode\":\"" + coupon.getCode() + "\"}");
+                response.getWriter()
+                        .write("{\"success\":true,\"message\":\"Coupon '" + coupon.getCode() + "' applied! You saved ₹"
+                                + discount.setScale(0, RoundingMode.HALF_UP) + "\",\"discount\":" + discount
+                                + ",\"grandTotal\":" + cart.getGrandTotal() + ",\"couponCode\":\"" + coupon.getCode()
+                                + "\"}");
                 return;
             }
 
@@ -291,7 +363,8 @@ public class CartServlet extends HttpServlet {
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("{\"success\":false,\"message\":\"" + ve.getMessage().replace("\"", "\\\"") + "\"}");
+                response.getWriter()
+                        .write("{\"success\":false,\"message\":\"" + ve.getMessage().replace("\"", "\\\"") + "\"}");
                 return;
             }
             request.setAttribute("cart", cart);
@@ -300,16 +373,16 @@ public class CartServlet extends HttpServlet {
         }
     }
 
-    private void handleRemoveCoupon(HttpServletRequest request, HttpServletResponse response) 
+    private void handleRemoveCoupon(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
-        
+
         HttpSession session = request.getSession(false);
         if (session != null) {
             session.removeAttribute("appliedCoupon");
         }
 
-        boolean isAjax = "XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With")) 
-                      || "true".equalsIgnoreCase(request.getParameter("ajax"));
+        boolean isAjax = "XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With"))
+                || "true".equalsIgnoreCase(request.getParameter("ajax"));
 
         if (isAjax) {
             response.setContentType("application/json");

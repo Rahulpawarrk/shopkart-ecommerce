@@ -20,9 +20,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.math.BigDecimal;
-
 import java.util.List;
 
 /**
@@ -34,7 +34,7 @@ import java.util.List;
  * NetBanking) & Confirm
  * 
  * Supports both Standard Persistent Cart and Instant Direct "Buy Now".
- * Protected by AuthFilter.
+ * Administrators are strictly blocked from placing customer orders.
  */
 @WebServlet(name = "CheckoutServlet", urlPatterns = { "/checkout", "/checkout/address", "/checkout/summary",
         "/checkout/payment" })
@@ -63,7 +63,18 @@ public class CheckoutServlet extends HttpServlet {
             throws ServletException, IOException {
 
         HttpSession session = request.getSession(false);
-        UserSession user = (UserSession) session.getAttribute("currentUser");
+        UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/login");
+            return;
+        }
+
+        // Enforce RBAC: Admins cannot checkout or place customer orders
+        if (user.isAdmin()) {
+            response.sendRedirect(request.getContextPath() + "/admin/dashboard?error=admin_cannot_shop");
+            return;
+        }
 
         String path = request.getServletPath();
         String buyNowPid = request.getParameter("buyNowProductId");
@@ -234,7 +245,18 @@ public class CheckoutServlet extends HttpServlet {
             throws ServletException, IOException {
 
         HttpSession session = request.getSession(false);
-        UserSession user = (UserSession) session.getAttribute("currentUser");
+        UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/login");
+            return;
+        }
+
+        // Enforce RBAC: Admins cannot place orders
+        if (user.isAdmin()) {
+            response.sendRedirect(request.getContextPath() + "/admin/dashboard?error=admin_cannot_shop");
+            return;
+        }
 
         String addressIdParam = request.getParameter("addressId");
         String paymentMethod = request.getParameter("paymentMethod");
@@ -282,14 +304,10 @@ public class CheckoutServlet extends HttpServlet {
             }
 
             if ("COD".equalsIgnoreCase(confirmedOrder.getPaymentMethod())) {
-                // Save order in session flash attribute and redirect to home to show
-                // celebratory modal popup
                 session.setAttribute("justPlacedOrder", confirmedOrder);
                 response.sendRedirect(request.getContextPath() + "/home?orderPlaced=true&orderNumber="
                         + confirmedOrder.getOrderNumber());
             } else {
-                // Redirect to interactive Simulated Payment Gateway for UPI, Credit Card, Net
-                // Banking
                 response.sendRedirect(
                         request.getContextPath() + "/payment/gateway?orderId=" + confirmedOrder.getOrderId());
             }

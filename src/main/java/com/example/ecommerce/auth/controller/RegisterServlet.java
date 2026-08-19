@@ -19,7 +19,7 @@ import java.io.IOException;
  * GET /register  -> Renders registration form.
  * POST /register -> Processes customer registration, initiates session, redirects to home/profile.
  */
-@WebServlet(name = "RegisterServlet", urlPatterns = {"/register"})
+@WebServlet(name = "RegisterServlet", urlPatterns = {"/register", "/auth/register"})
 public class RegisterServlet extends HttpServlet {
 
     private static final Logger logger = LoggerFactory.getLogger(RegisterServlet.class);

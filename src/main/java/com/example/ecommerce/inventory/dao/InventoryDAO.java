@@ -29,7 +29,8 @@ public class InventoryDAO {
     private static final Logger logger = LoggerFactory.getLogger(InventoryDAO.class);
 
     /**
-     * Searches and paginates inventory records with optional low/out-of-stock filters.
+     * Searches and paginates inventory records with optional low/out-of-stock
+     * filters.
      */
     public Pagination<Inventory> findAll(String keyword, String filter, int page, int pageSize) {
         StringBuilder whereClause = new StringBuilder(" WHERE 1=1 ");
@@ -39,15 +40,16 @@ public class InventoryDAO {
 
         // 1. Total Count
         String countSql = "SELECT COUNT(*) FROM dbo.inventory i " +
-                          "INNER JOIN dbo.products p ON i.product_id = p.product_id " +
-                          "INNER JOIN dbo.categories c ON p.category_id = c.category_id " +
-                          whereClause;
+                "INNER JOIN dbo.products p ON i.product_id = p.product_id " +
+                "INNER JOIN dbo.categories c ON p.category_id = c.category_id " +
+                whereClause;
         int total = 0;
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement countStmt = conn.prepareStatement(countSql)) {
+                PreparedStatement countStmt = conn.prepareStatement(countSql)) {
             setStatementParameters(countStmt, params);
             try (ResultSet rs = countStmt.executeQuery()) {
-                if (rs.next()) total = rs.getInt(1);
+                if (rs.next())
+                    total = rs.getInt(1);
             }
         } catch (SQLException e) {
             logger.error("Error counting inventory records", e);
@@ -58,19 +60,19 @@ public class InventoryDAO {
             return new Pagination<>(new ArrayList<>(), page, pageSize, 0);
         }
 
-        // 2. Fetch Page Data with SQL Server OFFSET-FETCH
+        // 2. Fetch Page Data with standard ANSI SQL OFFSET-FETCH
         String dataSql = "SELECT i.inventory_id, i.product_id, i.quantity, i.low_stock_threshold, i.last_updated, " +
-                         "p.product_name, p.sku, p.brand, p.price, c.category_name " +
-                         "FROM dbo.inventory i " +
-                         "INNER JOIN dbo.products p ON i.product_id = p.product_id " +
-                         "INNER JOIN dbo.categories c ON p.category_id = c.category_id " +
-                         whereClause +
-                         " ORDER BY i.quantity ASC, p.product_name ASC " +
-                         "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+                "p.product_name, p.sku, p.brand, p.price, c.category_name " +
+                "FROM dbo.inventory i " +
+                "INNER JOIN dbo.products p ON i.product_id = p.product_id " +
+                "INNER JOIN dbo.categories c ON p.category_id = c.category_id " +
+                whereClause +
+                " ORDER BY i.quantity ASC, p.product_name ASC " +
+                "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
         List<Inventory> list = new ArrayList<>();
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(dataSql)) {
+                PreparedStatement stmt = conn.prepareStatement(dataSql)) {
             int idx = setStatementParameters(stmt, params);
             stmt.setInt(idx++, (page - 1) * pageSize);
             stmt.setInt(idx, pageSize);
@@ -93,13 +95,13 @@ public class InventoryDAO {
      */
     public Optional<Inventory> findByProductId(int productId) {
         String sql = "SELECT i.inventory_id, i.product_id, i.quantity, i.low_stock_threshold, i.last_updated, " +
-                     "p.product_name, p.sku, p.brand, p.price, c.category_name " +
-                     "FROM dbo.inventory i " +
-                     "INNER JOIN dbo.products p ON i.product_id = p.product_id " +
-                     "INNER JOIN dbo.categories c ON p.category_id = c.category_id " +
-                     "WHERE i.product_id = ?";
+                "p.product_name, p.sku, p.brand, p.price, c.category_name " +
+                "FROM dbo.inventory i " +
+                "INNER JOIN dbo.products p ON i.product_id = p.product_id " +
+                "INNER JOIN dbo.categories c ON p.category_id = c.category_id " +
+                "WHERE i.product_id = ?";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, productId);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -114,16 +116,16 @@ public class InventoryDAO {
     }
 
     /**
-     * Obtains an exclusive row lock on product inventory (WITH (UPDLOCK, ROWLOCK))
+     * Obtains an exclusive row lock on product inventory (FOR UPDATE)
      * within an active transaction to prevent concurrent race conditions.
      */
     public Optional<Inventory> getInventoryWithLock(int productId, Connection conn) throws SQLException {
         String sql = "SELECT i.inventory_id, i.product_id, i.quantity, i.low_stock_threshold, i.last_updated, " +
-                     "p.product_name, p.sku, p.brand, p.price, c.category_name " +
-                     "FROM dbo.inventory i " +
-                     "INNER JOIN dbo.products p ON i.product_id = p.product_id " +
-                     "INNER JOIN dbo.categories c ON p.category_id = c.category_id " +
-                     "WHERE i.product_id = ? FOR UPDATE";
+                "p.product_name, p.sku, p.brand, p.price, c.category_name " +
+                "FROM dbo.inventory i " +
+                "INNER JOIN dbo.products p ON i.product_id = p.product_id " +
+                "INNER JOIN dbo.categories c ON p.category_id = c.category_id " +
+                "WHERE i.product_id = ? FOR UPDATE";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, productId);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -139,7 +141,7 @@ public class InventoryDAO {
      * Updates real-time stock quantity within transaction.
      */
     public boolean updateStock(int productId, int newQuantity, Connection conn) throws SQLException {
-        String sql = "UPDATE dbo.inventory SET quantity = ?, last_updated = SYSDATETIME() WHERE product_id = ?";
+        String sql = "UPDATE dbo.inventory SET quantity = ?, last_updated = CURRENT_TIMESTAMP WHERE product_id = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, newQuantity);
             stmt.setInt(2, productId);
@@ -151,9 +153,9 @@ public class InventoryDAO {
      * Updates the low stock alert threshold for a product.
      */
     public boolean updateThreshold(int productId, int lowStockThreshold) {
-        String sql = "UPDATE dbo.inventory SET low_stock_threshold = ?, last_updated = SYSDATETIME() WHERE product_id = ?";
+        String sql = "UPDATE dbo.inventory SET low_stock_threshold = ?, last_updated = CURRENT_TIMESTAMP WHERE product_id = ?";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, lowStockThreshold);
             stmt.setInt(2, productId);
             return stmt.executeUpdate() > 0;
@@ -168,8 +170,8 @@ public class InventoryDAO {
      */
     public void recordTransaction(InventoryTransaction t, Connection conn) throws SQLException {
         String sql = "INSERT INTO dbo.inventory_transactions (product_id, previous_stock, quantity_changed, " +
-                     "new_stock, transaction_type, reference_type, reference_id, remarks, created_by, created_at) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, SYSDATETIME())";
+                "new_stock, transaction_type, reference_type, reference_id, remarks, created_by, created_at) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, t.getProductId());
             stmt.setInt(2, t.getPreviousStock());
@@ -199,10 +201,11 @@ public class InventoryDAO {
         String countSql = "SELECT COUNT(*) FROM dbo.inventory_transactions WHERE product_id = ?";
         int total = 0;
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement countStmt = conn.prepareStatement(countSql)) {
+                PreparedStatement countStmt = conn.prepareStatement(countSql)) {
             countStmt.setInt(1, productId);
             try (ResultSet rs = countStmt.executeQuery()) {
-                if (rs.next()) total = rs.getInt(1);
+                if (rs.next())
+                    total = rs.getInt(1);
             }
         } catch (SQLException e) {
             logger.error("Error counting inventory transactions for product: {}", productId, e);
@@ -214,18 +217,18 @@ public class InventoryDAO {
         }
 
         String dataSql = "SELECT it.transaction_id, it.product_id, it.previous_stock, it.quantity_changed, " +
-                         "it.new_stock, it.transaction_type, it.reference_type, it.reference_id, it.remarks, " +
-                         "it.created_by, it.created_at, p.product_name, p.sku, u.first_name, u.last_name " +
-                         "FROM dbo.inventory_transactions it " +
-                         "INNER JOIN dbo.products p ON it.product_id = p.product_id " +
-                         "LEFT JOIN dbo.users u ON it.created_by = u.user_id " +
-                         "WHERE it.product_id = ? " +
-                         "ORDER BY it.created_at DESC " +
-                         "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
+                "it.new_stock, it.transaction_type, it.reference_type, it.reference_id, it.remarks, " +
+                "it.created_by, it.created_at, p.product_name, p.sku, u.first_name, u.last_name " +
+                "FROM dbo.inventory_transactions it " +
+                "INNER JOIN dbo.products p ON it.product_id = p.product_id " +
+                "LEFT JOIN dbo.users u ON it.created_by = u.user_id " +
+                "WHERE it.product_id = ? " +
+                "ORDER BY it.created_at DESC " +
+                "OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
         List<InventoryTransaction> list = new ArrayList<>();
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(dataSql)) {
+                PreparedStatement stmt = conn.prepareStatement(dataSql)) {
             stmt.setInt(1, productId);
             stmt.setInt(2, (page - 1) * pageSize);
             stmt.setInt(3, pageSize);
@@ -249,15 +252,15 @@ public class InventoryDAO {
     public Map<String, Integer> getSummaryStats() {
         Map<String, Integer> stats = new HashMap<>();
         String sql = "SELECT " +
-                     "COUNT(*) AS total_items, " +
-                     "SUM(CASE WHEN quantity = 0 THEN 1 ELSE 0 END) AS out_of_stock, " +
-                     "SUM(CASE WHEN quantity > 0 AND quantity <= low_stock_threshold THEN 1 ELSE 0 END) AS low_stock, " +
-                     "SUM(CASE WHEN quantity > low_stock_threshold THEN 1 ELSE 0 END) AS in_stock, " +
-                     "ISNULL(SUM(quantity), 0) AS total_units " +
-                     "FROM dbo.inventory";
+                "COUNT(*) AS total_items, " +
+                "SUM(CASE WHEN quantity = 0 THEN 1 ELSE 0 END) AS out_of_stock, " +
+                "SUM(CASE WHEN quantity > 0 AND quantity <= low_stock_threshold THEN 1 ELSE 0 END) AS low_stock, " +
+                "SUM(CASE WHEN quantity > low_stock_threshold THEN 1 ELSE 0 END) AS in_stock, " +
+                "COALESCE(SUM(quantity), 0) AS total_units " +
+                "FROM dbo.inventory";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()) {
             if (rs.next()) {
                 stats.put("totalItems", rs.getInt("total_items"));
                 stats.put("outOfStock", rs.getInt("out_of_stock"));
@@ -303,7 +306,8 @@ public class InventoryDAO {
         inv.setProductId(rs.getInt("product_id"));
         inv.setQuantity(rs.getInt("quantity"));
         inv.setLowStockThreshold(rs.getInt("low_stock_threshold"));
-        inv.setLastUpdated(rs.getTimestamp("last_updated") != null ? rs.getTimestamp("last_updated").toLocalDateTime() : null);
+        inv.setLastUpdated(
+                rs.getTimestamp("last_updated") != null ? rs.getTimestamp("last_updated").toLocalDateTime() : null);
         inv.setProductName(rs.getString("product_name"));
         inv.setSku(rs.getString("sku"));
         inv.setBrand(rs.getString("brand"));
@@ -322,14 +326,16 @@ public class InventoryDAO {
         t.setTransactionType(TransactionType.valueOf(rs.getString("transaction_type")));
         t.setReferenceType(rs.getString("reference_type"));
         int refId = rs.getInt("reference_id");
-        if (!rs.wasNull()) t.setReferenceId(refId);
+        if (!rs.wasNull())
+            t.setReferenceId(refId);
         t.setRemarks(rs.getString("remarks"));
         int createdBy = rs.getInt("created_by");
-        if (!rs.wasNull()) t.setCreatedBy(createdBy);
+        if (!rs.wasNull())
+            t.setCreatedBy(createdBy);
         t.setCreatedAt(rs.getTimestamp("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime() : null);
         t.setProductName(rs.getString("product_name"));
         t.setSku(rs.getString("sku"));
-        
+
         String fn = rs.getString("first_name");
         String ln = rs.getString("last_name");
         if (fn != null || ln != null) {

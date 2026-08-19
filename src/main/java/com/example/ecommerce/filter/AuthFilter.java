@@ -17,22 +17,15 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 /**
- * Filter that intercepts protected routes and ensures an authenticated UserSession exists.
- * Mapped to customer-protected routes and admin paths.
- *
- * Explicitly NOT mapped (public routes):
- *   /login, /logout, /register, /forgot-password, /reset-password, /products, /health
+ * Authentication filter safeguarding protected customer & admin endpoints.
  */
 @WebFilter(filterName = "AuthFilter", urlPatterns = {
-        "/profile", "/profile/*",
-        "/change-password",
+        "/account", "/account/*",
+        "/orders", "/orders/*",
+        "/order", "/order/*",
+        "/checkout", "/checkout/*",
         "/cart", "/cart/*",
         "/wishlist", "/wishlist/*",
-        "/checkout", "/checkout/*",
-        "/orders", "/orders/*",
-        "/addresses", "/addresses/*",
-        "/product/review",
-        "/payment", "/payment/*",
         "/admin", "/admin/*"
 })
 public class AuthFilter implements Filter {
@@ -45,9 +38,9 @@ public class AuthFilter implements Filter {
     }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) 
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        
+
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
@@ -55,23 +48,19 @@ public class AuthFilter implements Filter {
         UserSession userSession = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
 
         if (userSession == null) {
-            String requestURI = httpRequest.getRequestURI();
-            String queryString = httpRequest.getQueryString();
-            String redirectTarget = requestURI + (queryString != null ? "?" + queryString : "");
-
-            logger.debug("Unauthenticated access attempt to [{}]. Redirecting to /login", redirectTarget);
-            
-            // Save redirect target to return user to requested page after login
-            if (session == null) {
-                session = httpRequest.getSession(true);
+            String targetUrl = httpRequest.getRequestURI();
+            String query = httpRequest.getQueryString();
+            if (query != null && !query.isEmpty()) {
+                targetUrl += "?" + query;
             }
-            session.setAttribute("redirectAfterLogin", redirectTarget);
 
-            httpResponse.sendRedirect(httpRequest.getContextPath() + "/login?error=auth_required");
+            logger.info("Unauthenticated request to [{}]. Redirecting to /auth/login", targetUrl);
+            session = httpRequest.getSession(true);
+            session.setAttribute("redirectAfterLogin", targetUrl);
+            httpResponse.sendRedirect(httpRequest.getContextPath() + "/auth/login");
             return;
         }
 
-        // Authenticated, proceed down filter chain
         chain.doFilter(request, response);
     }
 
