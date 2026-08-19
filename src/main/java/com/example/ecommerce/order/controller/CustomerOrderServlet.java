@@ -109,12 +109,24 @@ public class CustomerOrderServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         UserSession user = (UserSession) session.getAttribute("currentUser");
 
-        int orderId = Integer.parseInt(request.getParameter("id"));
+        String idParam = request.getParameter("id");
+        if (idParam == null || idParam.trim().isEmpty()) {
+            idParam = request.getParameter("num");
+        }
+        if (idParam == null || idParam.trim().isEmpty()) {
+            idParam = request.getParameter("orderNumber");
+        }
+
+        if (idParam == null || idParam.trim().isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/orders");
+            return;
+        }
+
         try {
-            Order order = orderService.getOrderById(orderId, user.getUserId());
+            Order order = orderService.getOrderByIdOrNumber(idParam.trim(), user.getUserId());
             request.setAttribute("order", order);
 
-            orderReturnService.getReturnByOrderId(orderId)
+            orderReturnService.getReturnByOrderId(order.getOrderId())
                     .ifPresent(ret -> request.setAttribute("orderReturn", ret));
 
             // Load existing customer reviews for items in this order
@@ -139,14 +151,20 @@ public class CustomerOrderServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         UserSession user = (UserSession) session.getAttribute("currentUser");
 
-        int orderId = Integer.parseInt(request.getParameter("orderId"));
+        String orderIdParam = request.getParameter("orderId");
+        if (orderIdParam == null || orderIdParam.trim().isEmpty()) {
+            orderIdParam = request.getParameter("id");
+        }
         String reason = request.getParameter("reason");
 
         try {
-            orderService.cancelOrder(orderId, user.getUserId(), reason);
-            response.sendRedirect(request.getContextPath() + "/order?id=" + orderId + "&cancelled=true");
+            Order order = orderService.getOrderByIdOrNumber(orderIdParam.trim(), user.getUserId());
+            orderService.cancelOrder(order.getOrderId(), user.getUserId(), reason);
+            response.sendRedirect(request.getContextPath() + "/order?id=" + order.getOrderNumber() + "&cancelled=true");
         } catch (ValidationException ve) {
-            response.sendRedirect(request.getContextPath() + "/order?id=" + orderId + "&error=" + ve.getMessage());
+            response.sendRedirect(request.getContextPath() + "/order?id=" + (orderIdParam != null ? orderIdParam : "") + "&error=" + ve.getMessage());
+        } catch (Exception e) {
+            response.sendRedirect(request.getContextPath() + "/orders?error=cancel_failed");
         }
     }
 }

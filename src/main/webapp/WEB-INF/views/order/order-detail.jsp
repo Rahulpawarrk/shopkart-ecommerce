@@ -1171,7 +1171,7 @@
                                                         ${order.formattedCreatedAt}</c:when>
                                                     <c:otherwise>${order.createdAt}</c:otherwise>
                                                 </c:choose>
-                                            </strong> &bull; Order ID: <code>#${order.orderId}</code>
+                                            </strong> &bull; Order Ref: <code>${order.orderNumber}</code>
                                         </div>
                                     </div>
 
@@ -1400,7 +1400,7 @@
                                                         </button>
                                                     </c:if>
                                                     <button type="button" id="syncLiveTrackingBtn"
-                                                        onclick="syncLiveCarrierTracking(${order.orderId})"
+                                                        onclick="syncLiveCarrierTracking('${order.orderNumber}')"
                                                         style="padding: 0.5rem 1.1rem; font-size: 0.82rem; background: #166534; color: #ffffff; border: none; border-radius: 6px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: 0 2px 6px rgba(22, 101, 52, 0.25);">
                                                         <span id="syncIcon">🔄</span> Sync Live Carrier Telemetry
                                                     </button>
@@ -1781,7 +1781,7 @@
                         <c:if test="${order.orderStatus == 'PENDING' || order.orderStatus == 'CONFIRMED'}">
                             <form action="${pageContext.request.contextPath}/order/cancel" method="POST"
                                 onsubmit="return confirm('Are you sure you want to cancel Order #${order.orderNumber}? This cannot be undone.');">
-                                <input type="hidden" name="orderId" value="${order.orderId}">
+                                <input type="hidden" name="orderId" value="${order.orderNumber}">
                                 <button type="submit"
                                     style="background: #fee2e2; color: #b91c1c; border: 1px solid #f87171; padding: 0.6rem 1.25rem; border-radius: var(--radius-md); font-weight: 700; cursor: pointer; transition: var(--transition-fast);">
                                     ✕ Cancel This Order

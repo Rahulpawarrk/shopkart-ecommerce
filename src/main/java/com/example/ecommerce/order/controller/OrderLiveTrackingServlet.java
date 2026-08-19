@@ -61,10 +61,15 @@ public class OrderLiveTrackingServlet extends HttpServlet {
         Optional<Order> orderOpt = Optional.empty();
 
         if (idParam != null && !idParam.trim().isEmpty()) {
-            try {
-                int orderId = Integer.parseInt(idParam.trim());
-                orderOpt = orderDAO.findById(orderId);
-            } catch (NumberFormatException ignored) {}
+            String cleanId = idParam.trim();
+            if (cleanId.matches("\\d+")) {
+                try {
+                    int orderId = Integer.parseInt(cleanId);
+                    orderOpt = orderDAO.findById(orderId);
+                } catch (NumberFormatException ignored) {}
+            } else {
+                orderOpt = orderDAO.findByOrderNumber(cleanId);
+            }
         } else if (awbParam != null && !awbParam.trim().isEmpty()) {
             orderOpt = orderDAO.findByTrackingNumber(awbParam.trim());
         }

@@ -120,7 +120,7 @@ public class PaymentCallbackServlet extends HttpServlet {
                     session.removeAttribute("justPlacedOrder");
                 }
                 String encodedTxn = txnRef != null ? java.net.URLEncoder.encode(txnRef, java.nio.charset.StandardCharsets.UTF_8) : "";
-                response.sendRedirect(request.getContextPath() + "/order?id=" + order.getOrderId() + "&paymentSuccess=true&txnRef=" + encodedTxn);
+                response.sendRedirect(request.getContextPath() + "/order?id=" + order.getOrderNumber() + "&paymentSuccess=true&txnRef=" + encodedTxn);
             } else {
                 String errorMsg = reason != null && !reason.trim().isEmpty() ? reason : "Payment was declined by the issuing bank or cancelled. Order has not been placed.";
                 String encodedError = java.net.URLEncoder.encode(errorMsg, java.nio.charset.StandardCharsets.UTF_8);

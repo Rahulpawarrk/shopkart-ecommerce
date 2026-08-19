@@ -223,7 +223,7 @@
 
             <!-- Action Buttons -->
             <div style="margin-top: 2.5rem; display: flex; gap: 1.25rem; justify-content: center; flex-wrap: wrap;">
-                <a href="${pageContext.request.contextPath}/order?id=${order.orderId}" class="order-btn-primary" style="padding: 0.85rem 2rem; font-size: 1rem; border-radius: var(--radius-full);">
+                <a href="${pageContext.request.contextPath}/order?id=${order.orderNumber}" class="order-btn-primary" style="padding: 0.85rem 2rem; font-size: 1rem; border-radius: var(--radius-full);">
                     📦 Track Live Order
                 </a>
                 <a href="${pageContext.request.contextPath}/products" class="order-btn-secondary" style="padding: 0.85rem 2rem; font-size: 1rem; border-radius: var(--radius-full);">

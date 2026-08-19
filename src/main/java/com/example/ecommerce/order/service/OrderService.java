@@ -393,6 +393,40 @@ public class OrderService {
         return order;
     }
 
+    public Order getOrderByIdOrNumber(String idOrNumber, int userId) {
+        if (idOrNumber == null || idOrNumber.trim().isEmpty()) {
+            throw new ValidationException("Order identifier is required.");
+        }
+        String clean = idOrNumber.trim();
+        if (clean.toUpperCase().startsWith("ORD-") || !clean.matches("\\d+")) {
+            return getOrderByNumber(clean, userId);
+        }
+        try {
+            int orderId = Integer.parseInt(clean);
+            return getOrderById(orderId, userId);
+        } catch (NumberFormatException nfe) {
+            return getOrderByNumber(clean, userId);
+        }
+    }
+
+    public Order getAdminOrderByIdOrNumber(String idOrNumber) {
+        if (idOrNumber == null || idOrNumber.trim().isEmpty()) {
+            throw new ValidationException("Order identifier is required.");
+        }
+        String clean = idOrNumber.trim();
+        if (clean.toUpperCase().startsWith("ORD-") || !clean.matches("\\d+")) {
+            return orderDAO.findByOrderNumber(clean)
+                    .orElseThrow(() -> new ResourceNotFoundException("Order not found with Number: " + clean));
+        }
+        try {
+            int orderId = Integer.parseInt(clean);
+            return getAdminOrderById(orderId);
+        } catch (NumberFormatException nfe) {
+            return orderDAO.findByOrderNumber(clean)
+                    .orElseThrow(() -> new ResourceNotFoundException("Order not found with Number: " + clean));
+        }
+    }
+
     public Pagination<Order> getUserOrders(int userId, int page, int pageSize) {
         return orderDAO.findByUserId(userId, null, null, page, pageSize);
     }

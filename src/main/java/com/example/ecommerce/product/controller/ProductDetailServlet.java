@@ -47,11 +47,15 @@ public class ProductDetailServlet extends HttpServlet {
 
         try {
             Product product;
-            if (idParam != null && !idParam.trim().isEmpty()) {
-                int productId = Integer.parseInt(idParam.trim());
-                product = productService.getProductById(productId);
-            } else if (slugParam != null && !slugParam.trim().isEmpty()) {
+            if (slugParam != null && !slugParam.trim().isEmpty()) {
                 product = productService.getProductBySlug(slugParam.trim());
+            } else if (idParam != null && !idParam.trim().isEmpty()) {
+                String cleanId = idParam.trim();
+                if (cleanId.matches("\\d+")) {
+                    product = productService.getProductById(Integer.parseInt(cleanId));
+                } else {
+                    product = productService.getProductBySlug(cleanId);
+                }
             } else {
                 response.sendRedirect(request.getContextPath() + "/products");
                 return;

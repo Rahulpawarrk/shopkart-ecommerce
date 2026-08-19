@@ -242,7 +242,7 @@
 
                                     <div class="order-meta-col" style="margin-left: auto; text-align: right;">
                                         <span class="meta-label">Order # <c:out value="${order.orderNumber}" /></span>
-                                        <a href="${pageContext.request.contextPath}/order?id=${order.orderId}" style="color: #2563eb; font-weight: 800; text-decoration: none; font-size: 0.9rem;">
+                                        <a href="${pageContext.request.contextPath}/order?id=${order.orderNumber}" style="color: #2563eb; font-weight: 800; text-decoration: none; font-size: 0.9rem;">
                                             View Order & Invoice ➔
                                         </a>
                                     </div>
@@ -309,12 +309,12 @@
                                             </c:choose>
                                             <c:choose>
                                                 <c:when test="${order.orderStatus == 'DELIVERED'}">
-                                                    <a href="${pageContext.request.contextPath}/order?id=${order.orderId}" class="order-btn-primary" style="display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 800; font-size: 0.82rem; padding: 0.42rem 0.95rem; text-decoration: none; border-radius: 8px; background: linear-gradient(135deg, #059669 0%, #047857 100%); color: #ffffff; box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);">
+                                                    <a href="${pageContext.request.contextPath}/order?id=${order.orderNumber}" class="order-btn-primary" style="display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 800; font-size: 0.82rem; padding: 0.42rem 0.95rem; text-decoration: none; border-radius: 8px; background: linear-gradient(135deg, #059669 0%, #047857 100%); color: #ffffff; box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);">
                                                         📦 View Order
                                                     </a>
                                                 </c:when>
                                                 <c:otherwise>
-                                                    <a href="${pageContext.request.contextPath}/order?id=${order.orderId}" class="order-btn-primary" style="display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 800; font-size: 0.82rem; padding: 0.42rem 0.95rem; text-decoration: none; border-radius: 8px; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);">
+                                                    <a href="${pageContext.request.contextPath}/order?id=${order.orderNumber}" class="order-btn-primary" style="display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 800; font-size: 0.82rem; padding: 0.42rem 0.95rem; text-decoration: none; border-radius: 8px; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);">
                                                         🚚 Track Order
                                                     </a>
                                                 </c:otherwise>

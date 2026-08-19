@@ -91,17 +91,27 @@ public class OrderReturnServlet extends HttpServlet {
         }
 
         String orderIdStr = request.getParameter("orderId");
+        if (orderIdStr == null || orderIdStr.trim().isEmpty()) {
+            orderIdStr = request.getParameter("id");
+        }
         String returnReason = request.getParameter("returnReason");
         String resolutionType = request.getParameter("resolutionType");
         String comments = request.getParameter("comments");
 
-        int orderId;
-        try {
-            orderId = Integer.parseInt(orderIdStr);
-        } catch (NumberFormatException | NullPointerException e) {
+        if (orderIdStr == null || orderIdStr.trim().isEmpty()) {
             response.sendRedirect(request.getContextPath() + "/orders?error=invalid_order");
             return;
         }
+
+        Order order;
+        try {
+            order = new OrderService().getOrderByIdOrNumber(orderIdStr.trim(), user.getUserId());
+        } catch (Exception e) {
+            response.sendRedirect(request.getContextPath() + "/orders?error=invalid_order");
+            return;
+        }
+
+        int orderId = order.getOrderId();
 
         // Process optional damaged/defective product photo upload
         String imageUrl = null;
@@ -116,13 +126,13 @@ public class OrderReturnServlet extends HttpServlet {
 
         try {
             OrderReturn orderReturn = orderReturnService.requestReturn(user.getUserId(), orderId, returnReason, resolutionType, comments, imageUrl);
-            response.sendRedirect(request.getContextPath() + "/order?id=" + orderId + "&returnSubmitted=true&returnNum=" + orderReturn.getReturnNumber());
+            response.sendRedirect(request.getContextPath() + "/order?id=" + order.getOrderNumber() + "&returnSubmitted=true&returnNum=" + orderReturn.getReturnNumber());
         } catch (ValidationException ve) {
             String encoded = URLEncoder.encode(ve.getMessage(), StandardCharsets.UTF_8);
-            response.sendRedirect(request.getContextPath() + "/order?id=" + orderId + "&returnError=" + encoded);
+            response.sendRedirect(request.getContextPath() + "/order?id=" + order.getOrderNumber() + "&returnError=" + encoded);
         } catch (Exception e) {
             logger.error("Error submitting return request for order [{}]: {}", orderId, e.getMessage(), e);
-            response.sendRedirect(request.getContextPath() + "/order?id=" + orderId + "&returnError=Failed+to+submit+return+request");
+            response.sendRedirect(request.getContextPath() + "/order?id=" + order.getOrderNumber() + "&returnError=Failed+to+submit+return+request");
         }
     }
 
