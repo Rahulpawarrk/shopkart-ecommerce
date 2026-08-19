@@ -25,28 +25,28 @@
 
         <!-- Glow Filter -->
         <filter id="skIconGlow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#f59e0b" flood-opacity="0.5"/>
+            <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-color="#f59e0b" flood-opacity="0.6"/>
         </filter>
         <filter id="skBadgeShadow" x="-10%" y="-10%" width="120%" height="120%">
-            <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000000" flood-opacity="0.25"/>
+            <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.25"/>
         </filter>
     </defs>
 
-    <!-- 1. ICON BADGE -->
-    <g transform="translate(2, 4)">
-        <!-- Outer Glowing Rounded Rect -->
-        <rect x="0" y="0" width="40" height="40" rx="10" fill="url(#skBadgeGrad)" filter="url(#skBadgeShadow)"/>
-        <rect x="0.75" y="0.75" width="38.5" height="38.5" rx="9.25" stroke="#60a5fa" stroke-width="1.5" stroke-opacity="0.8"/>
+    <!-- 1. REFINED ICON BADGE (Fits precisely in header) -->
+    <g transform="translate(3, 4)">
+        <!-- Outer Glowing Rounded Squircle -->
+        <rect x="0" y="0" width="40" height="40" rx="11" fill="url(#skBadgeGrad)" filter="url(#skBadgeShadow)"/>
+        <rect x="0.75" y="0.75" width="38.5" height="38.5" rx="10.25" stroke="#93c5fd" stroke-width="1.25" stroke-opacity="0.85"/>
         
-        <!-- Speed Shopping Basket -->
-        <path d="M9 13H14L16.5 25H29.5L32 16.5H15.5" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- Crisp White Shopping Basket -->
+        <path d="M8.5 12.5 H13 L15.2 24.5 H29.8 L32.5 15.5 H14" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
         
-        <!-- Basket Wheels -->
-        <circle cx="18.5" cy="29.5" r="2" fill="url(#skGoldGrad)"/>
-        <circle cx="27.5" cy="29.5" r="2" fill="url(#skGoldGrad)"/>
+        <!-- Golden Amber Basket Wheels -->
+        <circle cx="17.5" cy="29.5" r="2.4" fill="url(#skGoldGrad)" stroke="#b45309" stroke-width="0.5"/>
+        <circle cx="27.5" cy="29.5" r="2.4" fill="url(#skGoldGrad)" stroke="#b45309" stroke-width="0.5"/>
         
         <!-- High-Velocity Lightning Bolt Spark -->
-        <path d="M24 9L20.5 16H25L22 22L28.5 14H24L26 9H24Z" fill="url(#skGoldGrad)" filter="url(#skIconGlow)"/>
+        <polygon points="23.5,6.5 19,15.5 24,15.5 21,22.5 28.5,13.5 24,13.5 26.5,6.5" fill="url(#skGoldGrad)" stroke="#ffffff" stroke-width="0.8" stroke-linejoin="round" filter="url(#skIconGlow)"/>
     </g>
 
     <!-- 2. BRAND TYPOGRAPHY -->
@@ -62,7 +62,7 @@
         <text x="17" y="11" font-family="'Outfit', 'Inter', sans-serif" font-weight="900" font-size="9.5" fill="#0f172a" text-anchor="middle" letter-spacing="0.8">PLUS</text>
     </g>
 
-    <!-- 4. SIGNATURE DYNAMIC SWOOSH (Amazon / Flipkart inspired smile curve with arrow) -->
+    <!-- 4. SIGNATURE DYNAMIC SWOOSH -->
     <path d="M52 35 C 80 41, 125 41, 154 33" stroke="url(#skGoldGrad)" stroke-width="2.5" stroke-linecap="round"/>
     <path d="M152 30.5 L 157.5 33.2 L 153.5 36.5" fill="url(#skGoldGrad)"/>
 

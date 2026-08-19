@@ -22,24 +22,28 @@
         </linearGradient>
 
         <filter id="skBadgeShadowDark" x="-10%" y="-10%" width="120%" height="120%">
-            <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#2563eb" flood-opacity="0.3"/>
+            <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-color="#2563eb" flood-opacity="0.3"/>
+        </filter>
+        <filter id="skIconGlowDark" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="#f59e0b" flood-opacity="0.6"/>
         </filter>
     </defs>
 
     <!-- 1. ICON BADGE -->
-    <g transform="translate(2, 4)">
-        <rect x="0" y="0" width="40" height="40" rx="10" fill="url(#skBadgeGradDark)" filter="url(#skBadgeShadowDark)"/>
-        <rect x="0.75" y="0.75" width="38.5" height="38.5" rx="9.25" stroke="#60a5fa" stroke-width="1.5" stroke-opacity="0.8"/>
+    <g transform="translate(3, 4)">
+        <!-- Outer Glowing Rounded Squircle -->
+        <rect x="0" y="0" width="40" height="40" rx="11" fill="url(#skBadgeGradDark)" filter="url(#skBadgeShadowDark)"/>
+        <rect x="0.75" y="0.75" width="38.5" height="38.5" rx="10.25" stroke="#93c5fd" stroke-width="1.25" stroke-opacity="0.85"/>
         
-        <!-- Speed Shopping Basket -->
-        <path d="M9 13H14L16.5 25H29.5L32 16.5H15.5" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- Crisp White Shopping Basket -->
+        <path d="M8.5 12.5 H13 L15.2 24.5 H29.8 L32.5 15.5 H14" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
         
-        <!-- Basket Wheels -->
-        <circle cx="18.5" cy="29.5" r="2" fill="#fbbf24"/>
-        <circle cx="27.5" cy="29.5" r="2" fill="#fbbf24"/>
+        <!-- Golden Amber Basket Wheels -->
+        <circle cx="17.5" cy="29.5" r="2.4" fill="url(#skGoldGradDark)" stroke="#b45309" stroke-width="0.5"/>
+        <circle cx="27.5" cy="29.5" r="2.4" fill="url(#skGoldGradDark)" stroke="#b45309" stroke-width="0.5"/>
         
         <!-- High-Velocity Lightning Bolt Spark -->
-        <path d="M24 9L20.5 16H25L22 22L28.5 14H24L26 9H24Z" fill="#fbbf24"/>
+        <polygon points="23.5,6.5 19,15.5 24,15.5 21,22.5 28.5,13.5 24,13.5 26.5,6.5" fill="url(#skGoldGradDark)" stroke="#ffffff" stroke-width="0.8" stroke-linejoin="round" filter="url(#skIconGlowDark)"/>
     </g>
 
     <!-- 2. BRAND TYPOGRAPHY -->
