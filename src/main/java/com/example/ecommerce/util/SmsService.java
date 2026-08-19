@@ -99,7 +99,14 @@ public class SmsService {
 
     private boolean sendViaTextBee(String phone, String message) {
         try {
-            String toPhone = phone.startsWith("+") ? phone : "+91" + phone;
+            // Use exact 10-digit format for Indian domestic numbers to avoid telecom +91 international routing errors
+            String toPhone = phone.trim();
+            if (toPhone.startsWith("+91") && toPhone.length() == 13) {
+                toPhone = toPhone.substring(3);
+            } else if (toPhone.startsWith("91") && toPhone.length() == 12) {
+                toPhone = toPhone.substring(2);
+            }
+
             String url = "https://api.textbee.dev/api/v1/gateway/devices/" + textbeeDeviceId.trim() + "/sendSMS";
             
             String jsonPayload = String.format(
