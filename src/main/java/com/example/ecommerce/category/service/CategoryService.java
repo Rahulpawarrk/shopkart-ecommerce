@@ -37,30 +37,39 @@ public class CategoryService {
 
     /**
      * Constructs a hierarchical category tree (Root Categories with populated subcategory lists).
+     * Cached in Redis for 15 minutes with instant fallback to DB.
      */
     public List<Category> getCategoryTree(boolean activeOnly) {
-        List<Category> allCategories = categoryDAO.findAll(activeOnly);
-        List<Category> rootCategories = new ArrayList<>();
-        Map<Integer, Category> categoryMap = new HashMap<>();
+        String cacheKey = "shopkart:category:tree:active_" + activeOnly;
+        return com.example.ecommerce.common.service.CacheService.getInstance().getOrLoad(
+                cacheKey,
+                900, // 15 minutes TTL
+                new com.fasterxml.jackson.core.type.TypeReference<List<Category>>() {},
+                () -> {
+                    List<Category> allCategories = categoryDAO.findAll(activeOnly);
+                    List<Category> rootCategories = new ArrayList<>();
+                    Map<Integer, Category> categoryMap = new HashMap<>();
 
-        for (Category c : allCategories) {
-            categoryMap.put(c.getCategoryId(), c);
-        }
+                    for (Category c : allCategories) {
+                        categoryMap.put(c.getCategoryId(), c);
+                    }
 
-        for (Category c : allCategories) {
-            if (c.getParentCategoryId() == null || c.getParentCategoryId() == 0) {
-                rootCategories.add(c);
-            } else {
-                Category parent = categoryMap.get(c.getParentCategoryId());
-                if (parent != null) {
-                    parent.addSubcategory(c);
-                } else {
-                    rootCategories.add(c); // Fallback if parent missing
+                    for (Category c : allCategories) {
+                        if (c.getParentCategoryId() == null || c.getParentCategoryId() == 0) {
+                            rootCategories.add(c);
+                        } else {
+                            Category parent = categoryMap.get(c.getParentCategoryId());
+                            if (parent != null) {
+                                parent.addSubcategory(c);
+                            } else {
+                                rootCategories.add(c); // Fallback if parent missing
+                            }
+                        }
+                    }
+
+                    return rootCategories;
                 }
-            }
-        }
-
-        return rootCategories;
+        );
     }
 
     /**
@@ -95,6 +104,7 @@ public class CategoryService {
 
         int newId = categoryDAO.createCategory(category);
         category.setCategoryId(newId);
+        com.example.ecommerce.common.service.CacheService.getInstance().evictPattern("shopkart:category:*");
         logger.info("Created category: [id={}, name={}]", newId, category.getCategoryName());
         return category;
     }
@@ -117,6 +127,7 @@ public class CategoryService {
         }
 
         categoryDAO.updateCategory(category);
+        com.example.ecommerce.common.service.CacheService.getInstance().evictPattern("shopkart:category:*");
         logger.info("Updated category ID: {}", category.getCategoryId());
     }
 
@@ -125,6 +136,7 @@ public class CategoryService {
      */
     public void toggleStatus(int categoryId, boolean active) {
         categoryDAO.updateStatus(categoryId, active);
+        com.example.ecommerce.common.service.CacheService.getInstance().evictPattern("shopkart:category:*");
         logger.info("Toggled status for category ID: {} to active={}", categoryId, active);
     }
 

@@ -12,6 +12,8 @@ public class SalesReportItem implements Serializable {
     private String label;
     private int orderCount = 0;
     private int unitsSold = 0;
+    private BigDecimal netSales = BigDecimal.ZERO;
+    private BigDecimal taxAmount = BigDecimal.ZERO;
     private BigDecimal totalSales = BigDecimal.ZERO;
 
     public SalesReportItem() {}
@@ -20,6 +22,15 @@ public class SalesReportItem implements Serializable {
         this.label = label;
         this.orderCount = orderCount;
         this.unitsSold = unitsSold;
+        this.totalSales = totalSales != null ? totalSales : BigDecimal.ZERO;
+    }
+
+    public SalesReportItem(String label, int orderCount, int unitsSold, BigDecimal netSales, BigDecimal taxAmount, BigDecimal totalSales) {
+        this.label = label;
+        this.orderCount = orderCount;
+        this.unitsSold = unitsSold;
+        this.netSales = netSales != null ? netSales : BigDecimal.ZERO;
+        this.taxAmount = taxAmount != null ? taxAmount : BigDecimal.ZERO;
         this.totalSales = totalSales != null ? totalSales : BigDecimal.ZERO;
     }
 
@@ -45,6 +56,22 @@ public class SalesReportItem implements Serializable {
 
     public void setUnitsSold(int unitsSold) {
         this.unitsSold = unitsSold;
+    }
+
+    public BigDecimal getNetSales() {
+        return netSales;
+    }
+
+    public void setNetSales(BigDecimal netSales) {
+        this.netSales = netSales != null ? netSales : BigDecimal.ZERO;
+    }
+
+    public BigDecimal getTaxAmount() {
+        return taxAmount;
+    }
+
+    public void setTaxAmount(BigDecimal taxAmount) {
+        this.taxAmount = taxAmount != null ? taxAmount : BigDecimal.ZERO;
     }
 
     public BigDecimal getTotalSales() {

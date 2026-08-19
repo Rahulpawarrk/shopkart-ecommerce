@@ -69,6 +69,8 @@ public class DashboardDAO {
         String sql = "SELECT " +
                 "TO_CHAR(created_at, 'YYYY-MM') AS month_label, " +
                 "COUNT(order_id) AS order_count, " +
+                "COALESCE(SUM(subtotal - discount_amount), 0) AS net_sales, " +
+                "COALESCE(SUM(tax_amount), 0) AS tax_amount, " +
                 "COALESCE(SUM(total_amount), 0) AS total_sales " +
                 "FROM dbo.orders " +
                 "WHERE EXTRACT(YEAR FROM created_at) = ? AND order_status = 'DELIVERED' " +
@@ -83,6 +85,8 @@ public class DashboardDAO {
                     SalesReportItem item = new SalesReportItem();
                     item.setLabel(rs.getString("month_label"));
                     item.setOrderCount(rs.getInt("order_count"));
+                    item.setNetSales(rs.getBigDecimal("net_sales"));
+                    item.setTaxAmount(rs.getBigDecimal("tax_amount"));
                     item.setTotalSales(rs.getBigDecimal("total_sales"));
                     list.add(item);
                 }
@@ -100,7 +104,9 @@ public class DashboardDAO {
                 "c.category_name, " +
                 "COUNT(DISTINCT oi.order_id) AS order_count, " +
                 "SUM(oi.quantity) AS units_sold, " +
-                "SUM(oi.line_total) AS category_sales " +
+                "SUM(oi.line_total) AS net_sales, " +
+                "SUM(oi.tax_amount) AS tax_amount, " +
+                "SUM(oi.line_total + oi.tax_amount) AS category_sales " +
                 "FROM dbo.order_items oi " +
                 "INNER JOIN dbo.products p ON oi.product_id = p.product_id " +
                 "INNER JOIN dbo.categories c ON p.category_id = c.category_id " +
@@ -117,6 +123,8 @@ public class DashboardDAO {
                 item.setLabel(rs.getString("category_name"));
                 item.setOrderCount(rs.getInt("order_count"));
                 item.setUnitsSold(rs.getInt("units_sold"));
+                item.setNetSales(rs.getBigDecimal("net_sales"));
+                item.setTaxAmount(rs.getBigDecimal("tax_amount"));
                 item.setTotalSales(rs.getBigDecimal("category_sales"));
                 list.add(item);
             }
@@ -132,7 +140,7 @@ public class DashboardDAO {
         String sql = "SELECT " +
                 "p.product_id, p.product_name, p.sku, " +
                 "SUM(oi.quantity) AS total_units_sold, " +
-                "SUM(oi.line_total) AS total_revenue " +
+                "SUM(oi.line_total + oi.tax_amount) AS total_revenue " +
                 "FROM dbo.order_items oi " +
                 "INNER JOIN dbo.products p ON oi.product_id = p.product_id " +
                 "INNER JOIN dbo.orders o ON oi.order_id = o.order_id " +

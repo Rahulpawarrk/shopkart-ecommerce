@@ -53,7 +53,10 @@ public class AppContextListener implements ServletContextListener {
         // 1. Shutdown HikariCP connection pool
         DBConnection.shutdown();
 
-        // 2. Deregister JDBC Drivers to prevent Tomcat classloader memory leaks
+        // 2. Shutdown Redis connection pool
+        RedisManager.shutdown();
+
+        // 3. Deregister JDBC Drivers to prevent Tomcat classloader memory leaks
         Enumeration<Driver> drivers = DriverManager.getDrivers();
         while (drivers.hasMoreElements()) {
             Driver driver = drivers.nextElement();

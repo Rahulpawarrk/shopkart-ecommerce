@@ -70,28 +70,34 @@
                 <!-- Financial Sales KPI Metrics Grid -->
                 <div class="grid grid-cols-4" style="margin-bottom: 1.5rem;">
                     <div class="stat-card" style="border-top: 4px solid #10b981; background: #ffffff;">
-                        <div class="stat-label">Total Gross Sales (${selectedYear})</div>
+                        <div class="stat-label">Total Settled Revenue (${selectedYear})</div>
                         <div class="stat-value" style="color: #10b981; font-size: 1.75rem;">
-                            ₹<fmt:formatNumber value="${totalGrossSales}" minFractionDigits="0" maxFractionDigits="0" />
+                            ₹<fmt:formatNumber value="${totalSettledRevenue}" minFractionDigits="0" maxFractionDigits="0" />
                         </div>
-                        <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; margin-top: 0.25rem;">Fulfilled &amp; settled orders</div>
+                        <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; margin-top: 0.25rem;">Gross revenue from delivered orders</div>
                     </div>
                     <div class="stat-card" style="border-top: 4px solid #6366f1; background: #ffffff;">
-                        <div class="stat-label">Fulfilled Orders</div>
-                        <div class="stat-value" style="color: #6366f1; font-size: 1.75rem;">${totalOrdersCount}</div>
-                        <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; margin-top: 0.25rem;">Completed transactions</div>
+                        <div class="stat-label">Net Product Sales (Pre-Tax)</div>
+                        <div class="stat-value" style="color: #6366f1; font-size: 1.75rem;">
+                            ₹<fmt:formatNumber value="${totalNetSales}" minFractionDigits="0" maxFractionDigits="0" />
+                        </div>
+                        <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; margin-top: 0.25rem;">Product price after discount</div>
                     </div>
                     <div class="stat-card" style="border-top: 4px solid #3b82f6; background: #ffffff;">
-                        <div class="stat-label">Total Units Sold</div>
-                        <div class="stat-value" style="color: #3b82f6; font-size: 1.75rem;">${totalUnitsSold}</div>
-                        <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; margin-top: 0.25rem;">Items dispatched/delivered</div>
+                        <div class="stat-label">Total Taxes Collected (GST)</div>
+                        <div class="stat-value" style="color: #3b82f6; font-size: 1.75rem;">
+                            ₹<fmt:formatNumber value="${totalTaxes}" minFractionDigits="0" maxFractionDigits="0" />
+                        </div>
+                        <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; margin-top: 0.25rem;">Applicable item taxes</div>
                     </div>
                     <div class="stat-card" style="border-top: 4px solid #f59e0b; background: #ffffff;">
-                        <div class="stat-label">Avg. Order Value (AOV)</div>
+                        <div class="stat-label">Fulfilled Orders &amp; AOV</div>
                         <div class="stat-value" style="color: #f59e0b; font-size: 1.75rem;">
-                            ₹<fmt:formatNumber value="${avgOrderValue}" minFractionDigits="0" maxFractionDigits="0" />
+                            ${totalOrdersCount} <span style="font-size: 0.95rem; font-weight: 600; color: #64748b;">(${totalUnitsSold} units)</span>
                         </div>
-                        <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; margin-top: 0.25rem;">Per completed order</div>
+                        <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; margin-top: 0.25rem;">
+                            Avg: <strong>₹<fmt:formatNumber value="${avgOrderValue}" minFractionDigits="0" maxFractionDigits="0" /></strong> / order
+                        </div>
                     </div>
                 </div>
 
@@ -106,19 +112,27 @@
                                 <tr>
                                     <th>Month</th>
                                     <th>Completed Orders</th>
-                                    <th style="text-align: right;">Total Net Revenue</th>
+                                    <th style="text-align: right;">Net Sales (Pre-Tax)</th>
+                                    <th style="text-align: right;">Taxes (GST)</th>
+                                    <th style="text-align: right;">Total Settled Revenue</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <c:choose>
                                     <c:when test="${empty monthlyReport}">
-                                        <tr><td colspan="3" style="text-align: center; padding: 2.5rem; color: #94a3b8;">No sales records found for ${selectedYear}.</td></tr>
+                                        <tr><td colspan="5" style="text-align: center; padding: 2.5rem; color: #94a3b8;">No sales records found for ${selectedYear}.</td></tr>
                                     </c:when>
                                     <c:otherwise>
                                         <c:forEach var="m" items="${monthlyReport}">
                                             <tr>
                                                 <td><strong style="color: #0f172a;"><c:out value="${m.label}" /></strong></td>
                                                 <td><strong style="color: #475569;">${m.orderCount}</strong> <small style="color: #94a3b8;">fulfilled orders</small></td>
+                                                <td style="text-align: right; color: #6366f1; font-weight: 700;">
+                                                    ₹<fmt:formatNumber value="${m.netSales}" minFractionDigits="0" maxFractionDigits="0" />
+                                                </td>
+                                                <td style="text-align: right; color: #3b82f6; font-weight: 700;">
+                                                    ₹<fmt:formatNumber value="${m.taxAmount}" minFractionDigits="0" maxFractionDigits="0" />
+                                                </td>
                                                 <td style="text-align: right; color: #10b981; font-weight: 800; font-size: 1.05rem;">
                                                     ₹<fmt:formatNumber value="${m.totalSales}" minFractionDigits="0" maxFractionDigits="0" />
                                                 </td>
@@ -143,13 +157,15 @@
                                     <th>Category Taxonomy</th>
                                     <th>Orders Involved</th>
                                     <th>Units Sold</th>
-                                    <th style="text-align: right;">Total Gross Sales</th>
+                                    <th style="text-align: right;">Net Sales (Pre-Tax)</th>
+                                    <th style="text-align: right;">Taxes (GST)</th>
+                                    <th style="text-align: right;">Total Gross Revenue</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <c:choose>
                                     <c:when test="${empty categoryReport}">
-                                        <tr><td colspan="4" style="text-align: center; padding: 2.5rem; color: #94a3b8;">No category sales data recorded.</td></tr>
+                                        <tr><td colspan="6" style="text-align: center; padding: 2.5rem; color: #94a3b8;">No category sales data recorded.</td></tr>
                                     </c:when>
                                     <c:otherwise>
                                         <c:forEach var="c" items="${categoryReport}">
@@ -157,7 +173,13 @@
                                                 <td><strong style="color: #0f172a;"><c:out value="${c.label}" /></strong></td>
                                                 <td>${c.orderCount}</td>
                                                 <td><strong>${c.unitsSold}</strong> <small style="color: #94a3b8;">units</small></td>
-                                                <td style="text-align: right; color: #4f46e5; font-weight: 800; font-size: 1rem;">
+                                                <td style="text-align: right; color: #6366f1; font-weight: 700;">
+                                                    ₹<fmt:formatNumber value="${c.netSales}" minFractionDigits="0" maxFractionDigits="0" />
+                                                </td>
+                                                <td style="text-align: right; color: #3b82f6; font-weight: 700;">
+                                                    ₹<fmt:formatNumber value="${c.taxAmount}" minFractionDigits="0" maxFractionDigits="0" />
+                                                </td>
+                                                <td style="text-align: right; color: #10b981; font-weight: 800; font-size: 1rem;">
                                                     ₹<fmt:formatNumber value="${c.totalSales}" minFractionDigits="0" maxFractionDigits="0" />
                                                 </td>
                                             </tr>

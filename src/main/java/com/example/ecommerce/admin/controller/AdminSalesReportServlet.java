@@ -39,13 +39,21 @@ public class AdminSalesReportServlet extends HttpServlet {
         List<SalesReportItem> monthlyReport = dashboardService.getMonthlySalesReport(year);
         List<SalesReportItem> categoryReport = dashboardService.getCategoryRevenueReport();
 
-        java.math.BigDecimal totalGrossSales = java.math.BigDecimal.ZERO;
+        java.math.BigDecimal totalSettledRevenue = java.math.BigDecimal.ZERO;
+        java.math.BigDecimal totalNetSales = java.math.BigDecimal.ZERO;
+        java.math.BigDecimal totalTaxes = java.math.BigDecimal.ZERO;
         int totalOrdersCount = 0;
         int totalUnitsSold = 0;
 
         for (SalesReportItem item : monthlyReport) {
             if (item.getTotalSales() != null) {
-                totalGrossSales = totalGrossSales.add(item.getTotalSales());
+                totalSettledRevenue = totalSettledRevenue.add(item.getTotalSales());
+            }
+            if (item.getNetSales() != null) {
+                totalNetSales = totalNetSales.add(item.getNetSales());
+            }
+            if (item.getTaxAmount() != null) {
+                totalTaxes = totalTaxes.add(item.getTaxAmount());
             }
             totalOrdersCount += item.getOrderCount();
         }
@@ -55,13 +63,16 @@ public class AdminSalesReportServlet extends HttpServlet {
         }
 
         java.math.BigDecimal avgOrderValue = totalOrdersCount > 0 
-                ? totalGrossSales.divide(java.math.BigDecimal.valueOf(totalOrdersCount), 2, java.math.RoundingMode.HALF_UP) 
+                ? totalSettledRevenue.divide(java.math.BigDecimal.valueOf(totalOrdersCount), 2, java.math.RoundingMode.HALF_UP) 
                 : java.math.BigDecimal.ZERO;
 
         request.setAttribute("selectedYear", year);
         request.setAttribute("monthlyReport", monthlyReport);
         request.setAttribute("categoryReport", categoryReport);
-        request.setAttribute("totalGrossSales", totalGrossSales);
+        request.setAttribute("totalSettledRevenue", totalSettledRevenue);
+        request.setAttribute("totalGrossSales", totalSettledRevenue);
+        request.setAttribute("totalNetSales", totalNetSales);
+        request.setAttribute("totalTaxes", totalTaxes);
         request.setAttribute("totalOrdersCount", totalOrdersCount);
         request.setAttribute("totalUnitsSold", totalUnitsSold);
         request.setAttribute("avgOrderValue", avgOrderValue);

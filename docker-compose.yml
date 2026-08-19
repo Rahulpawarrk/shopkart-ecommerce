@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # ── 1. ShopKart Web Application (Tomcat 11 + Java 21) ──────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shopkart-app
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_URL=jdbc:postgresql://postgres:5432/ecommerce_db
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_DRIVER=org.postgresql.Driver
+      - REDIS_URL=redis://redis:6379
+      - RAZORPAY_KEY_ID=${RAZORPAY_KEY_ID:-rzp_test_placeholder}
+      - RAZORPAY_KEY_SECRET=${RAZORPAY_KEY_SECRET:-rzp_secret_placeholder}
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+
+  # ── 2. PostgreSQL 16 Database Server ──────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: shopkart-postgres
+    environment:
+      POSTGRES_DB: ecommerce_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # ── 3. Redis In-Memory Cache & Session Store ──────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: shopkart-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  # ── 4. Jenkins CI/CD Automation Server (Optional) ─────────────────────────
+  jenkins:
+    image: jenkins/jenkins:lts-jdk21
+    container_name: shopkart-jenkins
+    user: root
+    ports:
+      - "8085:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  jenkins_home:
