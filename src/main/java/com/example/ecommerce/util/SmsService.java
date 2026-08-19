@@ -45,27 +45,42 @@ public class SmsService {
     }
 
     /**
-     * Sends a 6-digit OTP SMS to the given recipient mobile number using TextBee / real gateway.
+     * Sends a 6-digit OTP SMS with default/password-reset purpose.
+     */
+    public boolean sendOtpSms(String phoneNumber, String otpCode) {
+        return sendOtpSms(phoneNumber, otpCode, "PASSWORD_RESET");
+    }
+
+    /**
+     * Sends a 6-digit OTP SMS with a purpose-tailored concise message.
      *
      * @param phoneNumber 10-digit mobile number (e.g. 7021317291)
      * @param otpCode     6-digit numeric OTP (e.g. 592814)
+     * @param purpose     "REGISTRATION" or "PASSWORD_RESET"
      * @return true if dispatched successfully
      */
-    public boolean sendOtpSms(String phoneNumber, String otpCode) {
+    public boolean sendOtpSms(String phoneNumber, String otpCode, String purpose) {
         if (phoneNumber == null || phoneNumber.trim().isEmpty() || otpCode == null) {
             logger.warn("SMS dispatch aborted: missing phone number or OTP code.");
             throw new ValidationException("Please provide a valid mobile number.");
         }
 
         String cleanPhone = phoneNumber.trim().replaceAll("[^0-9]", "");
-        String message = "Your ShopKart password reset verification code is: " + otpCode + 
-                         ". Valid for 10 minutes. Do not share this OTP with anyone.";
+        
+        String message;
+        if ("REGISTRATION".equalsIgnoreCase(purpose)) {
+            message = "Your ShopKart registration verification code is: " + otpCode + 
+                      ". Valid for 10 minutes. Welcome to ShopKart!";
+        } else {
+            message = "Your ShopKart password reset verification code is: " + otpCode + 
+                      ". Valid for 10 minutes. Do not share this OTP with anyone.";
+        }
 
         // 1. TextBee Free Android Gateway (Primary)
         if (textbeeApiKey != null && !textbeeApiKey.trim().isEmpty() &&
             textbeeDeviceId != null && !textbeeDeviceId.trim().isEmpty()) {
             
-            logger.info("Dispatching SMS via TextBee to +91-{}...", cleanPhone);
+            logger.info("Dispatching [{}] SMS via TextBee to +91-{}...", purpose, cleanPhone);
             boolean sent = sendViaTextBee(cleanPhone, message);
             if (sent) {
                 return true;

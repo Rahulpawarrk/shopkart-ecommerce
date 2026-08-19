@@ -83,7 +83,7 @@ public class RegisterServlet extends HttpServlet {
             // Send verification code via Mobile SMS (TextBee / configured gateway)
             com.example.ecommerce.util.SmsService smsService = new com.example.ecommerce.util.SmsService();
             try {
-                smsService.sendOtpSms(phone.trim(), mobileOtp);
+                smsService.sendOtpSms(phone.trim(), mobileOtp, "REGISTRATION");
             } catch (Exception e) {
                 logger.warn("SMS dispatch exception during signup for {}: {}", phone, e.getMessage());
             }

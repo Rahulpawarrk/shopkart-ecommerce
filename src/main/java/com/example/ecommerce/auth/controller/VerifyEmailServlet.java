@@ -86,7 +86,7 @@ public class VerifyEmailServlet extends HttpServlet {
                 pending.setOtpExpiry(LocalDateTime.now().plusMinutes(10));
                 session.setAttribute("pendingRegistration", pending);
 
-                smsService.sendOtpSms(pending.getPhone(), newMobileOtp);
+                smsService.sendOtpSms(pending.getPhone(), newMobileOtp, "REGISTRATION");
                 request.setAttribute("successMessage", "A new 6-digit SMS verification code has been dispatched to: +91-" + pending.getPhone());
                 logger.info("Resent signup Mobile SMS OTP to: {}", pending.getPhone());
             } catch (ValidationException ve) {
@@ -111,7 +111,7 @@ public class VerifyEmailServlet extends HttpServlet {
 
                 emailService.sendSignupVerificationOtp(pending.getEmail(), pending.getFirstName(), newEmailOtp);
                 try {
-                    smsService.sendOtpSms(pending.getPhone(), newMobileOtp);
+                    smsService.sendOtpSms(pending.getPhone(), newMobileOtp, "REGISTRATION");
                 } catch (Exception ignored) {}
 
                 request.setAttribute("successMessage", "New verification codes sent to both your Email and Mobile.");
