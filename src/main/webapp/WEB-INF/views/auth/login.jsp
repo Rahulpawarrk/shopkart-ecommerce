@@ -117,45 +117,7 @@
                     color: var(--primary);
                     text-decoration: underline;
                 }
-
-                .demo-credentials-box {
-                    margin-top: 1.25rem;
-                    padding: 0.85rem;
-                    background: #f1f5f9;
-                    border-radius: var(--radius-sm);
-                    border: 1px dashed #cbd5e1;
-                    font-size: 0.8rem;
-                }
-
-                .demo-chips-row {
-                    display: flex;
-                    gap: 0.5rem;
-                    margin-top: 0.5rem;
-                }
-
-                .demo-chip-btn {
-                    flex: 1;
-                    padding: 0.35rem 0.5rem;
-                    font-size: 0.75rem;
-                    font-weight: 700;
-                    background: #ffffff;
-                    border: 1px solid #94a3b8;
-                    border-radius: var(--radius-sm);
-                    cursor: pointer;
-                    transition: var(--transition-fast);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 0.3rem;
-                }
-
-                .demo-chip-btn:hover {
-                    background: var(--primary-light);
-                    border-color: var(--primary);
-                    color: var(--primary);
-                }
-
-                .auth-divider {
+.auth-divider {
                     display: flex;
                     align-items: center;
                     margin: 1.5rem 0 1rem;
@@ -326,22 +288,7 @@
                     <div class="auth-terms-note">
                         By continuing, you agree to ShopKart's <a href="#">Conditions of Use</a> and <a href="#">Privacy
                             Notice</a>.
-                    </div>
-
-                    <!-- Demo Credentials 1-Click Fillers -->
-                    <div class="demo-credentials-box">
-                        <div style="font-weight: 700; color: #475569;">⚡ 1-Click Quick Demo Login:</div>
-                        <div class="demo-chips-row">
-                            <button type="button" class="demo-chip-btn"
-                                onclick="fillCredentials('customer@ecommerce.com', 'Admin@123')">
-                                👤 Customer
-                            </button>
-                            <button type="button" class="demo-chip-btn"
-                                onclick="fillCredentials('admin@ecommerce.com', 'Admin@123')">
-                                ⚙️ Admin
-                            </button>
-                        </div>
-                    </div>
+                    </div></div>
                 </div>
 
                 <!-- Divider -->
@@ -374,11 +321,7 @@
             </div>
 
             <script>
-                function fillCredentials(email, pass) {
-                    document.getElementById('email').value = email;
-                    document.getElementById('password').value = pass;
-                }
-            </script>
+</script>
         </body>
 
         </html>

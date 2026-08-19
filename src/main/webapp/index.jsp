@@ -43,7 +43,7 @@
     </script>
 
     <link rel="preload" as="image" href="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=1200&q=75" fetchpriority="high">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css?v=5.1">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css?v=5.2">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -82,7 +82,7 @@
         </div>
     </header>
 
-        <!-- 2. MAIN HEADER -->
+    <!-- 2. MAIN HEADER -->
     <nav class="main-header" aria-label="Main Navigation">
         <div class="brand-group">
             <a href="${pageContext.request.contextPath}/" class="brand-logo" title="ShopKart - Premier Online Shopping">
@@ -102,14 +102,12 @@
         <div class="header-search-wrapper">
             <form action="${pageContext.request.contextPath}/products" method="GET"
                 class="header-search-form" id="headerSearchForm" role="search">
-                <label for="searchCategorySelect" class="sr-only">Product Category</label>
                 <select name="categoryId" class="category-select" id="searchCategorySelect" aria-label="Product Category">
                     <option value="">All Categories</option>
                     <c:forEach var="cat" items="${categoryTree}">
                         <option value="${cat.categoryId}">${cat.categoryName}</option>
                     </c:forEach>
                 </select>
-                <label for="globalSearchInput" class="sr-only">Search products, brands and tech essentials</label>
                 <input type="text" name="keyword" class="search-input" id="globalSearchInput"
                     placeholder="Search for products, brands and tech essentials..." autocomplete="off" aria-label="Search products, brands and essentials">
                 <button type="submit" class="search-button" aria-label="Search">🔍</button>
