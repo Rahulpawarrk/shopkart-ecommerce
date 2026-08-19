@@ -60,8 +60,10 @@ public class RegisterServlet extends HttpServlet {
             // Validate all registration details and uniqueness in DB before sending OTP
             authService.validateRegistrationDetails(email, password, confirmPassword, firstName, lastName, phone);
 
-            // Generate secure 6-digit verification OTP
-            String otpCode = String.format("%06d", new java.security.SecureRandom().nextInt(1000000));
+            // Generate secure 6-digit verification OTPs for both Email and Mobile
+            java.security.SecureRandom secureRandom = new java.security.SecureRandom();
+            String emailOtp = String.format("%06d", secureRandom.nextInt(1000000));
+            String mobileOtp = String.format("%06d", secureRandom.nextInt(1000000));
             java.time.LocalDateTime otpExpiry = java.time.LocalDateTime.now().plusMinutes(10);
 
             com.example.ecommerce.auth.model.PendingRegistration pendingRegistration = new com.example.ecommerce.auth.model.PendingRegistration(
@@ -70,18 +72,28 @@ public class RegisterServlet extends HttpServlet {
                     firstName.trim(),
                     lastName.trim(),
                     phone.trim(),
-                    otpCode,
+                    emailOtp,
+                    mobileOtp,
                     otpExpiry);
 
             // Send verification code via Email
             com.example.ecommerce.util.EmailService emailService = new com.example.ecommerce.util.EmailService();
-            emailService.sendSignupVerificationOtp(email.trim().toLowerCase(), firstName.trim(), otpCode);
+            emailService.sendSignupVerificationOtp(email.trim().toLowerCase(), firstName.trim(), emailOtp);
+
+            // Send verification code via Mobile SMS (TextBee / configured gateway)
+            com.example.ecommerce.util.SmsService smsService = new com.example.ecommerce.util.SmsService();
+            try {
+                smsService.sendOtpSms(phone.trim(), mobileOtp);
+            } catch (Exception e) {
+                logger.warn("SMS dispatch exception during signup for {}: {}", phone, e.getMessage());
+            }
 
             // Store pending registration in session
             HttpSession session = request.getSession(true);
             session.setAttribute("pendingRegistration", pendingRegistration);
 
-            logger.info("Generated signup email verification OTP for: {}", email.trim().toLowerCase());
+            logger.info("Generated signup Email OTP and Mobile SMS OTP for user: {} (phone: {})", 
+                    email.trim().toLowerCase(), phone.trim());
             response.sendRedirect(request.getContextPath() + "/verify-email");
 
         } catch (ValidationException ve) {

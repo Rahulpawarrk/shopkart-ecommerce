@@ -200,7 +200,7 @@
         <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 1.25rem; font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">
             <span style="padding: 0.25rem 0.65rem; border-radius: 9999px; background: #e0f2fe; color: #0369a1; border: 1px solid #7dd3fc;">1. Account Details</span>
             <span>→</span>
-            <span style="padding: 0.25rem 0.65rem; border-radius: 9999px; background: #f1f5f9;">✉️ 2. Email Verification</span>
+            <span style="padding: 0.25rem 0.65rem; border-radius: 9999px; background: #f1f5f9;">🔐 2. Dual Verification (Email &amp; Mobile)</span>
             <span>→</span>
             <span style="padding: 0.25rem 0.65rem; border-radius: 9999px; background: #f1f5f9;">🛍️ 3. Shop</span>
         </div>
@@ -258,7 +258,7 @@
                 </div>
 
                 <button type="submit" class="btn-auth-submit">
-                    Continue to Email Verification →
+                    Continue to Dual Verification →
                 </button>
             </form>
 

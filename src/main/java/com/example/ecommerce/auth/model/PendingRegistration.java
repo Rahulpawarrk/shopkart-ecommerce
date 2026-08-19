@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * Model holding user registration details in HTTP session until email OTP verification succeeds.
+ * Model holding user registration details in HTTP session until Dual OTP (Email + Mobile) verification succeeds.
  */
 public class PendingRegistration implements Serializable {
 
@@ -15,30 +15,52 @@ public class PendingRegistration implements Serializable {
     private String firstName;
     private String lastName;
     private String phone;
-    private String otpCode;
+    private String emailOtp;
+    private String mobileOtp;
     private LocalDateTime otpExpiry;
 
     public PendingRegistration() {
     }
 
     public PendingRegistration(String email, String password, String firstName, String lastName, 
-                               String phone, String otpCode, LocalDateTime otpExpiry) {
+                               String phone, String emailOtp, String mobileOtp, LocalDateTime otpExpiry) {
         this.email = email;
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
         this.phone = phone;
-        this.otpCode = otpCode;
+        this.emailOtp = emailOtp;
+        this.mobileOtp = mobileOtp;
         this.otpExpiry = otpExpiry;
+    }
+
+    // Backward-compatible constructor
+    public PendingRegistration(String email, String password, String firstName, String lastName, 
+                               String phone, String emailOtp, LocalDateTime otpExpiry) {
+        this(email, password, firstName, lastName, phone, emailOtp, emailOtp, otpExpiry);
     }
 
     public boolean isOtpExpired() {
         return otpExpiry == null || LocalDateTime.now().isAfter(otpExpiry);
     }
 
+    public boolean isEmailOtpValid(String inputEmailOtp) {
+        if (inputEmailOtp == null || emailOtp == null) return false;
+        return !isOtpExpired() && emailOtp.trim().equals(inputEmailOtp.trim().replaceAll("\\s+", ""));
+    }
+
+    public boolean isMobileOtpValid(String inputMobileOtp) {
+        if (inputMobileOtp == null || mobileOtp == null) return false;
+        return !isOtpExpired() && mobileOtp.trim().equals(inputMobileOtp.trim().replaceAll("\\s+", ""));
+    }
+
+    public boolean isBothOtpValid(String inputEmailOtp, String inputMobileOtp) {
+        return isEmailOtpValid(inputEmailOtp) && isMobileOtpValid(inputMobileOtp);
+    }
+
+    // Backward compatible method
     public boolean isOtpValid(String inputOtp) {
-        if (inputOtp == null || otpCode == null) return false;
-        return !isOtpExpired() && otpCode.trim().equals(inputOtp.trim());
+        return isEmailOtpValid(inputOtp);
     }
 
     // Getters and Setters
@@ -82,12 +104,29 @@ public class PendingRegistration implements Serializable {
         this.phone = phone;
     }
 
+    public String getEmailOtp() {
+        return emailOtp;
+    }
+
+    public void setEmailOtp(String emailOtp) {
+        this.emailOtp = emailOtp;
+    }
+
+    public String getMobileOtp() {
+        return mobileOtp;
+    }
+
+    public void setMobileOtp(String mobileOtp) {
+        this.mobileOtp = mobileOtp;
+    }
+
+    // Backward compatible alias
     public String getOtpCode() {
-        return otpCode;
+        return emailOtp;
     }
 
     public void setOtpCode(String otpCode) {
-        this.otpCode = otpCode;
+        this.emailOtp = otpCode;
     }
 
     public LocalDateTime getOtpExpiry() {

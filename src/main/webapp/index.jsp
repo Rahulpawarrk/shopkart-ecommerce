@@ -202,6 +202,30 @@
         </div>
     </div>
 
+    <!-- 3.1 WELCOME / REGISTRATION SUCCESS NOTIFICATION BANNER -->
+    <c:if test="${param.registered == 'true' || param.welcome == 'true'}">
+        <div id="registrationSuccessBanner" style="max-width: 1400px; margin: 1rem auto 0; padding: 1.1rem 1.5rem; background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 1.5px solid #34d399; border-radius: 10px; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.18); display: flex; align-items: center; justify-content: space-between; gap: 1.25rem; z-index: 100; position: relative;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div style="font-size: 2.2rem; background: #ffffff; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06); flex-shrink: 0;">
+                    🎉
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #065f46; letter-spacing: -0.2px;">
+                        Registration Successful! Welcome to ShopKart<c:if test="${not empty sessionScope.currentUser.firstName}">, ${sessionScope.currentUser.firstName}</c:if>!
+                    </h3>
+                    <p style="margin: 0.25rem 0 0; font-size: 0.88rem; color: #047857; font-weight: 500;">
+                        ✓ Your Email and Mobile number have been verified. Enjoy exclusive member deals, 1-day express delivery, and secure payments.
+                    </p>
+                </div>
+            </div>
+            <button type="button" onclick="document.getElementById('registrationSuccessBanner').style.display='none'" 
+                style="background: #ffffff; border: 1px solid #a7f3d0; border-radius: 6px; font-size: 0.85rem; color: #065f46; cursor: pointer; padding: 0.45rem 0.85rem; font-weight: 700; transition: all 0.2s ease; white-space: nowrap;" 
+                onmouseover="this.style.background='#f0fdf4'" onmouseout="this.style.background='#ffffff'" title="Dismiss">
+                ✕ Dismiss
+            </button>
+        </div>
+    </c:if>
+
     <!-- 4. AUTO-SLIDING HERO CAROUSEL -->
     <section class="hero-carousel-container" aria-label="Featured Promotions">
         <div class="hero-slider-track" id="heroSliderTrack">
