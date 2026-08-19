@@ -16,7 +16,7 @@
         <session-timeout>30</session-timeout>
         <cookie-config>
             <http-only>true</http-only>
-            <secure>false</secure> <!-- Set to true in production with HTTPS -->
+            <secure>true</secure>
             <same-site>Lax</same-site>
         </cookie-config>
         <tracking-mode>COOKIE</tracking-mode>

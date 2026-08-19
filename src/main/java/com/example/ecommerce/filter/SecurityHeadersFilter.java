@@ -22,10 +22,18 @@ import java.io.IOException;
 public class SecurityHeadersFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(SecurityHeadersFilter.class);
+    private boolean enforceHttps = true; // Enabled by default for production security
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        logger.info("SecurityHeadersFilter initialized for production defense-in-depth.");
+        String enforceEnv = System.getenv("ENFORCE_HTTPS");
+        String enforceProp = System.getProperty("ecommerce.enforce.https");
+        if ("false".equalsIgnoreCase(enforceEnv) || "false".equalsIgnoreCase(enforceProp)) {
+            this.enforceHttps = false;
+        } else {
+            this.enforceHttps = true;
+        }
+        logger.info("SecurityHeadersFilter initialized (enforceHttps={}).", enforceHttps);
     }
 
     @Override
@@ -35,6 +43,26 @@ public class SecurityHeadersFilter implements Filter {
         if (response instanceof HttpServletResponse) {
             HttpServletResponse httpResponse = (HttpServletResponse) response;
             HttpServletRequest httpRequest = (HttpServletRequest) request;
+
+            String host = httpRequest.getHeader("Host");
+            if (host == null || host.trim().isEmpty()) {
+                host = httpRequest.getServerName();
+            }
+
+            boolean isLocalhost = host != null && (host.startsWith("localhost") || host.startsWith("127.0.0.1") || host.startsWith("[::1]"));
+            String forwardedProto = httpRequest.getHeader("X-Forwarded-Proto");
+            boolean isHttps = httpRequest.isSecure() || "https".equalsIgnoreCase(forwardedProto);
+
+            // 0. Enforce HTTP -> HTTPS 301 Redirect on production domains or when enforceHttps is active (skipping plain local dev unless explicitly enabled)
+            if (enforceHttps && !isHttps && !isLocalhost) {
+                String targetUrl = "https://" + host + httpRequest.getRequestURI();
+                if (httpRequest.getQueryString() != null) {
+                    targetUrl += "?" + httpRequest.getQueryString();
+                }
+                httpResponse.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
+                httpResponse.setHeader("Location", targetUrl);
+                return;
+            }
 
             // 1. Prevent MIME-type sniffing
             httpResponse.setHeader("X-Content-Type-Options", "nosniff");
@@ -49,7 +77,7 @@ public class SecurityHeadersFilter implements Filter {
             httpResponse.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
 
             // 5. Enforce HTTPS via HSTS if request is secure
-            if (httpRequest.isSecure() || "https".equalsIgnoreCase(httpRequest.getHeader("X-Forwarded-Proto"))) {
+            if (isHttps) {
                 httpResponse.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
             }
         }
