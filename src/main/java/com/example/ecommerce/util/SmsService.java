@@ -114,20 +114,26 @@ public class SmsService {
 
     private boolean sendViaTextBee(String phone, String message) {
         try {
-            // Use exact 10-digit format for Indian domestic numbers to avoid telecom +91 international routing errors
-            String toPhone = phone.trim();
-            if (toPhone.startsWith("+91") && toPhone.length() == 13) {
-                toPhone = toPhone.substring(3);
-            } else if (toPhone.startsWith("91") && toPhone.length() == 12) {
-                toPhone = toPhone.substring(2);
+            // E.164 phone format for TextBee official gateway API (e.g. +917021317291)
+            String cleanDigits = phone.trim().replaceAll("[^0-9]", "");
+            String toPhone;
+            if (cleanDigits.length() == 10) {
+                toPhone = "+91" + cleanDigits;
+            } else if (cleanDigits.startsWith("91") && cleanDigits.length() == 12) {
+                toPhone = "+" + cleanDigits;
+            } else if (phone.trim().startsWith("+")) {
+                toPhone = phone.trim();
+            } else {
+                toPhone = "+" + cleanDigits;
             }
 
-            String url = "https://api.textbee.dev/api/v1/gateway/devices/" + textbeeDeviceId.trim() + "/sendSMS";
+            String url = "https://api.textbee.dev/api/v1/gateway/send-sms";
             
             String jsonPayload = String.format(
-                "{\"recipients\":[\"%s\"],\"message\":\"%s\"}",
+                "{\"recipients\":[\"%s\"],\"message\":\"%s\",\"deviceId\":\"%s\"}",
                 toPhone,
-                message.replace("\"", "\\\"").replace("\n", "\\n")
+                message.replace("\"", "\\\"").replace("\n", "\\n"),
+                textbeeDeviceId.trim()
             );
 
             HttpRequest request = HttpRequest.newBuilder()
