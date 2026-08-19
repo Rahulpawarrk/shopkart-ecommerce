@@ -57,16 +57,20 @@ public class RedisManager {
                 poolConfig.setMaxWait(Duration.ofMillis(2000));
 
                 String redisUrl = System.getenv("REDIS_URL");
+                String host = System.getenv("REDIS_HOST");
+
+                if ((redisUrl == null || redisUrl.trim().isEmpty()) && (host == null || host.trim().isEmpty())) {
+                    available = false;
+                    logger.info("No REDIS_URL or REDIS_HOST environment variable provided; operating with direct database queries.");
+                    return;
+                }
+
                 if (redisUrl != null && !redisUrl.trim().isEmpty()) {
                     redisUrl = redisUrl.trim();
                     logger.info("Initializing Redis connection from REDIS_URL environment variable...");
                     URI uri = URI.create(redisUrl);
                     pool = new JedisPool(poolConfig, uri, 3000);
                 } else {
-                    String host = System.getenv("REDIS_HOST");
-                    if (host == null || host.trim().isEmpty()) {
-                        host = "localhost";
-                    }
                     int port = 6379;
                     String portStr = System.getenv("REDIS_PORT");
                     if (portStr != null && !portStr.trim().isEmpty()) {
