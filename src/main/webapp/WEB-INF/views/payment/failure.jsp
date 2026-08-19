@@ -41,38 +41,18 @@
             </form>
         </div>
 
-        <!-- STOREFRONT HEADER / NAVBAR USER SECTION -->
-        <ul class="nav-links">
-            <c:choose>
-                <%-- 1. When an ADMIN is logged in: Show Admin Console Badge (Hide Cart) --%>
-                <c:when test="${not empty sessionScope.currentUser && sessionScope.currentUser.isAdmin()}">
-                    <li>
-                        <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-warning" style="font-weight: 800; font-size: 0.85rem; padding: 0.4rem 0.85rem; border-radius: 6px;">
-                            👑 Admin Console ↗
-                        </a>
-                    </li>
-                    <li>
-                        <a href="${pageContext.request.contextPath}/logout" style="color: #ef4444; font-weight: 700;">Sign Out</a>
-                    </li>
-                </c:when>
-                <%-- 2. When a CUSTOMER is logged in: Show Cart, Wishlist, My Orders --%>
-                <c:when test="${not empty sessionScope.currentUser}">
-                    <li><a href="${pageContext.request.contextPath}/orders">📦 My Orders</a></li>
-                    <li><a href="${pageContext.request.contextPath}/wishlist">❤️ Wishlist</a></li>
-                    <li>
-                        <a href="${pageContext.request.contextPath}/cart" class="cart-btn">
-                            🛒 Cart <c:if test="${not empty cart && cart.totalQuantity > 0}">(${cart.totalQuantity})</c:if>
-                        </a>
-                    </li>
-                    <li><a href="${pageContext.request.contextPath}/logout" style="color: #ef4444; font-weight: 700;">Sign Out</a></li>
-                </c:when>
-                <%-- 3. GUEST: Show Sign In --%>
-                <c:otherwise>
-                    <li><a href="${pageContext.request.contextPath}/auth/login" class="btn btn-primary btn-sm">Sign In</a></li>
-                    <li><a href="${pageContext.request.contextPath}/register">Register</a></li>
-                </c:otherwise>
-            </c:choose>
-        </ul>
+        <div class="header-actions">
+            <a href="${pageContext.request.contextPath}/orders" class="header-action-inline" title="My Orders">
+                <span class="badge-icon">📦</span>
+                <span>My Orders</span>
+            </a>
+            <a href="${pageContext.request.contextPath}/cart" class="header-action-inline" title="Cart">
+                <div class="cart-icon-wrapper">
+                    <span class="badge-icon">🛒</span>
+                </div>
+                <span>Cart</span>
+            </a>
+        </div>
     </nav>
 
     <main class="container" style="max-width: 620px; margin: 3rem auto 4rem; padding: 0 1rem;">

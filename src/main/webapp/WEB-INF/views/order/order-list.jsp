@@ -56,38 +56,66 @@
             <div class="search-autocomplete-dropdown" id="searchAutocompleteDropdown"></div>
         </div>
 
-        <!-- STOREFRONT HEADER / NAVBAR USER SECTION -->
-        <ul class="nav-links">
-            <c:choose>
-                <%-- 1. When an ADMIN is logged in: Show Admin Console Badge (Hide Cart) --%>
-                <c:when test="${not empty sessionScope.currentUser && sessionScope.currentUser.isAdmin()}">
-                    <li>
-                        <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn btn-warning" style="font-weight: 800; font-size: 0.85rem; padding: 0.4rem 0.85rem; border-radius: 6px;">
-                            👑 Admin Console ↗
+        <!-- Header Actions -->
+        <div class="header-actions">
+            <!-- User Account Menu with Hover Dropdown -->
+            <div class="user-account-menu" id="userAccountMenu">
+                <c:choose>
+                    <c:when test="${not empty sessionScope.currentUser}">
+                        <div class="user-nav-btn" tabindex="0" role="button">
+                            <span class="user-avatar-icon">👤</span>
+                            <span class="user-nav-name">${sessionScope.currentUser.fullName}</span>
+                            <span class="arrow-down">▾</span>
+                        </div>
+                        <div class="account-dropdown">
+                            <div class="dropdown-header">
+                                <div class="user-name">Hello, ${sessionScope.currentUser.fullName}</div>
+                                <div class="user-email">${sessionScope.currentUser.email}</div>
+                                <c:if test="${sessionScope.currentUser.admin}">
+                                    <div style="font-size: 0.7rem; color: #fbbf24; font-weight: 800; margin-top: 0.2rem;">👑 ADMINISTRATOR</div>
+                                </c:if>
+                            </div>
+                            <c:choose>
+                                <c:when test="${sessionScope.currentUser.admin}">
+                                    <a href="${pageContext.request.contextPath}/admin/dashboard" style="color:var(--amazon-orange); font-weight:800;">⚙️ Admin Control Panel</a>
+                                    <a href="${pageContext.request.contextPath}/admin/products">📦 Manage Products</a>
+                                    <a href="${pageContext.request.contextPath}/admin/orders">🛒 Manage All Orders</a>
+                                    <a href="${pageContext.request.contextPath}/admin/reports/sales">📈 Sales & Revenue</a>
+                                    <a href="${pageContext.request.contextPath}/admin/profile">👑 Admin Profile</a>
+                                </c:when>
+                                <c:otherwise>
+                                    <a href="${pageContext.request.contextPath}/profile">👤 My Profile</a>
+                                    <a href="${pageContext.request.contextPath}/orders">📦 My Orders</a>
+                                    <a href="${pageContext.request.contextPath}/addresses">📍 Saved Addresses</a>
+                                    <a href="${pageContext.request.contextPath}/change-password">🔒 Change Password</a>
+                                </c:otherwise>
+                            </c:choose>
+                            <div class="dropdown-divider"></div>
+                            <a href="${pageContext.request.contextPath}/logout" style="color:var(--danger); font-weight: 600;">🚪 Sign Out</a>
+                        </div>
+                    </c:when>
+                    <c:otherwise>
+                        <a href="${pageContext.request.contextPath}/login" class="user-nav-btn" title="Sign In to ShopKart">
+                            <span class="user-avatar-icon">👤</span>
+                            <span style="font-weight:600;">Sign In</span>
                         </a>
-                    </li>
-                    <li>
-                        <a href="${pageContext.request.contextPath}/logout" style="color: #ef4444; font-weight: 700;">Sign Out</a>
-                    </li>
-                </c:when>
-                <%-- 2. When a CUSTOMER is logged in: Show Cart, Wishlist, My Orders --%>
-                <c:when test="${not empty sessionScope.currentUser}">
-                    <li><a href="${pageContext.request.contextPath}/orders">📦 My Orders</a></li>
-                    <li><a href="${pageContext.request.contextPath}/wishlist">❤️ Wishlist</a></li>
-                    <li>
-                        <a href="${pageContext.request.contextPath}/cart" class="cart-btn">
-                            🛒 Cart <c:if test="${not empty cart && cart.totalQuantity > 0}">(${cart.totalQuantity})</c:if>
-                        </a>
-                    </li>
-                    <li><a href="${pageContext.request.contextPath}/logout" style="color: #ef4444; font-weight: 700;">Sign Out</a></li>
-                </c:when>
-                <%-- 3. GUEST: Show Sign In --%>
-                <c:otherwise>
-                    <li><a href="${pageContext.request.contextPath}/auth/login" class="btn btn-primary btn-sm">Sign In</a></li>
-                    <li><a href="${pageContext.request.contextPath}/register">Register</a></li>
-                </c:otherwise>
-            </c:choose>
-        </ul>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+
+            <a href="${pageContext.request.contextPath}/wishlist" class="header-action-inline" title="Wishlist">
+                <span class="badge-icon">❤️</span>
+                <span>Wishlist</span>
+            </a>
+
+            <a href="${pageContext.request.contextPath}/cart" class="header-action-inline" title="Cart">
+                <div class="cart-icon-wrapper">
+                    <span class="badge-icon">🛒</span>
+                    <span class="badge-count" id="headerCartBadge">${not empty sessionScope.cart ? sessionScope.cart.totalQuantity : 0}</span>
+                </div>
+                <span>Cart</span>
+            </a>
+        </div>
     </nav>
 
     <!-- 3. SECONDARY SUB-NAVBAR -->

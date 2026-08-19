@@ -346,48 +346,6 @@ button, input, select, textarea {
     white-space: nowrap;
 }
 
-.main-header .nav-links {
-    display: flex;
-    align-items: center;
-    list-style: none;
-    gap: 0.85rem;
-    margin: 0;
-    padding: 0;
-}
-
-.main-header .nav-links li {
-    display: inline-flex;
-    align-items: center;
-}
-
-.main-header .nav-links a {
-    color: #ffffff;
-    text-decoration: none;
-    font-size: 0.88rem;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.45rem 0.75rem;
-    border-radius: var(--radius-sm);
-    transition: var(--transition-fast);
-}
-
-.main-header .nav-links a:hover {
-    background: rgba(255, 255, 255, 0.12);
-}
-
-.main-header .nav-links .cart-btn {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    font-weight: 700;
-}
-
-.main-header .nav-links .cart-btn:hover {
-    background: rgba(255, 255, 255, 0.18);
-    border-color: var(--amazon-yellow);
-}
-
 .brand-logo {
     display: inline-flex;
     align-items: center;
@@ -3682,17 +3640,6 @@ table tbody tr:hover, .table tbody tr:hover, .admin-table tbody tr:hover, .data-
 .btn-danger:hover {
     background: #dc2626;
     color: #ffffff;
-}
-
-.btn-warning {
-    background: #f59e0b;
-    color: #0f172a !important;
-    border-color: #d97706;
-}
-
-.btn-warning:hover {
-    background: #d97706;
-    color: #0f172a !important;
 }
 
 .btn-sm {
