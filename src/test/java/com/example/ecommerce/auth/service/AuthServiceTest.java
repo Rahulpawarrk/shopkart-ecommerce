@@ -284,4 +284,61 @@ class AuthServiceTest {
         assertEquals("newadmin@shopkart.com", created.getEmail());
         verify(userDAO).createAdminUser(any(User.class));
     }
+
+    @Test
+    @DisplayName("Should successfully verify OTP and return reset token for email")
+    void testVerifyResetOtpEmailSuccess() {
+        User mockUser = new User();
+        mockUser.setUserId(25);
+        mockUser.setEmail("user@example.com");
+        mockUser.setStatus("ACTIVE");
+
+        when(userDAO.findByEmail("user@example.com")).thenReturn(Optional.of(mockUser));
+        when(passwordResetDAO.validateOtp(25, "123456")).thenReturn(true);
+
+        String resetToken = authService.verifyResetOtp("user@example.com", "123456");
+
+        assertNotNull(resetToken);
+        assertFalse(resetToken.isEmpty());
+        verify(passwordResetDAO).invalidateToken("123456");
+        verify(passwordResetDAO).createToken(eq(25), eq(resetToken));
+    }
+
+    @Test
+    @DisplayName("Should successfully verify OTP and return reset token for mobile")
+    void testVerifyResetOtpPhoneSuccess() {
+        User mockUser = new User();
+        mockUser.setUserId(30);
+        mockUser.setPhone("9876543210");
+        mockUser.setStatus("ACTIVE");
+
+        when(userDAO.findByPhone("9876543210")).thenReturn(Optional.of(mockUser));
+        when(passwordResetDAO.validateOtp(30, "654321")).thenReturn(true);
+
+        String resetToken = authService.verifyResetOtp("9876543210", "654321");
+
+        assertNotNull(resetToken);
+        assertFalse(resetToken.isEmpty());
+        verify(passwordResetDAO).invalidateToken("654321");
+        verify(passwordResetDAO).createToken(eq(30), eq(resetToken));
+    }
+
+    @Test
+    @DisplayName("Should throw ValidationException when verifying invalid OTP")
+    void testVerifyResetOtpInvalid() {
+        User mockUser = new User();
+        mockUser.setUserId(30);
+        mockUser.setPhone("9876543210");
+        mockUser.setStatus("ACTIVE");
+
+        when(userDAO.findByPhone("9876543210")).thenReturn(Optional.of(mockUser));
+        when(passwordResetDAO.validateOtp(30, "000000")).thenReturn(false);
+
+        ValidationException ex = assertThrows(ValidationException.class, () ->
+            authService.verifyResetOtp("9876543210", "000000")
+        );
+
+        assertTrue(ex.getMessage().contains("Invalid or expired OTP"));
+    }
 }
+

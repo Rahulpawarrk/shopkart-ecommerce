@@ -117,13 +117,17 @@
         .btn-auth-submit:hover {
             background: linear-gradient(180deg, #f5d378 0%, #eeb933 100%);
         }
+        .btn-auth-submit:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
         .alert-success {
             background: #dcfce7;
             border: 1px solid #86efac;
             color: #15803d;
             border-radius: var(--radius-sm);
-            padding: 1rem 1.25rem;
-            font-size: 0.9rem;
+            padding: 0.85rem 1rem;
+            font-size: 0.88rem;
             margin-bottom: 1.25rem;
             line-height: 1.5;
         }
@@ -161,21 +165,42 @@
         }
         .steps-hint li { margin-bottom: 0.2rem; }
 
-        .simulation-box {
-            background: #fffbeb;
-            border: 1px dashed #f59e0b;
+        .otp-input-box {
+            font-size: 1.4rem;
+            letter-spacing: 8px;
+            text-align: center;
+            font-weight: 800;
+            font-family: monospace;
+            padding: 0.75rem;
+            border: 2px solid #888c8c;
             border-radius: var(--radius-sm);
-            padding: 0.85rem;
+            width: 100%;
+            box-sizing: border-box;
+            outline: none;
+            transition: var(--transition-fast);
+        }
+        .otp-input-box:focus {
+            border-color: var(--amazon-orange);
+            box-shadow: 0 0 0 3px rgba(250,137,0,0.25);
+        }
+        .resend-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-top: 1rem;
             font-size: 0.82rem;
-            color: #92400e;
         }
-        .simulation-box a {
-            color: #b45309;
-            font-weight: 700;
-            text-decoration: underline;
-            word-break: break-all;
+        .resend-link {
+            color: var(--primary);
+            text-decoration: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            font-size: 0.82rem;
+            font-family: inherit;
         }
+        .resend-link:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -188,37 +213,63 @@
         <div class="auth-card">
             <h1 class="auth-card-title">Forgot Password?</h1>
 
+            <c:if test="${not empty error}">
+                <div class="alert-error">⚠️ <c:out value="${error}"/></div>
+            </c:if>
+
             <c:choose>
-                <%-- State 2: Form submitted — show confirmation --%>
-                <c:when test="${submitted}">
+                <%-- State 2: OTP Generated on Same Page — Show OTP input field --%>
+                <c:when test="${otpSent}">
                     <div class="alert-success">
-                        <strong>✓ 6-Digit Verification Code Sent!</strong><br>
+                        <strong>✓ 6-Digit OTP Sent!</strong><br>
                         <c:choose>
                             <c:when test="${methodType == 'PHONE'}">
-                                A 6-digit verification code has been dispatched to <strong>+91-<c:out value="${destination}"/></strong>.
+                                A 6-digit code has been dispatched to <strong>+91-<c:out value="${destination}"/></strong>.
                             </c:when>
                             <c:otherwise>
-                                If an account exists for <strong><c:out value="${destination}"/></strong>, we've sent a 6-digit verification code to your email.
+                                A 6-digit code has been sent to <strong><c:out value="${destination}"/></strong>.
                             </c:otherwise>
                         </c:choose>
-                        The code is valid for <strong>10 minutes</strong>.
+                        Valid for <strong>10 minutes</strong>.
                     </div>
 
-                    <a href="${pageContext.request.contextPath}/reset-password?identifier=<c:out value='${rawIdentifier}'/>" 
-                       class="btn-auth-submit"
-                       style="display:block; text-align:center; text-decoration:none; padding:0.75rem; margin-top:1.25rem;">
-                        Enter OTP &amp; Reset Password →
-                    </a>
+                    <form action="${pageContext.request.contextPath}/forgot-password" method="POST" id="otpVerifyForm">
+                        <input type="hidden" name="action" value="verify_otp">
+                        <input type="hidden" name="identifier" value="<c:out value='${rawIdentifier != null ? rawIdentifier : identifier}'/>">
+                        <input type="hidden" name="destination" value="<c:out value='${destination}'/>">
 
-                    <a href="${pageContext.request.contextPath}/forgot-password" class="back-link" style="margin-top:1rem;">
-                        Didn't receive code? Resend OTP
-                    </a>
+                        <div style="margin-bottom: 1.25rem;">
+                            <label for="otpCode" class="auth-form-label">Enter 6-Digit Verification OTP *</label>
+                            <input type="text" id="otpCode" name="otpCode" class="otp-input-box"
+                                   required maxlength="6" pattern="[0-9]{6}"
+                                   placeholder="••••••" autocomplete="one-time-code" autofocus>
+                        </div>
+
+                        <button type="submit" class="btn-auth-submit" id="verifySubmitBtn">
+                            Submit OTP &amp; Proceed →
+                        </button>
+                    </form>
+
+                    <div class="resend-row">
+                        <!-- Resend OTP Form -->
+                        <form action="${pageContext.request.contextPath}/forgot-password" method="POST" style="display:inline;" id="resendForm">
+                            <input type="hidden" name="action" value="send_otp">
+                            <input type="hidden" name="identifier" value="<c:out value='${rawIdentifier != null ? rawIdentifier : identifier}'/>">
+                            <button type="submit" class="resend-link" id="resendBtn">
+                                🔄 Resend OTP
+                            </button>
+                        </form>
+
+                        <a href="${pageContext.request.contextPath}/forgot-password" class="resend-link" style="color:#64748b;">
+                            ← Change email/mobile
+                        </a>
+                    </div>
                 </c:when>
 
-                <%-- State 1: Show dual-method input form --%>
+                <%-- State 1: Select Email or Mobile and request OTP --%>
                 <c:otherwise>
                     <p class="auth-subtitle">
-                        Enter your registered email address or mobile number to receive a 6-digit OTP code to reset your password.
+                        Select and enter your registered email address or mobile number to receive a 6-digit OTP to reset your password.
                     </p>
 
                     <!-- Dual Method Tabs -->
@@ -235,17 +286,14 @@
                         <strong>Reset via Email OTP:</strong>
                         <ol>
                             <li>Enter your registered email address</li>
-                            <li>Check your inbox for a 6-digit OTP verification code</li>
-                            <li>Enter the OTP &amp; set your new password</li>
+                            <li>Receive a 6-digit OTP code on your email</li>
+                            <li>Submit OTP &amp; set your new password</li>
                         </ol>
                     </div>
 
-                    <c:if test="${not empty error}">
-                        <div class="alert-error">⚠️ <c:out value="${error}"/></div>
-                    </c:if>
-
                     <form action="${pageContext.request.contextPath}/forgot-password" method="POST" id="forgotForm" novalidate>
-                        
+                        <input type="hidden" name="action" value="send_otp">
+
                         <!-- Email Input Group -->
                         <div id="emailGroup" style="margin-bottom:1.25rem;">
                             <label for="emailInput" class="auth-form-label">Registered Email Address *</label>
@@ -306,8 +354,8 @@
                 hintBox.innerHTML = '<strong>Reset via Email OTP:</strong>' +
                     '<ol>' +
                     '<li>Enter your registered email address</li>' +
-                    '<li>Check your inbox for a 6-digit OTP verification code</li>' +
-                    '<li>Enter the OTP &amp; set your new password</li>' +
+                    '<li>Receive a 6-digit OTP code on your email</li>' +
+                    '<li>Submit OTP &amp; set your new password</li>' +
                     '</ol>';
             } else {
                 tabPhone.classList.add('active');
@@ -320,35 +368,52 @@
                 hintBox.innerHTML = '<strong>Reset via Mobile SMS OTP:</strong>' +
                     '<ol>' +
                     '<li>Enter your registered 10-digit mobile number</li>' +
-                    '<li>Check your phone for a 6-digit SMS verification code</li>' +
-                    '<li>Enter the OTP &amp; set your new password</li>' +
+                    '<li>Receive a 6-digit SMS OTP code on your phone</li>' +
+                    '<li>Submit OTP &amp; set your new password</li>' +
                     '</ol>';
             }
         }
 
-        // Form submission handling
+        // Form submission handling for initial send
         const form = document.getElementById('forgotForm');
         const btn  = document.getElementById('forgotSubmitBtn');
         if (form && btn) {
             form.addEventListener('submit', function(e) {
-                const emailVal = document.getElementById('emailInput').value.trim();
-                const phoneVal = document.getElementById('phoneInput').value.trim();
+                const emailVal = document.getElementById('emailInput')?.value.trim();
+                const phoneVal = document.getElementById('phoneInput')?.value.trim();
 
                 if (currentMethod === 'email' && (!emailVal || !emailVal.includes('@'))) {
                     e.preventDefault();
                     alert('Please enter a valid email address.');
-                    document.getElementById('emailInput').focus();
+                    document.getElementById('emailInput')?.focus();
                     return;
                 }
                 if (currentMethod === 'phone' && (!phoneVal || phoneVal.length < 10)) {
                     e.preventDefault();
                     alert('Please enter a valid 10-digit mobile number.');
-                    document.getElementById('phoneInput').focus();
+                    document.getElementById('phoneInput')?.focus();
                     return;
                 }
 
                 btn.disabled = true;
-                btn.textContent = 'Generating OTP…';
+                btn.textContent = 'Sending OTP…';
+            });
+        }
+
+        // Form submission handling for OTP verification
+        const otpForm = document.getElementById('otpVerifyForm');
+        const otpBtn  = document.getElementById('verifySubmitBtn');
+        if (otpForm && otpBtn) {
+            otpForm.addEventListener('submit', function(e) {
+                const otpVal = document.getElementById('otpCode')?.value.trim();
+                if (!otpVal || otpVal.length !== 6 || !/^\d{6}$/.test(otpVal)) {
+                    e.preventDefault();
+                    alert('Please enter a valid 6-digit OTP code.');
+                    document.getElementById('otpCode')?.focus();
+                    return;
+                }
+                otpBtn.disabled = true;
+                otpBtn.textContent = 'Verifying OTP…';
             });
         }
     </script>

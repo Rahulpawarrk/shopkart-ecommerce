@@ -9,7 +9,7 @@
     <link rel="apple-touch-icon" href="${pageContext.request.contextPath}/assets/images/favicon.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reset Password | ShopKart India</title>
+    <title>Set New Password | ShopKart India</title>
     <meta name="description" content="Set a new secure password for your ShopKart account.">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,7 +38,13 @@
             font-size: 1.5rem;
             font-weight: 800;
             color: #111827;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.35rem;
+        }
+        .auth-subtitle {
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin: 0 0 1.25rem;
+            line-height: 1.4;
         }
         .auth-form-label {
             display: block;
@@ -49,7 +55,7 @@
         }
         .auth-form-input {
             width: 100%;
-            padding: 0.65rem 0.85rem;
+            padding: 0.65rem 2.25rem 0.65rem 0.85rem;
             border: 1px solid #888c8c;
             border-radius: var(--radius-sm);
             font-size: 0.95rem;
@@ -86,15 +92,17 @@
             font-size: 0.85rem;
             margin-bottom: 1.25rem;
         }
-        .alert-invalid {
-            background: #fef9c3;
-            border: 1px solid #fde047;
-            color: #854d0e;
+        .alert-verified {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
             border-radius: var(--radius-sm);
-            padding: 1rem 1.25rem;
-            font-size: 0.9rem;
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
             margin-bottom: 1.25rem;
-            line-height: 1.5;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
         .password-strength-bar {
             height: 4px;
@@ -105,6 +113,7 @@
         .strength-hint {
             font-size: 0.75rem;
             margin-top: 4px;
+            font-weight: 600;
         }
         .form-group { margin-bottom: 1.25rem; }
         .pwd-wrapper { position: relative; }
@@ -119,6 +128,7 @@
             font-size: 1rem;
             color: #6b7280;
             padding: 0;
+            line-height: 1;
         }
         .back-link {
             display: block;
@@ -134,73 +144,62 @@
 <body>
     <div class="auth-page-wrapper">
         <!-- Logo -->
-        <a href="${pageContext.request.contextPath}/" style="text-decoration:none; margin-bottom:1.5rem; display:inline-block;">
+        <a href="${pageContext.request.contextPath}/" style="text-decoration:none; margin-bottom:1.5rem; display:inline-block;" title="ShopKart">
             <img src="${pageContext.request.contextPath}/assets/images/logo-dark.svg" alt="ShopKart" style="height:48px; width:auto; display:block;">
         </a>
 
         <div class="auth-card">
-            <h1 class="auth-card-title">Reset Your Password</h1>
-            <p style="color:#6b7280; font-size:0.875rem; margin:0 0 1.25rem;">
-                Enter the 6-digit verification code sent to your email or mobile, then choose a secure new password.
-            </p>
+            <h1 class="auth-card-title">Set New Password</h1>
+            
+            <div class="alert-verified">
+                <span>✓</span> <span>Identity verified. Enter your new password below.</span>
+            </div>
 
             <c:if test="${not empty error}">
                 <div class="alert-error">⚠️ <c:out value="${error}"/></div>
             </c:if>
 
             <form action="${pageContext.request.contextPath}/reset-password" method="POST" id="resetForm" novalidate>
+                <!-- Hidden Token / Session Identifiers -->
                 <c:if test="${not empty token}">
                     <input type="hidden" name="token" value="<c:out value='${token}'/>">
                 </c:if>
+                <c:if test="${not empty identifier}">
+                    <input type="hidden" name="identifier" value="<c:out value='${identifier}'/>">
+                </c:if>
+                <c:if test="${not empty otpCode}">
+                    <input type="hidden" name="otpCode" value="<c:out value='${otpCode}'/>">
+                </c:if>
 
-                <!-- Identifier Field (Email / Mobile) -->
-                <div class="form-group">
-                    <label for="identifier" class="auth-form-label">Registered Email or Mobile Number *</label>
-                    <input type="text" id="identifier" name="identifier" class="auth-form-input"
-                           required placeholder="you@example.com or 10-digit mobile"
-                           value="<c:out value='${identifier}'/>"
-                           <c:if test="${not empty identifier}">readonly style="background-color:#f1f5f9; cursor:not-allowed;"</c:if>>
-                </div>
-
-                <!-- 6-Digit OTP Field -->
-                <div class="form-group">
-                    <label for="otpCode" class="auth-form-label">6-Digit Verification OTP Code *</label>
-                    <input type="text" id="otpCode" name="otpCode"
-                           class="auth-form-input" required maxlength="6" pattern="[0-9]{6}"
-                           placeholder="123456" autocomplete="one-time-code" autofocus
-                           value="<c:out value='${otpCode}'/>"
-                           style="font-size: 1.3rem; letter-spacing: 6px; text-align: center; font-weight: 800; font-family: monospace;">
-                </div>
-
-                <!-- New Password -->
+                <!-- New Password Field -->
                 <div class="form-group">
                     <label for="newPassword" class="auth-form-label">New Password * (Min 8 Characters)</label>
                     <div class="pwd-wrapper">
                         <input type="password" id="newPassword" name="newPassword"
                                class="auth-form-input" required minlength="8"
-                               placeholder="Enter new password" autocomplete="new-password"
+                               placeholder="Enter new secure password" autocomplete="new-password" autofocus
                                oninput="checkStrength(this.value)">
-                        <button type="button" class="pwd-toggle" onclick="togglePwd('newPassword', this)" title="Show/hide">👁</button>
+                        <button type="button" class="pwd-toggle" onclick="togglePwd('newPassword', this)" title="Show/hide password">👁</button>
                     </div>
                     <div id="strengthBar" class="password-strength-bar" style="background:#e5e7eb;"></div>
                     <div id="strengthHint" class="strength-hint" style="color:#9ca3af;"></div>
                 </div>
 
-                <!-- Confirm Password -->
+                <!-- Confirm New Password Field -->
                 <div class="form-group">
                     <label for="confirmPassword" class="auth-form-label">Confirm New Password *</label>
                     <div class="pwd-wrapper">
                         <input type="password" id="confirmPassword" name="confirmPassword"
                                class="auth-form-input" required minlength="8"
-                               placeholder="Confirm new password" autocomplete="new-password"
+                               placeholder="Re-enter new password" autocomplete="new-password"
                                oninput="checkMatch()">
-                        <button type="button" class="pwd-toggle" onclick="togglePwd('confirmPassword', this)" title="Show/hide">👁</button>
+                        <button type="button" class="pwd-toggle" onclick="togglePwd('confirmPassword', this)" title="Show/hide password">👁</button>
                     </div>
                     <div id="matchHint" class="strength-hint"></div>
                 </div>
 
                 <button type="submit" class="btn-auth-submit" id="resetBtn">
-                    🔒 Verify Code &amp; Update Password
+                    🔒 Save New Password
                 </button>
             </form>
 
@@ -218,6 +217,7 @@
     <script>
         function togglePwd(fieldId, btn) {
             const field = document.getElementById(fieldId);
+            if (!field) return;
             if (field.type === 'password') {
                 field.type = 'text';
                 btn.textContent = '🙈';
@@ -230,6 +230,7 @@
         function checkStrength(value) {
             const bar  = document.getElementById('strengthBar');
             const hint = document.getElementById('strengthHint');
+            if (!bar || !hint) return;
             let score = 0;
             if (value.length >= 8)  score++;
             if (value.length >= 12) score++;
@@ -253,10 +254,11 @@
         }
 
         function checkMatch() {
-            const pw  = document.getElementById('newPassword').value;
-            const cpw = document.getElementById('confirmPassword').value;
+            const pw  = document.getElementById('newPassword')?.value;
+            const cpw = document.getElementById('confirmPassword')?.value;
             const hint = document.getElementById('matchHint');
-            if (cpw.length === 0) { hint.textContent = ''; return; }
+            if (!hint) return;
+            if (!cpw || cpw.length === 0) { hint.textContent = ''; return; }
             if (pw === cpw) {
                 hint.textContent = '✓ Passwords match';
                 hint.style.color = '#16a34a';
@@ -266,17 +268,24 @@
             }
         }
 
-        // Prevent double-submit
+        // Prevent double-submit & check client match
         document.getElementById('resetForm')?.addEventListener('submit', function(e) {
             const pw  = document.getElementById('newPassword')?.value;
             const cpw = document.getElementById('confirmPassword')?.value;
+            if (pw && pw.length < 8) {
+                e.preventDefault();
+                alert('Password must be at least 8 characters long.');
+                document.getElementById('newPassword')?.focus();
+                return;
+            }
             if (pw !== cpw) {
                 e.preventDefault();
                 alert('Passwords do not match. Please check and try again.');
+                document.getElementById('confirmPassword')?.focus();
                 return;
             }
             const btn = document.getElementById('resetBtn');
-            if (btn) { btn.disabled = true; btn.textContent = 'Updating…'; }
+            if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
         });
     </script>
 </body>

@@ -36,6 +36,10 @@ public class ForgotPasswordServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        String error = request.getParameter("error");
+        if (error != null && !error.trim().isEmpty()) {
+            request.setAttribute("error", error.trim());
+        }
         request.getRequestDispatcher("/WEB-INF/views/auth/forgot-password.jsp")
                .forward(request, response);
     }
@@ -44,6 +48,7 @@ public class ForgotPasswordServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        String action = request.getParameter("action");
         String identifier = request.getParameter("identifier");
         if (identifier == null || identifier.trim().isEmpty()) {
             identifier = request.getParameter("email");
@@ -51,7 +56,44 @@ public class ForgotPasswordServlet extends HttpServlet {
         if (identifier == null || identifier.trim().isEmpty()) {
             identifier = request.getParameter("phone");
         }
+        if (identifier != null) {
+            identifier = identifier.trim();
+        }
 
+        String otpCode = request.getParameter("otpCode");
+
+        // If action is verify_otp or an otpCode parameter is present in submission
+        if ("verify_otp".equalsIgnoreCase(action) || (otpCode != null && !otpCode.trim().isEmpty())) {
+            try {
+                String resetToken = authService.verifyResetOtp(identifier, otpCode);
+                logger.info("Reset OTP verified for identifier: {}. Redirecting to reset password page.", identifier);
+                response.sendRedirect(request.getContextPath() + "/reset-password?token=" + resetToken);
+                return;
+            } catch (com.example.ecommerce.exception.ValidationException ve) {
+                request.setAttribute("error", ve.getMessage());
+                request.setAttribute("otpSent", true);
+                request.setAttribute("identifier", identifier);
+                request.setAttribute("rawIdentifier", identifier);
+                request.setAttribute("methodType", (identifier != null && identifier.contains("@")) ? "EMAIL" : "PHONE");
+                String destination = request.getParameter("destination");
+                request.setAttribute("destination", destination != null && !destination.isEmpty() ? destination : identifier);
+                request.getRequestDispatcher("/WEB-INF/views/auth/forgot-password.jsp")
+                       .forward(request, response);
+                return;
+            } catch (Exception e) {
+                logger.error("Unexpected error during OTP verification for identifier: {}", identifier, e);
+                request.setAttribute("error", "An error occurred during verification. Please try again.");
+                request.setAttribute("otpSent", true);
+                request.setAttribute("identifier", identifier);
+                request.setAttribute("rawIdentifier", identifier);
+                request.setAttribute("methodType", (identifier != null && identifier.contains("@")) ? "EMAIL" : "PHONE");
+                request.getRequestDispatcher("/WEB-INF/views/auth/forgot-password.jsp")
+                       .forward(request, response);
+                return;
+            }
+        }
+
+        // Otherwise, action is send_otp (generate OTP)
         // Build the app base URL from the incoming request
         String scheme      = request.getScheme();
         String serverName  = request.getServerName();
@@ -87,7 +129,8 @@ public class ForgotPasswordServlet extends HttpServlet {
             );
         }
 
-        request.setAttribute("submitted", true);
+        request.setAttribute("otpSent", true);
+        request.setAttribute("submitted", true); // for backward compatibility
         request.setAttribute("identifier", identifier);
         request.setAttribute("methodType", result != null ? result.getMethod() : "EMAIL");
         request.setAttribute("destination", result != null ? result.getMaskedDestination() : identifier);

@@ -463,4 +463,59 @@ public class AuthService {
 
         logger.info("Password successfully reset via OTP for userId: {}", user.getUserId());
     }
+
+    /**
+     * Verifies the 6-digit OTP code submitted on the forgot-password page.
+     * If valid, generates a one-time UUID reset token, registers it in the DB,
+     * invalidates the OTP code, resets failed attempt counters, and returns the reset token.
+     *
+     * @param identifier email address or 10-digit mobile number
+     * @param otpCode    6-digit OTP verification code
+     * @return a secure reset token string to be used for setting a new password
+     */
+    public String verifyResetOtp(String identifier, String otpCode) {
+        if (identifier == null || identifier.trim().isEmpty()) {
+            throw new ValidationException("Email address or mobile number is required.");
+        }
+        if (otpCode == null || otpCode.trim().length() < 6) {
+            throw new ValidationException("Please enter a valid 6-digit OTP verification code.");
+        }
+
+        String input = identifier.trim();
+
+        // 1. Check if user is locked out due to multiple failed verification attempts
+        OtpRateLimiter.checkFailedVerification(input, "PASSWORD_RESET");
+
+        Optional<User> userOpt;
+        if (input.contains("@")) {
+            userOpt = userDAO.findByEmail(input.toLowerCase());
+        } else {
+            String cleanPhone = input.replaceAll("[^0-9]", "");
+            userOpt = userDAO.findByPhone(cleanPhone);
+        }
+
+        if (userOpt.isEmpty()) {
+            OtpRateLimiter.recordFailedVerification(input, "PASSWORD_RESET");
+            throw new ValidationException("Invalid or expired OTP verification code. Please request a new OTP.");
+        }
+
+        User user = userOpt.get();
+
+        boolean isValid = passwordResetDAO.validateOtp(user.getUserId(), otpCode.trim());
+        if (!isValid) {
+            OtpRateLimiter.recordFailedVerification(input, "PASSWORD_RESET");
+            throw new ValidationException("Invalid or expired OTP verification code. Please check and try again.");
+        }
+
+        // OTP is valid: invalidate OTP and create a secure one-time reset token (UUID)
+        passwordResetDAO.invalidateToken(otpCode.trim());
+        OtpRateLimiter.reset(input, "PASSWORD_RESET");
+
+        String resetToken = java.util.UUID.randomUUID().toString().replace("-", "");
+        passwordResetDAO.createToken(user.getUserId(), resetToken);
+
+        logger.info("OTP verified successfully for userId: {}. Created reset token.", user.getUserId());
+        return resetToken;
+    }
 }
+
