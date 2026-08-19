@@ -5,6 +5,8 @@ import com.example.ecommerce.exception.ValidationException;
 import com.example.ecommerce.product.dao.ProductDAO;
 import com.example.ecommerce.product.model.Product;
 import com.example.ecommerce.wishlist.dao.WishlistDAO;
+import com.example.ecommerce.wishlist.model.Wishlist;
+import com.example.ecommerce.wishlist.model.WishlistItem;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

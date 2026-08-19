@@ -180,8 +180,7 @@
                         <a href="${pageContext.request.contextPath}/cart" class="header-action-inline" title="Cart">
                             <div class="cart-icon-wrapper">
                                 <span class="badge-icon">🛒</span>
-                                <span class="badge-count" id="headerCartBadge">${not empty sessionScope.cart ?
-                                    sessionScope.cart.totalQuantity : 0}</span>
+                                <span class="badge-count" id="headerCartBadge">${not empty sessionScope.cart ? sessionScope.cart.totalQuantity : 0}</span>
                             </div>
                             <span>Cart</span>
                         </a>

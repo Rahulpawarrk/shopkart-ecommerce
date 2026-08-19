@@ -33,6 +33,12 @@ public class ChangePasswordServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        UserSession userSession = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+        if (userSession == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/login");
+            return;
+        }
         request.getRequestDispatcher("/WEB-INF/views/auth/change-password.jsp").forward(request, response);
     }
 
@@ -41,7 +47,11 @@ public class ChangePasswordServlet extends HttpServlet {
             throws ServletException, IOException {
         
         HttpSession session = request.getSession(false);
-        UserSession userSession = (UserSession) session.getAttribute("currentUser");
+        UserSession userSession = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+        if (userSession == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/login");
+            return;
+        }
 
         String currentPassword = request.getParameter("currentPassword");
         String newPassword = request.getParameter("newPassword");

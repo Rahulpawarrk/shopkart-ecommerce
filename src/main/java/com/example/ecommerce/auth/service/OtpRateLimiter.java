@@ -20,7 +20,12 @@ public class OtpRateLimiter {
     private static final long LOCKOUT_DURATION_MS = 60 * 60 * 1000L; // 1 Hour in ms
     private static final int LOCKOUT_DURATION_SEC = 3600; // 1 Hour in seconds
 
+    private static final int MAX_VERIFY_FAILURES = 5;
+    private static final long VERIFY_LOCKOUT_MS = 15 * 60 * 1000L; // 15 Minutes
+    private static final int VERIFY_LOCKOUT_SEC = 900;
+
     private static final ConcurrentHashMap<String, RateLimitEntry> inMemoryStore = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, FailedAttemptEntry> failedAttemptsStore = new ConcurrentHashMap<>();
 
     private static class RateLimitEntry {
         int requestCount;
@@ -30,6 +35,18 @@ public class OtpRateLimiter {
         RateLimitEntry(long now) {
             this.requestCount = 1;
             this.windowStartTime = now;
+            this.lockedUntil = 0;
+        }
+    }
+
+    private static class FailedAttemptEntry {
+        int failureCount;
+        long firstFailureTime;
+        long lockedUntil;
+
+        FailedAttemptEntry(long now) {
+            this.failureCount = 1;
+            this.firstFailureTime = now;
             this.lockedUntil = 0;
         }
     }
@@ -121,15 +138,88 @@ public class OtpRateLimiter {
     }
 
     /**
-     * Resets the rate limiter for an identifier upon successful verification.
+     * Checks if the identifier is locked out due to too many failed OTP verification attempts.
+     */
+    public static void checkFailedVerification(String identifier, String actionType) {
+        if (identifier == null || identifier.trim().isEmpty()) {
+            return;
+        }
+
+        String target = identifier.trim().toLowerCase();
+        String verifyLockKey = "shopkart:otp_verify_lock:" + actionType.toLowerCase() + ":" + target;
+        long now = System.currentTimeMillis();
+
+        if (RedisManager.isAvailable()) {
+            String locked = RedisManager.get(verifyLockKey);
+            if (locked != null) {
+                try {
+                    long lockExpiryMs = Long.parseLong(locked);
+                    if (lockExpiryMs > now) {
+                        long remainingMinutes = Math.max(1, (lockExpiryMs - now) / 60000 + 1);
+                        throw new ValidationException("Too many failed verification attempts. Please try again in " + remainingMinutes + " minute(s).");
+                    }
+                } catch (NumberFormatException ignored) {}
+            }
+        }
+
+        FailedAttemptEntry entry = failedAttemptsStore.get(target);
+        if (entry != null && entry.lockedUntil > now) {
+            long remainingMinutes = Math.max(1, (entry.lockedUntil - now) / 60000 + 1);
+            throw new ValidationException("Too many failed verification attempts. Please try again in " + remainingMinutes + " minute(s).");
+        }
+    }
+
+    /**
+     * Records a failed verification attempt. If maximum allowed failures exceeded, locks out the identifier.
+     */
+    public static void recordFailedVerification(String identifier, String actionType) {
+        if (identifier == null || identifier.trim().isEmpty()) {
+            return;
+        }
+
+        String target = identifier.trim().toLowerCase();
+        String verifyLockKey = "shopkart:otp_verify_lock:" + actionType.toLowerCase() + ":" + target;
+        long now = System.currentTimeMillis();
+
+        FailedAttemptEntry entry = failedAttemptsStore.compute(target, (k, v) -> {
+            if (v == null) {
+                return new FailedAttemptEntry(now);
+            }
+            if (now - v.firstFailureTime > VERIFY_LOCKOUT_MS) {
+                v.failureCount = 1;
+                v.firstFailureTime = now;
+                v.lockedUntil = 0;
+                return v;
+            }
+            v.failureCount++;
+            if (v.failureCount >= MAX_VERIFY_FAILURES) {
+                v.lockedUntil = now + VERIFY_LOCKOUT_MS;
+            }
+            return v;
+        });
+
+        if (entry.lockedUntil > now) {
+            if (RedisManager.isAvailable()) {
+                RedisManager.setex(verifyLockKey, VERIFY_LOCKOUT_SEC, String.valueOf(entry.lockedUntil));
+            }
+            long remainingMinutes = Math.max(1, (entry.lockedUntil - now) / 60000 + 1);
+            logger.warn("OTP verification locked out for {} [action={}]: Exceeded {} failed attempts.", target, actionType, MAX_VERIFY_FAILURES);
+            throw new ValidationException("Too many incorrect OTP attempts. For security, account verification is locked for " + remainingMinutes + " minute(s).");
+        }
+    }
+
+    /**
+     * Resets both the rate limiter and failed attempts for an identifier upon successful verification.
      */
     public static void reset(String identifier, String actionType) {
         if (identifier == null) return;
         String target = identifier.trim().toLowerCase();
         inMemoryStore.remove(target);
+        failedAttemptsStore.remove(target);
         if (RedisManager.isAvailable()) {
             RedisManager.del("shopkart:otp_lock:" + actionType.toLowerCase() + ":" + target);
             RedisManager.del("shopkart:otp_count:" + actionType.toLowerCase() + ":" + target);
+            RedisManager.del("shopkart:otp_verify_lock:" + actionType.toLowerCase() + ":" + target);
         }
     }
 }

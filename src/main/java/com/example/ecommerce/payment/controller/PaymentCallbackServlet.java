@@ -13,6 +13,8 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -23,6 +25,8 @@ import java.io.IOException;
  */
 @WebServlet(name = "PaymentCallbackServlet", urlPatterns = {"/payment/callback"})
 public class PaymentCallbackServlet extends HttpServlet {
+
+    private static final Logger logger = LoggerFactory.getLogger(PaymentCallbackServlet.class);
 
     private PaymentService paymentService;
     private OrderService orderService;
@@ -43,9 +47,26 @@ public class PaymentCallbackServlet extends HttpServlet {
             throws ServletException, IOException {
         
         HttpSession session = request.getSession(false);
-        UserSession user = (UserSession) session.getAttribute("currentUser");
+        UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/login");
+            return;
+        }
 
-        int orderId = Integer.parseInt(request.getParameter("orderId"));
+        String orderIdStr = request.getParameter("orderId");
+        if (orderIdStr == null || orderIdStr.trim().isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/orders");
+            return;
+        }
+
+        int orderId;
+        try {
+            orderId = Integer.parseInt(orderIdStr.trim());
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/orders");
+            return;
+        }
+
         String txnRef = request.getParameter("transactionReference");
         String statusParam = request.getParameter("status");
         String reason = request.getParameter("reason");
@@ -58,9 +79,11 @@ public class PaymentCallbackServlet extends HttpServlet {
         boolean isSuccess;
         String gatewayResponseMsg;
 
-        if (rzpPaymentId != null && !rzpPaymentId.trim().isEmpty()) {
-            // Verify HMAC-SHA256 Cryptographic Signature
-            boolean isSignatureValid = razorpayService.verifyPaymentSignature(rzpOrderId, rzpPaymentId, rzpSignature);
+        if (razorpayService.isConfigured() || (rzpPaymentId != null && !rzpPaymentId.trim().isEmpty())) {
+            // Live or configured Razorpay mode: Require valid cryptographic signature
+            boolean isSignatureValid = (rzpPaymentId != null && !rzpPaymentId.trim().isEmpty())
+                    && razorpayService.verifyPaymentSignature(rzpOrderId, rzpPaymentId, rzpSignature);
+
             if (isSignatureValid) {
                 isSuccess = true;
                 txnRef = rzpPaymentId;
@@ -71,10 +94,10 @@ public class PaymentCallbackServlet extends HttpServlet {
                 reason = "Cryptographic signature verification failed. Payment was not recorded.";
             }
         } else {
-            // Standard simulated sandbox callback
+            // Local Sandbox Test Mode only (when RAZORPAY_KEY_ID is not configured)
             isSuccess = "SUCCESS".equalsIgnoreCase(statusParam);
-            gatewayResponseMsg = isSuccess ? "Simulated Payment Successful (Txn: " + txnRef + ")" : 
-                    (reason != null ? reason : "Payment Declined by Issuer / User Cancelled");
+            gatewayResponseMsg = isSuccess ? "Sandbox Simulated Payment Successful (Txn: " + (txnRef != null ? txnRef : "SIM-" + System.currentTimeMillis()) + ")" : 
+                    (reason != null && !reason.trim().isEmpty() ? reason : "Payment Declined by Issuer / User Cancelled");
         }
 
         try {
@@ -89,7 +112,7 @@ public class PaymentCallbackServlet extends HttpServlet {
 
             Order order = orderService.getOrderById(orderId, user.getUserId());
 
-            if (processed) {
+            if (processed && isSuccess) {
                 if (session != null) {
                     Cart freshCart = cartService.getCart(user.getUserId());
                     session.setAttribute("cart", freshCart);
@@ -104,6 +127,7 @@ public class PaymentCallbackServlet extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/payment/gateway?orderId=" + orderId + "&paymentFailed=true&error=" + encodedError);
             }
         } catch (Exception e) {
+            logger.error("Error processing payment callback for orderId: {}", orderId, e);
             response.sendRedirect(request.getContextPath() + "/orders");
         }
     }

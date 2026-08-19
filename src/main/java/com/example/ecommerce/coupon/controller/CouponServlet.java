@@ -120,9 +120,17 @@ public class CouponServlet extends HttpServlet {
             return request.getContextPath() + "/checkout";
         }
         String trimmed = redirectUrl.trim();
-        if (trimmed.startsWith(request.getContextPath())) {
+        String contextPath = request.getContextPath();
+
+        // Prevent protocol-relative URLs (//evil.com), external schemas, and CRLF injection
+        if (trimmed.startsWith("//") || trimmed.contains("://") || trimmed.contains("\r") || trimmed.contains("\n")) {
+            return contextPath + "/checkout";
+        }
+
+        if (!contextPath.isEmpty() && trimmed.startsWith(contextPath)) {
             return trimmed;
         }
-        return trimmed.startsWith("/") ? request.getContextPath() + trimmed : request.getContextPath() + "/" + trimmed;
+
+        return trimmed.startsWith("/") ? contextPath + trimmed : contextPath + "/" + trimmed;
     }
 }

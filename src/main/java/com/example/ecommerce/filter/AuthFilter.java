@@ -21,9 +21,14 @@ import java.io.IOException;
  */
 @WebFilter(filterName = "AuthFilter", urlPatterns = {
         "/account", "/account/*",
+        "/profile", "/profile/*",
+        "/change-password", "/change-password/*",
         "/addresses", "/addresses/*",
         "/orders", "/orders/*",
         "/order", "/order/*",
+        "/returns", "/returns/*",
+        "/order/return",
+        "/product/review", "/order/review",
         "/checkout", "/checkout/*",
         "/cart", "/cart/*",
         "/wishlist", "/wishlist/*",

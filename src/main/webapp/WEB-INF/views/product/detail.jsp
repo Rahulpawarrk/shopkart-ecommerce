@@ -475,8 +475,7 @@
                         <a href="${pageContext.request.contextPath}/cart" class="header-action-inline" title="Cart">
                             <div class="cart-icon-wrapper">
                                 <span class="badge-icon">🛒</span>
-                                <span class="badge-count" id="headerCartBadge">${not empty sessionScope.cart ?
-                                    sessionScope.cart.totalQuantity : 0}</span>
+                                <span class="badge-count" id="headerCartBadge">${not empty sessionScope.cart ? sessionScope.cart.totalQuantity : 0}</span>
                             </div>
                             <span>Cart</span>
                         </a>
@@ -506,8 +505,7 @@
                     style="max-width: 1500px; margin: 1rem auto 0; padding: 0 2rem; font-size: 0.8rem; color: var(--text-muted);">
                     <a href="${pageContext.request.contextPath}/" style="color: var(--primary);">Home</a> &gt;
                     <a href="${pageContext.request.contextPath}/products?category=${product.categoryId}"
-                        style="color: var(--primary);">${not empty product.category ? product.category.categoryName :
-                        'Catalog'}</a> &gt;
+                        style="color: var(--primary);">${not empty product.category ? product.category.categoryName : 'Catalog'}</a> &gt;
                     <span>${product.brand}</span> &gt;
                     <span>${product.productName}</span>
                 </div>

@@ -81,14 +81,14 @@ public class SmsService {
 
     private boolean sendViaFast2SMS(String phone, String message) {
         try {
-            String url = "https://www.fast2sms.com/dev/bulkV2?authorization=" + 
-                         URLEncoder.encode(fast2smsApiKey, StandardCharsets.UTF_8) +
-                         "&route=q&message=" + URLEncoder.encode(message, StandardCharsets.UTF_8) +
+            String url = "https://www.fast2sms.com/dev/bulkV2?route=q&message=" + 
+                         URLEncoder.encode(message, StandardCharsets.UTF_8) +
                          "&language=english&flash=0&numbers=" + URLEncoder.encode(phone, StandardCharsets.UTF_8);
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(url))
                     .timeout(Duration.ofSeconds(15))
+                    .header("authorization", fast2smsApiKey.trim())
                     .GET()
                     .build();
 

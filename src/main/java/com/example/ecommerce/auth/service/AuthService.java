@@ -19,7 +19,6 @@ import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -29,7 +28,8 @@ import com.example.ecommerce.auth.model.ForgotPasswordResult;
 import com.example.ecommerce.util.SmsService;
 
 /**
- * Service orchestrating authentication, customer registration, session preparation, and profile management.
+ * Service orchestrating authentication, customer registration, session
+ * preparation, and profile management.
  */
 public class AuthService {
 
@@ -60,7 +60,8 @@ public class AuthService {
         this(userDAO, roleDAO, passwordResetDAO, new EmailService(), new SmsService());
     }
 
-    public AuthService(UserDAO userDAO, RoleDAO roleDAO, PasswordResetDAO passwordResetDAO, EmailService emailService, SmsService smsService) {
+    public AuthService(UserDAO userDAO, RoleDAO roleDAO, PasswordResetDAO passwordResetDAO, EmailService emailService,
+            SmsService smsService) {
         this.userDAO = userDAO;
         this.roleDAO = roleDAO;
         this.passwordResetDAO = passwordResetDAO;
@@ -69,11 +70,13 @@ public class AuthService {
     }
 
     /**
-     * Validates customer registration details prior to sending email verification OTP.
-     * Checks format of email, 10-digit mobile, password length/match, and database uniqueness.
+     * Validates customer registration details prior to sending email verification
+     * OTP.
+     * Checks format of email, 10-digit mobile, password length/match, and database
+     * uniqueness.
      */
-    public void validateRegistrationDetails(String email, String password, String confirmPassword, 
-                                           String firstName, String lastName, String phone) {
+    public void validateRegistrationDetails(String email, String password, String confirmPassword,
+            String firstName, String lastName, String phone) {
         List<String> errors = new ArrayList<>();
 
         // 1. Validation Rules
@@ -121,14 +124,15 @@ public class AuthService {
 
     /**
      * Registers a new customer with transactional safety.
-     * Automatically assigns the 'CUSTOMER' role and provisions an empty Cart and Wishlist.
+     * Automatically assigns the 'CUSTOMER' role and provisions an empty Cart and
+     * Wishlist.
      * Both Email and Mobile Phone are compulsory and must be unique in the system.
      *
      * @return UserSession representing the newly registered customer
      */
-    public UserSession registerCustomer(String email, String password, String confirmPassword, 
-                                        String firstName, String lastName, String phone) {
-        
+    public UserSession registerCustomer(String email, String password, String confirmPassword,
+            String firstName, String lastName, String phone) {
+
         validateRegistrationDetails(email, password, confirmPassword, firstName, lastName, phone);
 
         String normalizedEmail = email.trim().toLowerCase();
@@ -149,7 +153,8 @@ public class AuthService {
         Role customerRole = roleDAO.findByName("CUSTOMER")
                 .orElseThrow(() -> new AppException("System role 'CUSTOMER' not configured in database."));
 
-        // 5. Transactional Execution: Create User -> Assign Role -> Provision Cart & Wishlist
+        // 5. Transactional Execution: Create User -> Assign Role -> Provision Cart &
+        // Wishlist
         try (Connection conn = DBConnection.getConnection()) {
             conn.setAutoCommit(false); // Begin Transaction
             try {
@@ -158,7 +163,8 @@ public class AuthService {
                 userDAO.provisionCartAndWishlist(userId, conn);
 
                 conn.commit(); // Commit Transaction
-                logger.info("Successfully registered customer: [id={}, email={}, phone={}]", userId, normalizedEmail, normalizedPhone);
+                logger.info("Successfully registered customer: [id={}, email={}, phone={}]", userId, normalizedEmail,
+                        normalizedPhone);
 
                 newUser.setUserId(userId);
                 newUser.setRoles(List.of(customerRole));
@@ -176,7 +182,8 @@ public class AuthService {
     }
 
     /**
-     * Authenticates a user by email and plain-text password against stored BCrypt hash.
+     * Authenticates a user by email and plain-text password against stored BCrypt
+     * hash.
      *
      * @return UserSession for active authenticated user
      */
@@ -198,7 +205,8 @@ public class AuthService {
         // Check account status
         if (!"ACTIVE".equalsIgnoreCase(user.getStatus())) {
             logger.warn("Authentication rejected: Account {} is {}", normalizedEmail, user.getStatus());
-            throw new ValidationException("Your account is " + user.getStatus().toLowerCase() + ". Please contact customer support.");
+            throw new ValidationException(
+                    "Your account is " + user.getStatus().toLowerCase() + ". Please contact customer support.");
         }
 
         // Verify BCrypt Password
@@ -253,10 +261,11 @@ public class AuthService {
 
     /**
      * Registers a new Administrator account directly from the Admin Dashboard.
-     * The account is granted strictly administrative access and cannot place customer orders.
+     * The account is granted strictly administrative access and cannot place
+     * customer orders.
      */
     public User registerAdmin(String email, String password, String confirmPassword,
-                              String firstName, String lastName, String phone, int createdByAdminUserId) {
+            String firstName, String lastName, String phone, int createdByAdminUserId) {
         validateRegistrationDetails(email, password, confirmPassword, firstName, lastName, phone);
 
         String hashedPassword = PasswordUtil.hashPassword(password);
@@ -284,12 +293,14 @@ public class AuthService {
     }
 
     /**
-     * Initiates the forgot-password flow supporting 6-digit OTP over EMAIL and MOBILE PHONE.
+     * Initiates the forgot-password flow supporting 6-digit OTP over EMAIL and
+     * MOBILE PHONE.
      * Enforces rate limiting (max 3 attempts, 1-hour block).
      *
-     * @param identifier   email address OR 10-digit mobile number
-     * @param appBaseUrl   full base URL (optional)
-     * @return ForgotPasswordResult with method, masked info, and verification details
+     * @param identifier email address OR 10-digit mobile number
+     * @param appBaseUrl full base URL (optional)
+     * @return ForgotPasswordResult with method, masked info, and verification
+     *         details
      */
     public ForgotPasswordResult initiateForgotPassword(String identifier, String appBaseUrl) {
         if (identifier == null || identifier.trim().isEmpty()) {
@@ -313,13 +324,15 @@ public class AuthService {
 
         if (userOpt.isEmpty()) {
             logger.info("Forgot password requested for non-existent {}: {} (ignored)", method, input);
-            return new ForgotPasswordResult(method, isEmail ? maskEmail(input) : maskPhone(input), input, null, null, false);
+            return new ForgotPasswordResult(method, isEmail ? maskEmail(input) : maskPhone(input), input, null, null,
+                    false);
         }
 
         User user = userOpt.get();
         if (!"ACTIVE".equalsIgnoreCase(user.getStatus())) {
             logger.warn("Forgot password requested for non-ACTIVE account: {}", input);
-            return new ForgotPasswordResult(method, isEmail ? maskEmail(input) : maskPhone(input), input, null, null, false);
+            return new ForgotPasswordResult(method, isEmail ? maskEmail(input) : maskPhone(input), input, null, null,
+                    false);
         }
 
         // Generate 6-Digit Numeric OTP (10-minute expiry)
@@ -337,7 +350,8 @@ public class AuthService {
         } else {
             String userPhone = user.getPhone() != null ? user.getPhone() : input;
             smsService.sendOtpSms(userPhone, otpCode);
-            logger.info("Forgot-password 6-digit OTP issued via SMS to +91-{} for userId: {}", userPhone, user.getUserId());
+            logger.info("Forgot-password 6-digit OTP issued via SMS to +91-{} for userId: {}", userPhone,
+                    user.getUserId());
             return new ForgotPasswordResult("PHONE", maskPhone(userPhone), userPhone, null, null, true);
         }
     }
@@ -350,21 +364,25 @@ public class AuthService {
     }
 
     private String maskEmail(String email) {
-        if (email == null || !email.contains("@")) return email;
+        if (email == null || !email.contains("@"))
+            return email;
         int atIdx = email.indexOf('@');
         String name = email.substring(0, atIdx);
         String domain = email.substring(atIdx);
-        if (name.length() <= 2) return name + "***" + domain;
+        if (name.length() <= 2)
+            return name + "***" + domain;
         return name.substring(0, 2) + "***" + name.charAt(name.length() - 1) + domain;
     }
 
     private String maskPhone(String phone) {
-        if (phone == null || phone.length() < 4) return phone;
+        if (phone == null || phone.length() < 4)
+            return phone;
         return phone.substring(0, 2) + "******" + phone.substring(phone.length() - 2);
     }
 
     /**
-     * Validates a reset token and updates the user's password, then invalidates the token.
+     * Validates a reset token and updates the user's password, then invalidates the
+     * token.
      * (Retained for backwards compatibility)
      */
     public void resetPassword(String token, String newPassword, String confirmPassword) {
@@ -390,12 +408,13 @@ public class AuthService {
     }
 
     /**
-     * Validates a 6-digit OTP (received via Email or SMS) and securely updates the user's password.
+     * Validates a 6-digit OTP (received via Email or SMS) and securely updates the
+     * user's password.
      *
-     * @param identifier         email address or 10-digit mobile number
-     * @param otpCode            6-digit OTP verification code
-     * @param newPassword        new plain-text password
-     * @param confirmPassword    confirmation password
+     * @param identifier      email address or 10-digit mobile number
+     * @param otpCode         6-digit OTP verification code
+     * @param newPassword     new plain-text password
+     * @param confirmPassword confirmation password
      */
     public void resetPasswordWithOtp(String identifier, String otpCode, String newPassword, String confirmPassword) {
         if (identifier == null || identifier.trim().isEmpty()) {
@@ -412,6 +431,10 @@ public class AuthService {
         }
 
         String input = identifier.trim();
+
+        // 1. Check if user is locked out due to multiple failed verification attempts
+        OtpRateLimiter.checkFailedVerification(input, "PASSWORD_RESET");
+
         Optional<User> userOpt;
         if (input.contains("@")) {
             userOpt = userDAO.findByEmail(input.toLowerCase());
@@ -420,11 +443,17 @@ public class AuthService {
             userOpt = userDAO.findByPhone(cleanPhone);
         }
 
-        User user = userOpt.orElseThrow(() -> new ValidationException("No account found with this email or mobile number."));
+        if (userOpt.isEmpty()) {
+            OtpRateLimiter.recordFailedVerification(input, "PASSWORD_RESET");
+            throw new ValidationException("Invalid or expired OTP verification code. Please request a new OTP.");
+        }
+
+        User user = userOpt.get();
 
         boolean isValid = passwordResetDAO.validateOtp(user.getUserId(), otpCode.trim());
         if (!isValid) {
-            throw new ValidationException("Invalid or expired OTP verification code. Please request a new OTP.");
+            OtpRateLimiter.recordFailedVerification(input, "PASSWORD_RESET");
+            throw new ValidationException("Invalid or expired OTP verification code. Please check and try again.");
         }
 
         String newHash = PasswordUtil.hashPassword(newPassword);

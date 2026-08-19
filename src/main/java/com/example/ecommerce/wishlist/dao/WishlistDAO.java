@@ -45,7 +45,7 @@ public class WishlistDAO {
         throw new SQLException("Failed to resolve or create wishlist for userId: " + userId);
     }
 
-    public Optional<Wishlist> getWishlistWithItems(int userId) {
+    public Optional<com.example.ecommerce.wishlist.model.Wishlist> getWishlistWithItems(int userId) {
         String wishlistSql = "SELECT wishlist_id, user_id, created_at FROM dbo.wishlists WHERE user_id = ?";
 
         try (Connection conn = DBConnection.getConnection()) {

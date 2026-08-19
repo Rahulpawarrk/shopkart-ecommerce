@@ -126,8 +126,8 @@ public class OrderService {
             order.setOrderStatus(OrderStatus.PROCESSING);
             order.setPaymentStatus(PaymentStatus.PENDING);
         } else {
-            order.setOrderStatus(OrderStatus.PROCESSING);
-            order.setPaymentStatus(PaymentStatus.PAID);
+            order.setOrderStatus(OrderStatus.PENDING);
+            order.setPaymentStatus(PaymentStatus.PENDING);
         }
 
         // Financials from Authoritative Cart
@@ -277,8 +277,8 @@ public class OrderService {
             order.setOrderStatus(OrderStatus.PROCESSING);
             order.setPaymentStatus(PaymentStatus.PENDING);
         } else {
-            order.setOrderStatus(OrderStatus.PROCESSING);
-            order.setPaymentStatus(PaymentStatus.PAID);
+            order.setOrderStatus(OrderStatus.PENDING);
+            order.setPaymentStatus(PaymentStatus.PENDING);
         }
 
         order.setSubtotal(directCart.getSubtotal());

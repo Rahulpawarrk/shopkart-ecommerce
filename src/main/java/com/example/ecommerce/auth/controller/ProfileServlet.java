@@ -36,7 +36,11 @@ public class ProfileServlet extends HttpServlet {
             throws ServletException, IOException {
         
         HttpSession session = request.getSession(false);
-        UserSession userSession = (UserSession) session.getAttribute("currentUser");
+        UserSession userSession = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+        if (userSession == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/login");
+            return;
+        }
 
         try {
             User user = authService.getUserProfile(userSession.getUserId());
@@ -55,7 +59,7 @@ public class ProfileServlet extends HttpServlet {
             }
 
         } catch (Exception e) {
-            logger.error("Error loading profile for userId: {}", userSession.getUserId(), e);
+            logger.error("Error loading profile for userId: {}", (userSession != null ? userSession.getUserId() : "unknown"), e);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Could not load user profile");
         }
     }
@@ -65,7 +69,11 @@ public class ProfileServlet extends HttpServlet {
             throws ServletException, IOException {
         
         HttpSession session = request.getSession(false);
-        UserSession userSession = (UserSession) session.getAttribute("currentUser");
+        UserSession userSession = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+        if (userSession == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/login");
+            return;
+        }
 
         String firstName = request.getParameter("firstName");
         String lastName = request.getParameter("lastName");
