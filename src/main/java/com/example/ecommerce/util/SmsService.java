@@ -69,18 +69,16 @@ public class SmsService {
         
         String message;
         if ("REGISTRATION".equalsIgnoreCase(purpose)) {
-            message = "Your ShopKart registration verification code is: " + otpCode + 
-                      ". Valid for 10 minutes. Welcome to ShopKart!";
+            message = "ShopKart OTP: " + otpCode + ". Valid for 10 mins. Welcome!";
         } else {
-            message = "Your ShopKart password reset verification code is: " + otpCode + 
-                      ". Valid for 10 minutes. Do not share this OTP with anyone.";
+            message = "ShopKart OTP: " + otpCode + ". Valid for 10 mins.";
         }
 
         // 1. TextBee Free Android Gateway (Primary)
         if (textbeeApiKey != null && !textbeeApiKey.trim().isEmpty() &&
             textbeeDeviceId != null && !textbeeDeviceId.trim().isEmpty()) {
             
-            logger.info("Dispatching [{}] SMS via TextBee to +91-{}...", purpose, cleanPhone);
+            logger.info("Dispatching [{}] SMS via TextBee to {}...", purpose, cleanPhone);
             boolean sent = sendViaTextBee(cleanPhone, message);
             if (sent) {
                 return true;
@@ -114,17 +112,15 @@ public class SmsService {
 
     private boolean sendViaTextBee(String phone, String message) {
         try {
-            // E.164 phone format for TextBee official gateway API (e.g. +917021317291)
+            // Standard 10-digit format for Indian domestic numbers to match phone's native SMS routing
             String cleanDigits = phone.trim().replaceAll("[^0-9]", "");
             String toPhone;
-            if (cleanDigits.length() == 10) {
-                toPhone = "+91" + cleanDigits;
-            } else if (cleanDigits.startsWith("91") && cleanDigits.length() == 12) {
-                toPhone = "+" + cleanDigits;
-            } else if (phone.trim().startsWith("+")) {
-                toPhone = phone.trim();
+            if (cleanDigits.length() == 12 && cleanDigits.startsWith("91")) {
+                toPhone = cleanDigits.substring(2);
+            } else if (cleanDigits.length() == 13 && cleanDigits.startsWith("+91")) {
+                toPhone = cleanDigits.substring(3);
             } else {
-                toPhone = "+" + cleanDigits;
+                toPhone = cleanDigits;
             }
 
             String url = "https://api.textbee.dev/api/v1/gateway/send-sms";
