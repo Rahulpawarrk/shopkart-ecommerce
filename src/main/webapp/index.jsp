@@ -1115,7 +1115,7 @@
                                 <div class="order-number-pill">
                                     <span>Order #${justPlacedOrder.orderNumber}</span>
                                     <button type="button" class="copy-order-btn"
-                                        onclick="copyOrderNumber('${justPlacedOrder.orderNumber}', event)"
+                                        data-copy-val="${justPlacedOrder.orderNumber}"
                                         title="Copy Order Number">📋 Copy</button>
                                 </div>
                             </div>

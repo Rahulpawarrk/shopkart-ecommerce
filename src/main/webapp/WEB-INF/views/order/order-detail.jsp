@@ -836,7 +836,7 @@
                                             style="font-size: 1.75rem; font-weight: 900; color: #ffffff; letter-spacing: -0.02em; margin: 0 0 0.4rem 0; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
                                             Order #${order.orderNumber}
                                             <button type="button" class="copy-order-btn"
-                                                onclick="copyOrderNumber('${order.orderNumber}', event)"
+                                                data-copy-val="${order.orderNumber}"
                                                 style="background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); color: #ffffff; padding: 0.35rem 0.75rem; font-size: 0.8rem; border-radius: 6px; cursor: pointer; font-weight: 700; display: inline-flex; align-items: center; gap: 0.3rem;">
                                                 📋 Copy #
                                             </button>
@@ -1398,13 +1398,13 @@
                                                     style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
                                                     <c:if test="${not empty order.trackingNumber}">
                                                         <button type="button" class="copy-order-btn"
-                                                            onclick="copyOrderNumber('${order.trackingNumber}', event)"
+                                                            data-copy-val="${order.trackingNumber}"
                                                             style="padding: 0.5rem 0.85rem; font-size: 0.82rem; background: #ffffff; border: 1px solid #86efac; color: #166534; border-radius: 6px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3rem;">
                                                             📋 Copy AWB
                                                         </button>
                                                     </c:if>
                                                     <button type="button" id="syncLiveTrackingBtn"
-                                                        onclick="syncLiveCarrierTracking('${order.orderNumber}')"
+                                                        data-action="syncLiveTracking" data-order-id="${order.orderNumber}"
                                                         style="padding: 0.5rem 1.1rem; font-size: 0.82rem; background: #166534; color: #ffffff; border: none; border-radius: 6px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: 0 2px 6px rgba(22, 101, 52, 0.25);">
                                                         <span id="syncIcon">🔄</span> Sync Live Carrier Telemetry
                                                     </button>
@@ -2151,7 +2151,6 @@
                                     </strong></span>
                                 <button type="button" class="copy-order-btn"
                                     data-copy-val="<c:out value='${not empty param.txnRef ? param.txnRef : order.orderNumber}' />"
-                                    onclick="copyOrderNumber(this.getAttribute('data-copy-val'), event)"
                                     title="Copy Transaction ID">📋 Copy</button>
                             </div>
 
@@ -2331,6 +2330,15 @@
             <c:if test="${not empty param.returnError}">
                 showToast('Return Error: <c:out value="${param.returnError}" />', 'danger');
             </c:if>
+                    });
+
+                    // CSP-compliant delegation for Sync Live Tracking button
+                    document.addEventListener('click', function(e) {
+                        const btn = e.target.closest('[data-action="syncLiveTracking"]');
+                        if (btn) {
+                            const orderId = btn.getAttribute('data-order-id');
+                            if (orderId) syncLiveCarrierTracking(orderId);
+                        }
                     });
 
                     // Return Modal Logic

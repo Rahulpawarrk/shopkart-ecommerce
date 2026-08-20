@@ -1142,6 +1142,19 @@ window.handlePaymentModalBackdrop = function(event) {
     }
 };
 
-
-
-
+/* ==============================================================================
+   14. CSP-COMPLIANT EVENT DELEGATION FOR COPY BUTTONS
+   Replaces inline onclick="copyOrderNumber(...)" handlers across all pages.
+   Any button/element with [data-copy-val] will trigger the clipboard copy.
+   ============================================================================== */
+document.addEventListener('click', function(event) {
+    const btn = event.target.closest('[data-copy-val]');
+    if (btn) {
+        event.preventDefault();
+        event.stopPropagation();
+        const val = btn.getAttribute('data-copy-val');
+        if (val) {
+            window.copyOrderNumber(val, event);
+        }
+    }
+});
