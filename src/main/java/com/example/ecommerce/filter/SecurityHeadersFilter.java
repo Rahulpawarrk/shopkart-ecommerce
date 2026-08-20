@@ -82,14 +82,14 @@ public class SecurityHeadersFilter implements Filter {
             String cspNonce = java.util.Base64.getEncoder().encodeToString(nonceBytes);
             httpRequest.setAttribute("cspNonce", cspNonce);
 
-            // 5. Content Security Policy (CSP) - Hardened OWASP & Mozilla Observatory Compliant Policy
+            // 5. Content Security Policy (CSP) - Production Security Policy allowing application inline handlers & integrations
             httpResponse.setHeader("Content-Security-Policy",
                     "default-src 'self'; " +
-                    "script-src 'self' 'nonce-" + cspNonce + "' https://checkout.razorpay.com; " +
+                    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com https://cdn.jsdelivr.net; " +
                     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
                     "font-src 'self' https://fonts.gstatic.com data:; " +
                     "img-src 'self' data: https: blob:; " +
-                    "connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com; " +
+                    "connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com https://nominatim.openstreetmap.org; " +
                     "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com; " +
                     "object-src 'none'; " +
                     "base-uri 'self'; " +
@@ -105,7 +105,7 @@ public class SecurityHeadersFilter implements Filter {
                     "display-capture=(), " +
                     "encrypted-media=(), " +
                     "fullscreen=(self), " +
-                    "geolocation=(), " +
+                    "geolocation=(self), " +
                     "gyroscope=(), " +
                     "magnetometer=(), " +
                     "microphone=(), " +

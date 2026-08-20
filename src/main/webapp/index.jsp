@@ -1,34 +1,40 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="jakarta.tags.core" %>
-<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
-<c:if test="${empty featuredProducts and empty catalogError}">
-    <c:redirect url="/home${not empty pageContext.request.queryString ? '?'.concat(pageContext.request.queryString) : ''}" />
-</c:if>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="${pageContext.request.contextPath}/assets/images/favicon.svg">
-    <link rel="shortcut icon" href="${pageContext.request.contextPath}/favicon.svg">
-    <link rel="apple-touch-icon" href="${pageContext.request.contextPath}/assets/images/favicon.svg">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="contextPath" content="${pageContext.request.contextPath}">
-    <title>ShopKart | India's Premier Online Shopping Destination</title>
-    <meta name="description" content="ShopKart India - Discover top deals on smartphones, laptops, electronics, audio, and fashion. Free express delivery, verified reviews, and secure checkout.">
-    <meta name="keywords" content="ShopKart, online shopping India, electronics, smartphones, laptops, headphones, deals, fashion, discounts">
-    <meta name="robots" content="index, follow">
-    <meta name="theme-color" content="#2563eb">
+    <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+        <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+            <c:if test="${empty featuredProducts and empty catalogError}">
+                <c:redirect
+                    url="/home${not empty pageContext.request.queryString ? '?'.concat(pageContext.request.queryString) : ''}" />
+            </c:if>
+            <!DOCTYPE html>
+            <html lang="en">
 
-    <!-- OpenGraph Social Sharing -->
-    <meta property="og:title" content="ShopKart | India's Premier Online Shopping Destination">
-    <meta property="og:description" content="Discover top deals on smartphones, laptops, audio & fashion with instant express delivery.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://shopkart-ecommerce-1m2n.onrender.com/">
-    <meta property="og:image" content="${pageContext.request.contextPath}/assets/images/logo.svg">
+            <head>
+                <!-- Favicon -->
+                <link rel="icon" type="image/svg+xml"
+                    href="${pageContext.request.contextPath}/assets/images/favicon.svg">
+                <link rel="shortcut icon" href="${pageContext.request.contextPath}/favicon.svg">
+                <link rel="apple-touch-icon" href="${pageContext.request.contextPath}/assets/images/favicon.svg">
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <meta name="contextPath" content="${pageContext.request.contextPath}">
+                <title>ShopKart | India's Premier Online Shopping Destination</title>
+                <meta name="description"
+                    content="ShopKart India - Discover top deals on smartphones, laptops, electronics, audio, and fashion. Free express delivery, verified reviews, and secure checkout.">
+                <meta name="keywords"
+                    content="ShopKart, online shopping India, electronics, smartphones, laptops, headphones, deals, fashion, discounts">
+                <meta name="robots" content="index, follow">
+                <meta name="theme-color" content="#2563eb">
 
-    <!-- Schema.org JSON-LD -->
-    <script type="application/ld+json">
+                <!-- OpenGraph Social Sharing -->
+                <meta property="og:title" content="ShopKart | India's Premier Online Shopping Destination">
+                <meta property="og:description"
+                    content="Discover top deals on smartphones, laptops, audio & fashion with instant express delivery.">
+                <meta property="og:type" content="website">
+                <meta property="og:url" content="https://shopkart-ecommerce-1m2n.onrender.com/">
+                <meta property="og:image" content="${pageContext.request.contextPath}/assets/images/logo.svg">
+
+                <!-- Schema.org JSON-LD -->
+                <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
@@ -42,236 +48,273 @@
     }
     </script>
 
-    <link rel="preload" as="image" href="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=1200&q=75" fetchpriority="high">
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css?v=5.2">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-</head>
-<body>
-    <!-- 0. SINGLE-LINE REGISTRATION SUCCESS & WELCOME STRIP -->
-    <c:if test="${param.registered == 'true' || param.welcome == 'true'}">
-        <div id="registrationSuccessBanner" style="background: linear-gradient(90deg, #059669 0%, #10b981 100%); color: #ffffff; padding: 0.55rem 1rem; font-size: 0.88rem; font-weight: 700; display: flex; align-items: center; justify-content: center; position: relative; z-index: 1200; box-shadow: 0 2px 8px rgba(0,0,0,0.12);">
-            <div style="display: flex; align-items: center; gap: 0.5rem; text-align: center;">
-                <span>🎉</span>
-                <span><strong>Registration Successful!</strong> Welcome to ShopKart<c:if test="${not empty sessionScope.currentUser.firstName}">, ${sessionScope.currentUser.firstName}</c:if>! Your account is verified. Enjoy your shopping!</span>
-            </div>
-            <button type="button" onclick="document.getElementById('registrationSuccessBanner').style.display='none'" 
-                style="position: absolute; right: 1rem; background: none; border: none; color: #ffffff; font-size: 1.1rem; cursor: pointer; padding: 0 0.5rem; font-weight: 800; line-height: 1;" 
-                title="Dismiss">✕</button>
-        </div>
-    </c:if>
+                <link rel="preload" as="image"
+                    href="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=1200&q=75"
+                    fetchpriority="high">
+                <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css?v=5.2">
+                <link rel="preconnect" href="https://fonts.googleapis.com">
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+                <link
+                    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap"
+                    rel="stylesheet">
+            </head>
 
-    <!-- 0. ADMIN STOREFRONT NOTIFICATION BAR -->
-    <c:if test="${sessionScope.currentUser.admin}">
-        <div class="admin-storefront-bar">
-            <div class="admin-bar-left">
-                <span class="admin-crown-badge">👑 ADMIN MODE</span>
-                <span>ShopKart Control Center &bull; Logged in as <strong>${sessionScope.currentUser.fullName}</strong></span>
-            </div>
-            <div class="admin-bar-actions">
-                <a href="${pageContext.request.contextPath}/admin/dashboard" class="admin-bar-btn admin-bar-btn-primary">⚙️ Admin Console</a>
-                <a href="${pageContext.request.contextPath}/admin/products" class="admin-bar-btn">📦 Catalog</a>
-                <a href="${pageContext.request.contextPath}/admin/orders" class="admin-bar-btn">🛒 Orders</a>
-                <a href="${pageContext.request.contextPath}/admin/reports/sales" class="admin-bar-btn">📊 Sales</a>
-            </div>
-        </div>
-    </c:if>
-
-    <!-- 1. TOP ANNOUNCEMENT TICKER -->
-    <header class="top-ticker">
-        <div class="ticker-text">
-            <a href="${pageContext.request.contextPath}/products?deals=true" style="color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
-                <span class="ticker-badge">⚡ ShopKart Mega Sale</span>
-                <span>Grand Festive Carnival: Up to 50% Off Top Brands + Extra 20% Off with Code <strong>SAVE20</strong> &bull; Explore Deals &rarr;</span>
-            </a>
-        </div>
-        <div class="ticker-links">
-            <c:if test="${sessionScope.currentUser.admin}">
-                <a href="${pageContext.request.contextPath}/admin/dashboard" style="color: #fbbf24; font-weight: 700;">⚙️ Admin Console</a>
-                <a href="${pageContext.request.contextPath}/health" style="color: #38bdf8; font-weight: 700;">🩺 System Health</a>
-            </c:if>
-            <a href="${pageContext.request.contextPath}/products?brand=Apple">Brand Store</a>
-        </div>
-    </header>
-
-    <!-- 2. MAIN HEADER -->
-    <nav class="main-header" aria-label="Main Navigation">
-        <div class="brand-group">
-            <a href="${pageContext.request.contextPath}/" class="brand-logo" title="ShopKart - Premier Online Shopping">
-                <img src="${pageContext.request.contextPath}/assets/images/logo.svg" alt="ShopKart" class="logo-img">
-            </a>
-            <div class="delivery-locator" id="headerDeliveryTrigger" onclick="openPinCodeModal()"
-                title="Change delivery location" role="button" tabindex="0" aria-label="Delivery Location Bengaluru 560100">
-                <span class="loc-icon" aria-hidden="true">📍</span>
-                <div class="loc-text">
-                    <span class="sub">Deliver to</span>
-                    <span class="main" id="headerPincodeText">Bengaluru 560100</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Global Search Bar with Live Autocomplete -->
-        <div class="header-search-wrapper">
-            <form action="${pageContext.request.contextPath}/products" method="GET"
-                class="header-search-form" id="headerSearchForm" role="search">
-                <select name="categoryId" class="category-select" id="searchCategorySelect" aria-label="Product Category">
-                    <option value="">All Categories</option>
-                    <c:forEach var="cat" items="${categoryTree}">
-                        <option value="${cat.categoryId}">${cat.categoryName}</option>
-                    </c:forEach>
-                </select>
-                <input type="text" name="keyword" class="search-input" id="globalSearchInput"
-                    placeholder="Search for products, brands and tech essentials..." autocomplete="off" aria-label="Search products, brands and essentials">
-                <button type="submit" class="search-button" aria-label="Search">🔍</button>
-            </form>
-
-            <!-- Autocomplete Dropdown Preview -->
-            <div class="search-autocomplete-dropdown" id="searchAutocompleteDropdown"></div>
-        </div>
-
-        <!-- Header Actions -->
-        <div class="header-actions">
-            <!-- User Account Menu with Hover Dropdown -->
-            <div class="user-account-menu" id="userAccountMenu">
-                <c:choose>
-                    <c:when test="${not empty sessionScope.currentUser}">
-                        <div class="user-nav-btn" tabindex="0" role="button" aria-label="User Account Menu">
-                            <span class="user-avatar-icon" aria-hidden="true">👤</span>
-                            <span class="user-nav-name">${sessionScope.currentUser.fullName}</span>
-                            <span class="arrow-down" aria-hidden="true">▾</span>
+            <body>
+                <!-- 0. SINGLE-LINE REGISTRATION SUCCESS & WELCOME STRIP -->
+                <c:if test="${param.registered == 'true' || param.welcome == 'true'}">
+                    <div id="registrationSuccessBanner"
+                        style="background: linear-gradient(90deg, #059669 0%, #10b981 100%); color: #ffffff; padding: 0.55rem 1rem; font-size: 0.88rem; font-weight: 700; display: flex; align-items: center; justify-content: center; position: relative; z-index: 1200; box-shadow: 0 2px 8px rgba(0,0,0,0.12);">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; text-align: center;">
+                            <span>🎉</span>
+                            <span><strong>Registration Successful!</strong> Welcome to ShopKart<c:if
+                                    test="${not empty sessionScope.currentUser.firstName}">,
+                                    ${sessionScope.currentUser.firstName}</c:if>! Your account is verified. Enjoy your
+                                shopping!</span>
                         </div>
-                        <div class="account-dropdown">
-                            <div class="dropdown-header">
-                                <div class="user-name">Hello, ${sessionScope.currentUser.fullName}</div>
-                                <div class="user-email">${sessionScope.currentUser.email}</div>
-                                <c:if test="${sessionScope.currentUser.admin}">
-                                    <div style="font-size: 0.7rem; color: #fbbf24; font-weight: 800; margin-top: 0.2rem;">
-                                        👑 ADMINISTRATOR</div>
-                                </c:if>
+                        <button type="button" id="registrationSuccessBannerClose"
+                            class="registration-success-banner-close" title="Dismiss"
+                            aria-label="Dismiss registration success message">
+                            ✕
+                        </button>
+                    </div>
+                </c:if>
+
+                <!-- 0. ADMIN STOREFRONT NOTIFICATION BAR -->
+                <c:if test="${sessionScope.currentUser.admin}">
+                    <div class="admin-storefront-bar">
+                        <div class="admin-bar-left">
+                            <span class="admin-crown-badge">👑 ADMIN MODE</span>
+                            <span>ShopKart Control Center &bull; Logged in as
+                                <strong>${sessionScope.currentUser.fullName}</strong></span>
+                        </div>
+                        <div class="admin-bar-actions">
+                            <a href="${pageContext.request.contextPath}/admin/dashboard"
+                                class="admin-bar-btn admin-bar-btn-primary">⚙️ Admin Console</a>
+                            <a href="${pageContext.request.contextPath}/admin/products" class="admin-bar-btn">📦
+                                Catalog</a>
+                            <a href="${pageContext.request.contextPath}/admin/orders" class="admin-bar-btn">🛒
+                                Orders</a>
+                            <a href="${pageContext.request.contextPath}/admin/reports/sales" class="admin-bar-btn">📊
+                                Sales</a>
+                        </div>
+                    </div>
+                </c:if>
+
+                <!-- 1. TOP ANNOUNCEMENT TICKER -->
+                <header class="top-ticker">
+                    <div class="ticker-text">
+                        <a href="${pageContext.request.contextPath}/products?deals=true"
+                            style="color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
+                            <span class="ticker-badge">⚡ ShopKart Mega Sale</span>
+                            <span>Grand Festive Carnival: Up to 50% Off Top Brands + Extra 20% Off with Code
+                                <strong>SAVE20</strong> &bull; Explore Deals &rarr;</span>
+                        </a>
+                    </div>
+                    <div class="ticker-links">
+                        <c:if test="${sessionScope.currentUser.admin}">
+                            <a href="${pageContext.request.contextPath}/admin/dashboard"
+                                style="color: #fbbf24; font-weight: 700;">⚙️ Admin Console</a>
+                            <a href="${pageContext.request.contextPath}/health"
+                                style="color: #38bdf8; font-weight: 700;">🩺 System Health</a>
+                        </c:if>
+                        <a href="${pageContext.request.contextPath}/products?brand=Apple">Brand Store</a>
+                    </div>
+                </header>
+
+                <!-- 2. MAIN HEADER -->
+                <nav class="main-header" aria-label="Main Navigation">
+                    <div class="brand-group">
+                        <a href="${pageContext.request.contextPath}/" class="brand-logo"
+                            title="ShopKart - Premier Online Shopping">
+                            <img src="${pageContext.request.contextPath}/assets/images/logo.svg" alt="ShopKart"
+                                class="logo-img">
+                        </a>
+                        <div class="delivery-locator" id="headerDeliveryTrigger" onclick="openPinCodeModal()"
+                            title="Change delivery location" role="button" tabindex="0"
+                            aria-label="Delivery Location Bengaluru 560100">
+                            <span class="loc-icon" aria-hidden="true">📍</span>
+                            <div class="loc-text">
+                                <span class="sub">Deliver to</span>
+                                <span class="main" id="headerPincodeText">Bengaluru 560100</span>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Global Search Bar with Live Autocomplete -->
+                    <div class="header-search-wrapper">
+                        <form action="${pageContext.request.contextPath}/products" method="GET"
+                            class="header-search-form" id="headerSearchForm" role="search">
+                            <select name="categoryId" class="category-select" id="searchCategorySelect"
+                                aria-label="Product Category">
+                                <option value="">All Categories</option>
+                                <c:forEach var="cat" items="${categoryTree}">
+                                    <option value="${cat.categoryId}">${cat.categoryName}</option>
+                                </c:forEach>
+                            </select>
+                            <input type="text" name="keyword" class="search-input" id="globalSearchInput"
+                                placeholder="Search for products, brands and tech essentials..." autocomplete="off"
+                                aria-label="Search products, brands and essentials">
+                            <button type="submit" class="search-button" aria-label="Search">🔍</button>
+                        </form>
+
+                        <!-- Autocomplete Dropdown Preview -->
+                        <div class="search-autocomplete-dropdown" id="searchAutocompleteDropdown"></div>
+                    </div>
+
+                    <!-- Header Actions -->
+                    <div class="header-actions">
+                        <!-- User Account Menu with Hover Dropdown -->
+                        <div class="user-account-menu" id="userAccountMenu">
                             <c:choose>
-                                <c:when test="${sessionScope.currentUser.admin}">
-                                    <a href="${pageContext.request.contextPath}/admin/dashboard"
-                                        style="color:var(--amazon-orange); font-weight:800;">⚙️ Admin Control Panel</a>
-                                    <a href="${pageContext.request.contextPath}/admin/products">📦 Manage Products</a>
-                                    <a href="${pageContext.request.contextPath}/admin/orders">🛒 Manage All Orders</a>
-                                    <a href="${pageContext.request.contextPath}/admin/reports/sales">📈 Sales & Revenue</a>
-                                    <a href="${pageContext.request.contextPath}/admin/profile">👑 Admin Profile</a>
+                                <c:when test="${not empty sessionScope.currentUser}">
+                                    <div class="user-nav-btn" tabindex="0" role="button" aria-label="User Account Menu">
+                                        <span class="user-avatar-icon" aria-hidden="true">👤</span>
+                                        <span class="user-nav-name">${sessionScope.currentUser.fullName}</span>
+                                        <span class="arrow-down" aria-hidden="true">▾</span>
+                                    </div>
+                                    <div class="account-dropdown">
+                                        <div class="dropdown-header">
+                                            <div class="user-name">Hello, ${sessionScope.currentUser.fullName}</div>
+                                            <div class="user-email">${sessionScope.currentUser.email}</div>
+                                            <c:if test="${sessionScope.currentUser.admin}">
+                                                <div
+                                                    style="font-size: 0.7rem; color: #fbbf24; font-weight: 800; margin-top: 0.2rem;">
+                                                    👑 ADMINISTRATOR</div>
+                                            </c:if>
+                                        </div>
+                                        <c:choose>
+                                            <c:when test="${sessionScope.currentUser.admin}">
+                                                <a href="${pageContext.request.contextPath}/admin/dashboard"
+                                                    style="color:var(--amazon-orange); font-weight:800;">⚙️ Admin
+                                                    Control Panel</a>
+                                                <a href="${pageContext.request.contextPath}/admin/products">📦 Manage
+                                                    Products</a>
+                                                <a href="${pageContext.request.contextPath}/admin/orders">🛒 Manage All
+                                                    Orders</a>
+                                                <a href="${pageContext.request.contextPath}/admin/reports/sales">📈
+                                                    Sales & Revenue</a>
+                                                <a href="${pageContext.request.contextPath}/admin/profile">👑 Admin
+                                                    Profile</a>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <a href="${pageContext.request.contextPath}/profile">👤 My Profile</a>
+                                                <a href="${pageContext.request.contextPath}/orders">📦 My Orders</a>
+                                                <a href="${pageContext.request.contextPath}/addresses">📍 Saved
+                                                    Addresses</a>
+                                                <a href="${pageContext.request.contextPath}/change-password">🔒 Change
+                                                    Password</a>
+                                            </c:otherwise>
+                                        </c:choose>
+                                        <div class="dropdown-divider"></div>
+                                        <a href="${pageContext.request.contextPath}/logout"
+                                            style="color:var(--danger); font-weight: 600;">🚪 Sign Out</a>
+                                    </div>
                                 </c:when>
                                 <c:otherwise>
-                                    <a href="${pageContext.request.contextPath}/profile">👤 My Profile</a>
-                                    <a href="${pageContext.request.contextPath}/orders">📦 My Orders</a>
-                                    <a href="${pageContext.request.contextPath}/addresses">📍 Saved Addresses</a>
-                                    <a href="${pageContext.request.contextPath}/change-password">🔒 Change Password</a>
+                                    <a href="${pageContext.request.contextPath}/login" class="user-nav-btn"
+                                        title="Sign In to ShopKart" aria-label="Sign In">
+                                        <span class="user-avatar-icon" aria-hidden="true">👤</span>
+                                        <span style="font-weight:600;">Sign In</span>
+                                    </a>
                                 </c:otherwise>
                             </c:choose>
-                            <div class="dropdown-divider"></div>
-                            <a href="${pageContext.request.contextPath}/logout"
-                                style="color:var(--danger); font-weight: 600;">🚪 Sign Out</a>
                         </div>
-                    </c:when>
-                    <c:otherwise>
-                        <a href="${pageContext.request.contextPath}/login" class="user-nav-btn"
-                            title="Sign In to ShopKart" aria-label="Sign In">
-                            <span class="user-avatar-icon" aria-hidden="true">👤</span>
-                            <span style="font-weight:600;">Sign In</span>
+
+                        <a href="${pageContext.request.contextPath}/wishlist" class="header-action-inline"
+                            title="Wishlist" aria-label="View Wishlist">
+                            <span class="badge-icon" aria-hidden="true">❤️</span>
+                            <span>Wishlist</span>
                         </a>
-                    </c:otherwise>
-                </c:choose>
-            </div>
 
-            <a href="${pageContext.request.contextPath}/wishlist" class="header-action-inline"
-                title="Wishlist" aria-label="View Wishlist">
-                <span class="badge-icon" aria-hidden="true">❤️</span>
-                <span>Wishlist</span>
-            </a>
+                        <a href="${pageContext.request.contextPath}/cart" class="header-action-inline" title="Cart"
+                            aria-label="View Cart">
+                            <div class="cart-icon-wrapper">
+                                <span class="badge-icon" aria-hidden="true">🛒</span>
+                                <span class="badge-count" id="headerCartBadge">${not empty sessionScope.cart ?
+                                    sessionScope.cart.totalQuantity : 0}</span>
+                            </div>
+                            <span>Cart</span>
+                        </a>
+                    </div>
+                </nav>
 
-            <a href="${pageContext.request.contextPath}/cart" class="header-action-inline" title="Cart" aria-label="View Cart">
-                <div class="cart-icon-wrapper">
-                    <span class="badge-icon" aria-hidden="true">🛒</span>
-                    <span class="badge-count" id="headerCartBadge">${not empty sessionScope.cart ? sessionScope.cart.totalQuantity : 0}</span>
+                <!-- 3. SECONDARY SUB-NAVBAR -->
+                <div class="sub-navbar">
+                    <a href="${pageContext.request.contextPath}/products" class="all-categories-btn">
+                        <span>☰</span> <strong>All Departments</strong>
+                    </a>
+                    <div class="nav-links-strip">
+                        <a href="${pageContext.request.contextPath}/products?category=1">💻 Laptops & Computers</a>
+                        <a href="${pageContext.request.contextPath}/products?category=2">📱 Smartphones & Tablets</a>
+                        <a href="${pageContext.request.contextPath}/products?category=3">🎧 Audio & Headphones</a>
+                        <a href="${pageContext.request.contextPath}/products?category=4">⌚ Smartwatches</a>
+                        <a href="${pageContext.request.contextPath}/products?category=5">👕 Men's Fashion</a>
+                        <a href="${pageContext.request.contextPath}/products?category=6">👗 Women's Fashion</a>
+                        <a href="${pageContext.request.contextPath}/products?category=8">🏠 Home & Kitchen</a>
+                        <a href="${pageContext.request.contextPath}/products?deals=true" class="hot-deal">🔥 Flash
+                            Deals</a>
+                        <a href="${pageContext.request.contextPath}/products?sortBy=price&sortDirection=ASC">🏷️ Under
+                            ₹50,000</a>
+                    </div>
                 </div>
-                <span>Cart</span>
-            </a>
-        </div>
-    </nav>
 
-    <!-- 3. SECONDARY SUB-NAVBAR -->
-    <div class="sub-navbar">
-        <a href="${pageContext.request.contextPath}/products" class="all-categories-btn">
-            <span>☰</span> <strong>All Departments</strong>
-        </a>
-        <div class="nav-links-strip">
-            <a href="${pageContext.request.contextPath}/products?category=1">💻 Laptops & Computers</a>
-            <a href="${pageContext.request.contextPath}/products?category=2">📱 Smartphones & Tablets</a>
-            <a href="${pageContext.request.contextPath}/products?category=3">🎧 Audio & Headphones</a>
-            <a href="${pageContext.request.contextPath}/products?category=4">⌚ Smartwatches</a>
-            <a href="${pageContext.request.contextPath}/products?category=5">👕 Men's Fashion</a>
-            <a href="${pageContext.request.contextPath}/products?category=6">👗 Women's Fashion</a>
-            <a href="${pageContext.request.contextPath}/products?category=8">🏠 Home & Kitchen</a>
-            <a href="${pageContext.request.contextPath}/products?deals=true" class="hot-deal">🔥 Flash Deals</a>
-            <a href="${pageContext.request.contextPath}/products?sortBy=price&sortDirection=ASC">🏷️ Under ₹50,000</a>
-        </div>
-    </div>
+                <!-- 4. AUTO-SLIDING HERO CAROUSEL -->
+                <section class="hero-carousel-container" aria-label="Featured Promotions">
+                    <div class="hero-slider-track" id="heroSliderTrack">
+                        <!-- Slide 1: Laptops -->
+                        <div class="hero-slide"
+                            style="background-image: url('https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=1200&q=75');">
+                            <div class="hero-slide-overlay"></div>
+                            <div class="hero-slide-content">
+                                <span class="hero-tag">⚡ Next-Gen Performance</span>
+                                <h1 class="hero-title">Apple M3 Max & OLED Workstations</h1>
+                                <p class="hero-description">Supercharge your workflow with unprecedented processing
+                                    power, liquid retina XDR displays, and up to 22 hours of battery life.</p>
+                                <a href="${pageContext.request.contextPath}/products?category=1"
+                                    class="hero-cta-btn">Shop Pro Laptops →</a>
+                            </div>
+                        </div>
+                        <!-- Slide 2: Audio -->
+                        <div class="hero-slide"
+                            style="background-image: url('https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1200&q=75');">
+                            <div class="hero-slide-overlay"></div>
+                            <div class="hero-slide-content">
+                                <span class="hero-tag">🎧 Studio Soundfest</span>
+                                <h2 class="hero-title">Industry Leading Noise Cancellation</h2>
+                                <p class="hero-description">Immerse yourself in lossless spatial audio with Sony
+                                    WH-1000XM5 and Apple AirPods Pro. Starting at ₹19,900.</p>
+                                <a href="${pageContext.request.contextPath}/products?category=3"
+                                    class="hero-cta-btn">Explore Audio Gear →</a>
+                            </div>
+                        </div>
+                        <!-- Slide 3: Fashion -->
+                        <div class="hero-slide"
+                            style="background-image: url('https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1200&q=75');">
+                            <div class="hero-slide-overlay"></div>
+                            <div class="hero-slide-content">
+                                <span class="hero-tag">✨ Premium Couture</span>
+                                <h2 class="hero-title">Designer Autumn & Winter Apparel</h2>
+                                <p class="hero-description">Discover the latest arrivals from Ralph Lauren, AllSaints,
+                                    and Zimmermann with up to 40% limited-time markdown.</p>
+                                <a href="${pageContext.request.contextPath}/products?category=5"
+                                    class="hero-cta-btn">Discover Collection →</a>
+                            </div>
+                        </div>
+                    </div>
 
-    <!-- 4. AUTO-SLIDING HERO CAROUSEL -->
-    <section class="hero-carousel-container" aria-label="Featured Promotions">
-        <div class="hero-slider-track" id="heroSliderTrack">
-            <!-- Slide 1: Laptops -->
-            <div class="hero-slide"
-                style="background-image: url('https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=1200&q=75');">
-                <div class="hero-slide-overlay"></div>
-                <div class="hero-slide-content">
-                    <span class="hero-tag">⚡ Next-Gen Performance</span>
-                    <h1 class="hero-title">Apple M3 Max & OLED Workstations</h1>
-                    <p class="hero-description">Supercharge your workflow with unprecedented processing
-                        power, liquid retina XDR displays, and up to 22 hours of battery life.</p>
-                    <a href="${pageContext.request.contextPath}/products?category=1"
-                        class="hero-cta-btn">Shop Pro Laptops →</a>
-                </div>
-            </div>
-            <!-- Slide 2: Audio -->
-            <div class="hero-slide"
-                style="background-image: url('https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1200&q=75');">
-                <div class="hero-slide-overlay"></div>
-                <div class="hero-slide-content">
-                    <span class="hero-tag">🎧 Studio Soundfest</span>
-                    <h2 class="hero-title">Industry Leading Noise Cancellation</h2>
-                    <p class="hero-description">Immerse yourself in lossless spatial audio with Sony
-                        WH-1000XM5 and Apple AirPods Pro. Starting at ₹19,900.</p>
-                    <a href="${pageContext.request.contextPath}/products?category=3"
-                        class="hero-cta-btn">Explore Audio Gear →</a>
-                </div>
-            </div>
-            <!-- Slide 3: Fashion -->
-            <div class="hero-slide"
-                style="background-image: url('https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1200&q=75');">
-                <div class="hero-slide-overlay"></div>
-                <div class="hero-slide-content">
-                    <span class="hero-tag">✨ Premium Couture</span>
-                    <h2 class="hero-title">Designer Autumn & Winter Apparel</h2>
-                    <p class="hero-description">Discover the latest arrivals from Ralph Lauren, AllSaints,
-                        and Zimmermann with up to 40% limited-time markdown.</p>
-                    <a href="${pageContext.request.contextPath}/products?category=5"
-                        class="hero-cta-btn">Discover Collection →</a>
-                </div>
-            </div>
-        </div>
+                    <!-- Controls -->
+                    <button class="carousel-nav-btn prev" id="carouselPrevBtn" aria-label="Previous Slide">❮</button>
+                    <button class="carousel-nav-btn next" id="carouselNextBtn" aria-label="Next Slide">❯</button>
 
-        <!-- Controls -->
-        <button class="carousel-nav-btn prev" id="carouselPrevBtn" aria-label="Previous Slide">❮</button>
-        <button class="carousel-nav-btn next" id="carouselNextBtn" aria-label="Next Slide">❯</button>
+                    <div class="carousel-indicators">
+                        <span class="indicator-dot active" aria-label="Slide 1"></span>
+                        <span class="indicator-dot" aria-label="Slide 2"></span>
+                        <span class="indicator-dot" aria-label="Slide 3"></span>
+                    </div>
+                </section>
 
-        <div class="carousel-indicators">
-            <span class="indicator-dot active" aria-label="Slide 1"></span>
-            <span class="indicator-dot" aria-label="Slide 2"></span>
-            <span class="indicator-dot" aria-label="Slide 3"></span>
-        </div>
-    </section>
-
-    <!-- 5. TRUST & VALUE STRIP -->
-    <div class="trust-badges-strip">
+                <!-- 5. TRUST & VALUE STRIP -->
+                <div class="trust-badges-strip">
                     <div class="trust-badge-item">
                         <div class="badge-icon-box">🚚</div>
                         <div class="badge-details">
@@ -322,7 +365,8 @@
                     </div>
 
                     <div class="product-slider-wrapper">
-                        <button type="button" class="slider-arrow-btn prev" onclick="scrollProductSlider('dealSliderTrack', -1)" aria-label="Previous Deals">❮</button>
+                        <button type="button" class="slider-arrow-btn prev"
+                            onclick="scrollProductSlider('dealSliderTrack', -1)" aria-label="Previous Deals">❮</button>
                         <div class="product-slider-track" id="dealSliderTrack">
                             <c:forEach var="deal" items="${hotDeals}">
                                 <div class="product-card">
@@ -351,9 +395,13 @@
                                     </div>
 
                                     <div class="price-row">
-                                        <span class="current-price">₹<fmt:formatNumber value="${deal.effectivePrice}" pattern="#,##0" /></span>
+                                        <span class="current-price">₹
+                                            <fmt:formatNumber value="${deal.effectivePrice}" pattern="#,##0" />
+                                        </span>
                                         <c:if test="${deal.discountPercentage > 0}">
-                                            <span class="mrp-price">₹<fmt:formatNumber value="${deal.price}" pattern="#,##0" /></span>
+                                            <span class="mrp-price">₹
+                                                <fmt:formatNumber value="${deal.price}" pattern="#,##0" />
+                                            </span>
                                         </c:if>
                                     </div>
 
@@ -362,18 +410,20 @@
                                     <div class="card-action-group">
                                         <c:choose>
                                             <c:when test="${sessionScope.currentUser.admin}">
-                                                <a href="${pageContext.request.contextPath}/admin/products/edit?id=${deal.productId}" 
-                                                   style="display: flex; align-items: center; justify-content: center; gap: 0.35rem; width: 100%; padding: 0.5rem; font-size: 0.8rem; font-weight: 700; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; border-radius: 8px; text-decoration: none;">
+                                                <a href="${pageContext.request.contextPath}/admin/products/edit?id=${deal.productId}"
+                                                    style="display: flex; align-items: center; justify-content: center; gap: 0.35rem; width: 100%; padding: 0.5rem; font-size: 0.8rem; font-weight: 700; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; border-radius: 8px; text-decoration: none;">
                                                     ✏️ Edit in Admin Console
                                                 </a>
                                             </c:when>
                                             <c:otherwise>
                                                 <button class="card-add-cart-btn"
-                                                    onclick="quickAddToCart('${deal.productId}', 1, event)" title="Add to Cart">
+                                                    onclick="quickAddToCart('${deal.productId}', 1, event)"
+                                                    title="Add to Cart">
                                                     🛒 Add Cart
                                                 </button>
                                                 <button class="card-buy-now-btn"
-                                                    onclick="quickBuyNow('${deal.productId}', 1, event)" title="Buy Now">
+                                                    onclick="quickBuyNow('${deal.productId}', 1, event)"
+                                                    title="Buy Now">
                                                     ⚡ Buy
                                                 </button>
                                             </c:otherwise>
@@ -382,7 +432,8 @@
                                 </div>
                             </c:forEach>
                         </div>
-                        <button type="button" class="slider-arrow-btn next" onclick="scrollProductSlider('dealSliderTrack', 1)" aria-label="Next Deals">❯</button>
+                        <button type="button" class="slider-arrow-btn next"
+                            onclick="scrollProductSlider('dealSliderTrack', 1)" aria-label="Next Deals">❯</button>
                     </div>
                 </section>
 
@@ -628,7 +679,9 @@
                     </div>
 
                     <div class="product-slider-wrapper">
-                        <button type="button" class="slider-arrow-btn prev" onclick="scrollProductSlider('bestSellersSliderTrack', -1)" aria-label="Previous Best Sellers">❮</button>
+                        <button type="button" class="slider-arrow-btn prev"
+                            onclick="scrollProductSlider('bestSellersSliderTrack', -1)"
+                            aria-label="Previous Best Sellers">❮</button>
                         <div class="product-slider-track" id="bestSellersSliderTrack">
                             <c:forEach var="item" items="${bestSellers}">
                                 <div class="product-card">
@@ -657,9 +710,13 @@
                                     </div>
 
                                     <div class="price-row">
-                                        <span class="current-price">₹<fmt:formatNumber value="${item.effectivePrice}" pattern="#,##0" /></span>
+                                        <span class="current-price">₹
+                                            <fmt:formatNumber value="${item.effectivePrice}" pattern="#,##0" />
+                                        </span>
                                         <c:if test="${item.discountPercentage > 0}">
-                                            <span class="mrp-price">₹<fmt:formatNumber value="${item.price}" pattern="#,##0" /></span>
+                                            <span class="mrp-price">₹
+                                                <fmt:formatNumber value="${item.price}" pattern="#,##0" />
+                                            </span>
                                         </c:if>
                                     </div>
 
@@ -668,18 +725,20 @@
                                     <div class="card-action-group">
                                         <c:choose>
                                             <c:when test="${sessionScope.currentUser.admin}">
-                                                <a href="${pageContext.request.contextPath}/admin/products/edit?id=${item.productId}" 
-                                                   style="display: flex; align-items: center; justify-content: center; gap: 0.35rem; width: 100%; padding: 0.5rem; font-size: 0.8rem; font-weight: 700; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; border-radius: 8px; text-decoration: none;">
+                                                <a href="${pageContext.request.contextPath}/admin/products/edit?id=${item.productId}"
+                                                    style="display: flex; align-items: center; justify-content: center; gap: 0.35rem; width: 100%; padding: 0.5rem; font-size: 0.8rem; font-weight: 700; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; border-radius: 8px; text-decoration: none;">
                                                     ✏️ Edit in Admin Console
                                                 </a>
                                             </c:when>
                                             <c:otherwise>
                                                 <button class="card-add-cart-btn"
-                                                    onclick="quickAddToCart('${item.productId}', 1, event)" title="Add to Cart">
+                                                    onclick="quickAddToCart('${item.productId}', 1, event)"
+                                                    title="Add to Cart">
                                                     🛒 Add Cart
                                                 </button>
                                                 <button class="card-buy-now-btn"
-                                                    onclick="quickBuyNow('${item.productId}', 1, event)" title="Buy Now">
+                                                    onclick="quickBuyNow('${item.productId}', 1, event)"
+                                                    title="Buy Now">
                                                     ⚡ Buy Now
                                                 </button>
                                             </c:otherwise>
@@ -688,7 +747,9 @@
                                 </div>
                             </c:forEach>
                         </div>
-                        <button type="button" class="slider-arrow-btn next" onclick="scrollProductSlider('bestSellersSliderTrack', 1)" aria-label="Next Best Sellers">❯</button>
+                        <button type="button" class="slider-arrow-btn next"
+                            onclick="scrollProductSlider('bestSellersSliderTrack', 1)"
+                            aria-label="Next Best Sellers">❯</button>
                     </div>
                 </section>
 
@@ -744,10 +805,14 @@
                             </ul>
                         </div>
                     </div>
-                    <div style="text-align: center; border-top: 1px solid var(--amazon-subnav); padding-top: 1.5rem; font-size: 0.82rem; color: #94a3b8; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
-                        <div>&copy; 2026 ShopKart Inc. All rights reserved. &bull; Trade Assurance &bull; 100% Purchase Protection</div>
-                        <div style="padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.08); width: 100%; max-width: 500px; color: #cbd5e1; font-size: 0.85rem;">
-                            Designed, Developed &amp; Managed by <strong style="color: #38bdf8; font-weight: 800; letter-spacing: 0.02em;">Rahul Pawar</strong>
+                    <div
+                        style="text-align: center; border-top: 1px solid var(--amazon-subnav); padding-top: 1.5rem; font-size: 0.82rem; color: #94a3b8; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+                        <div>&copy; 2026 ShopKart Inc. All rights reserved. &bull; Trade Assurance &bull; 100% Purchase
+                            Protection</div>
+                        <div
+                            style="padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.08); width: 100%; max-width: 500px; color: #cbd5e1; font-size: 0.85rem;">
+                            Designed, Developed &amp; Managed by <strong
+                                style="color: #38bdf8; font-weight: 800; letter-spacing: 0.02em;">Rahul Pawar</strong>
                         </div>
                     </div>
                 </footer>
@@ -1115,8 +1180,8 @@
                                 <div class="order-number-pill">
                                     <span>Order #${justPlacedOrder.orderNumber}</span>
                                     <button type="button" class="copy-order-btn"
-                                        data-copy-val="${justPlacedOrder.orderNumber}"
-                                        title="Copy Order Number">📋 Copy</button>
+                                        data-copy-val="${justPlacedOrder.orderNumber}" title="Copy Order Number">📋
+                                        Copy</button>
                                 </div>
                             </div>
 

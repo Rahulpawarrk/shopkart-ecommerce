@@ -15,7 +15,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
+    <style nonce="${cspNonce}">
         .modal {
             display: none;
             position: fixed;
@@ -178,12 +178,19 @@
                                             </c:choose>
                                         </td>
                                         <td style="text-align: right;">
-                                            <button onclick="openRestockModal(${item.productId}, '<c:out value="${item.productName}" />', ${item.quantity})" 
-                                                    class="btn btn-primary btn-sm">
+                                            <button type="button"
+                                                    class="btn btn-primary btn-sm js-restock-btn"
+                                                    data-product-id="${item.productId}"
+                                                    data-product-name="<c:out value="${item.productName}" />"
+                                                    data-quantity="${item.quantity}">
                                                 + Restock
                                             </button>
-                                            <button onclick="openAdjustModal(${item.productId}, '<c:out value="${item.productName}" />', ${item.quantity})" 
-                                                    class="btn btn-secondary btn-sm" style="margin-left: 0.25rem;">
+                                            <button type="button"
+                                                    class="btn btn-secondary btn-sm js-adjust-btn"
+                                                    style="margin-left: 0.25rem;"
+                                                    data-product-id="${item.productId}"
+                                                    data-product-name="<c:out value="${item.productName}" />"
+                                                    data-quantity="${item.quantity}">
                                                 Adjust
                                             </button>
                                             <a href="${pageContext.request.contextPath}/admin/inventory/transactions?productId=${item.productId}" 
@@ -225,7 +232,7 @@
                 </div>
 
                 <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
-                    <button type="button" onclick="closeModals()" class="btn btn-secondary">Cancel</button>
+                    <button type="button" class="btn btn-secondary js-modal-cancel">Cancel</button>
                     <button type="submit" class="btn btn-primary">Confirm Restock</button>
                 </div>
             </form>
@@ -250,7 +257,7 @@
                 </div>
 
                 <div style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem;">
-                    <button type="button" onclick="closeModals()" class="btn btn-secondary">Cancel</button>
+                    <button type="button" class="btn btn-secondary js-modal-cancel">Cancel</button>
                     <button type="submit" class="btn btn-primary">Apply Count Correction</button>
                 </div>
             </form>
@@ -275,6 +282,40 @@
             document.getElementById('restockModal').classList.remove('open');
             document.getElementById('adjustModal').classList.remove('open');
         }
+
+        // CSP-compliant event delegation — replaces inline onclick="" handlers,
+        // which are blocked by CSP even when the <script> tag itself carries a nonce.
+        document.addEventListener('click', function (event) {
+            const restockBtn = event.target.closest('.js-restock-btn');
+            if (restockBtn) {
+                openRestockModal(
+                    restockBtn.getAttribute('data-product-id'),
+                    restockBtn.getAttribute('data-product-name'),
+                    restockBtn.getAttribute('data-quantity')
+                );
+                return;
+            }
+
+            const adjustBtn = event.target.closest('.js-adjust-btn');
+            if (adjustBtn) {
+                openAdjustModal(
+                    adjustBtn.getAttribute('data-product-id'),
+                    adjustBtn.getAttribute('data-product-name'),
+                    adjustBtn.getAttribute('data-quantity')
+                );
+                return;
+            }
+
+            if (event.target.closest('.js-modal-cancel')) {
+                closeModals();
+                return;
+            }
+
+            // Click on the dark overlay (outside modal-content) also closes it
+            if (event.target.classList.contains('modal') && event.target.classList.contains('open')) {
+                closeModals();
+            }
+        });
     </script>
 
     <!-- ADMIN FOOTER -->

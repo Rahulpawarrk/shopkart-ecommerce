@@ -211,6 +211,17 @@ function initSearchAutocomplete() {
 
         dropdown.innerHTML = html;
         dropdown.classList.add('show');
+
+        // NOTE: the onerror="" attribute above the <img> tag is ALSO blocked by CSP
+        // for the same reason onclick="" is. Replaced below with a JS-side fallback
+        // that runs after the markup is inserted, instead of relying on an inline
+        // event-handler attribute in the generated HTML.
+        dropdown.querySelectorAll('.autocomplete-item img').forEach((img) => {
+            img.addEventListener('error', function onImgError() {
+                this.src = 'https://placehold.co/80x80?text=Product';
+                this.removeEventListener('error', onImgError);
+            });
+        });
     }
 }
 
@@ -361,7 +372,7 @@ function initPincodeChecker() {
                 pinBtn.textContent = 'Checking...';
                 const city = await resolveLiveCityFromPincode(val);
                 pinBtn.textContent = 'Check';
-                
+
                 localStorage.setItem('shopkart_pincode', val);
                 localStorage.setItem('shopkart_city', city);
                 localStorage.setItem('shopkart_location_prompted', 'true');
@@ -408,7 +419,7 @@ function applyPdpEstimate(pin, city) {
 }
 
 // Global modal functions
-window.openPinCodeModal = function(isFirstPrompt = false) {
+window.openPinCodeModal = function (isFirstPrompt = false) {
     let modal = document.getElementById('pincodeModalOverlay');
     if (!modal) {
         createPincodeModalHtml();
@@ -429,14 +440,14 @@ window.openPinCodeModal = function(isFirstPrompt = false) {
     modal.classList.add('show');
 };
 
-window.closePinCodeModal = function() {
+window.closePinCodeModal = function () {
     const modal = document.getElementById('pincodeModalOverlay');
     if (modal) modal.classList.remove('show');
     localStorage.setItem('shopkart_location_prompted', 'true');
     sessionStorage.setItem('shopkart_location_prompted', 'true');
 };
 
-window.skipPincodeSelection = function() {
+window.skipPincodeSelection = function () {
     const curPin = localStorage.getItem('shopkart_pincode') || '560100';
     const curCity = localStorage.getItem('shopkart_city') || 'Bengaluru';
     localStorage.setItem('shopkart_pincode', curPin);
@@ -446,13 +457,13 @@ window.skipPincodeSelection = function() {
     closePinCodeModal();
 };
 
-window.selectQuickPin = function(pin, city) {
+window.selectQuickPin = function (pin, city) {
     const field = document.getElementById('modalPincodeInput');
     if (field) field.value = pin;
     applyModalPincode(city);
 };
 
-window.applyModalPincode = async function(predefinedCity) {
+window.applyModalPincode = async function (predefinedCity) {
     const field = document.getElementById('modalPincodeInput');
     const applyBtn = document.querySelector('.pincode-apply-btn');
     if (!field) return;
@@ -492,7 +503,7 @@ window.applyModalPincode = async function(predefinedCity) {
     }
 };
 
-window.detectLiveGpsLocation = function() {
+window.detectLiveGpsLocation = function () {
     const detectBtn = document.getElementById('pincodeGpsDetectBtn');
     const indicator = document.getElementById('pincodeLiveIndicator');
     const field = document.getElementById('modalPincodeInput');
@@ -554,6 +565,12 @@ function createPincodeModalHtml() {
     const div = document.createElement('div');
     div.id = 'pincodeModalOverlay';
     div.className = 'pincode-modal-overlay';
+    // NOTE: All buttons below use data-action / data-pin / data-city attributes
+    // instead of inline onclick="" handlers. CSP blocks inline event-handler
+    // attributes regardless of whether they're present in the original page
+    // source or injected later via innerHTML — a nonce on a <script> tag does
+    // NOT cover attribute-based handlers. A single delegated listener is
+    // attached to this container below to dispatch these actions instead.
     div.innerHTML = `
         <div class="pincode-modal-card">
             <div class="pincode-modal-header">
@@ -563,11 +580,11 @@ function createPincodeModalHtml() {
                         View live delivery dates and stock availability
                     </div>
                 </div>
-                <button type="button" class="pincode-modal-close" onclick="closePinCodeModal()" title="Close">✕</button>
+                <button type="button" class="pincode-modal-close" data-action="close-pincode-modal" title="Close">✕</button>
             </div>
             <div class="pincode-modal-body">
                 <!-- GPS Quick Button -->
-                <button type="button" id="pincodeGpsDetectBtn" class="pincode-detect-btn" onclick="detectLiveGpsLocation()">
+                <button type="button" id="pincodeGpsDetectBtn" class="pincode-detect-btn" data-action="detect-gps">
                     📍 Use Current Location via GPS
                 </button>
 
@@ -581,50 +598,77 @@ function createPincodeModalHtml() {
 
                 <div class="pincode-input-group">
                     <input type="text" id="modalPincodeInput" class="pincode-input-field" maxlength="6" placeholder="Enter 6-digit PIN" autocomplete="off">
-                    <button type="button" class="pincode-apply-btn" onclick="applyModalPincode()">Apply</button>
+                    <button type="button" class="pincode-apply-btn" data-action="apply-pincode">Apply</button>
                 </div>
 
                 <div style="font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.35rem;">
                     Popular Cities
                 </div>
                 <div class="pincode-quick-chips">
-                    <button type="button" class="pincode-chip-btn" onclick="selectQuickPin('560100', 'Bengaluru')">
+                    <button type="button" class="pincode-chip-btn" data-action="quick-pin" data-pin="560100" data-city="Bengaluru">
                         <span class="chip-pin">560100</span>
                         <span class="chip-city">Bengaluru</span>
                     </button>
-                    <button type="button" class="pincode-chip-btn" onclick="selectQuickPin('110001', 'New Delhi')">
+                    <button type="button" class="pincode-chip-btn" data-action="quick-pin" data-pin="110001" data-city="New Delhi">
                         <span class="chip-pin">110001</span>
                         <span class="chip-city">Delhi NCR</span>
                     </button>
-                    <button type="button" class="pincode-chip-btn" onclick="selectQuickPin('400001', 'Mumbai')">
+                    <button type="button" class="pincode-chip-btn" data-action="quick-pin" data-pin="400001" data-city="Mumbai">
                         <span class="chip-pin">400001</span>
                         <span class="chip-city">Mumbai</span>
                     </button>
-                    <button type="button" class="pincode-chip-btn" onclick="selectQuickPin('500081', 'Hyderabad')">
+                    <button type="button" class="pincode-chip-btn" data-action="quick-pin" data-pin="500081" data-city="Hyderabad">
                         <span class="chip-pin">500081</span>
                         <span class="chip-city">Hyderabad</span>
                     </button>
-                    <button type="button" class="pincode-chip-btn" onclick="selectQuickPin('411001', 'Pune')">
+                    <button type="button" class="pincode-chip-btn" data-action="quick-pin" data-pin="411001" data-city="Pune">
                         <span class="chip-pin">411001</span>
                         <span class="chip-city">Pune</span>
                     </button>
-                    <button type="button" class="pincode-chip-btn" onclick="selectQuickPin('700001', 'Kolkata')">
+                    <button type="button" class="pincode-chip-btn" data-action="quick-pin" data-pin="700001" data-city="Kolkata">
                         <span class="chip-pin">700001</span>
                         <span class="chip-city">Kolkata</span>
                     </button>
                 </div>
 
                 <div style="margin-top: 0.85rem; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 0.5rem;">
-                    <button type="button" onclick="skipPincodeSelection()" style="background: none; border: none; color: var(--text-muted); font-size: 0.78rem; cursor: pointer; text-decoration: underline;">
+                    <button type="button" data-action="skip-pincode" style="background: none; border: none; color: var(--text-muted); font-size: 0.78rem; cursor: pointer; text-decoration: underline;">
                         Deliver to default location (Skip)
                     </button>
                 </div>
             </div>
         </div>
     `;
+
     div.addEventListener('click', (e) => {
-        if (e.target === div) closePinCodeModal();
+        // Click on the dark overlay itself (outside the card) closes the modal
+        if (e.target === div) {
+            closePinCodeModal();
+            return;
+        }
+
+        const actionEl = e.target.closest('[data-action]');
+        if (!actionEl) return;
+
+        switch (actionEl.getAttribute('data-action')) {
+            case 'close-pincode-modal':
+                closePinCodeModal();
+                break;
+            case 'detect-gps':
+                detectLiveGpsLocation();
+                break;
+            case 'apply-pincode':
+                applyModalPincode();
+                break;
+            case 'quick-pin':
+                selectQuickPin(actionEl.getAttribute('data-pin'), actionEl.getAttribute('data-city'));
+                break;
+            case 'skip-pincode':
+                skipPincodeSelection();
+                break;
+        }
     });
+
     document.body.appendChild(div);
 }
 
@@ -728,13 +772,13 @@ function quickAddToCart(productId, quantity = 1, event) {
         },
         body: formData.toString()
     })
-    .then(response => {
-        window.location.href = `${contextPath}/cart`;
-    })
-    .catch(error => {
-        console.error('Cart AJAX error:', error);
-        window.location.href = `${contextPath}/cart`;
-    });
+        .then(response => {
+            window.location.href = `${contextPath}/cart`;
+        })
+        .catch(error => {
+            console.error('Cart AJAX error:', error);
+            window.location.href = `${contextPath}/cart`;
+        });
 }
 
 function quickBuyNow(productId, quantity = 1, event) {
@@ -768,25 +812,25 @@ function quickAddToWishlist(productId, event) {
         },
         body: formData.toString()
     })
-    .then(response => {
-        if (response.redirected) {
-            window.location.href = response.url;
-            return null;
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (!data) return;
-        if (data.success) {
-            showToast(data.message || 'Saved to your Wishlist!', 'success');
-        } else {
-            showToast(data.message || 'Unable to update wishlist.', 'error');
-        }
-    })
-    .catch(error => {
-        console.error('Wishlist AJAX error:', error);
-        showToast('Saved to your Wishlist!', 'success');
-    });
+        .then(response => {
+            if (response.redirected) {
+                window.location.href = response.url;
+                return null;
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!data) return;
+            if (data.success) {
+                showToast(data.message || 'Saved to your Wishlist!', 'success');
+            } else {
+                showToast(data.message || 'Unable to update wishlist.', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Wishlist AJAX error:', error);
+            showToast('Saved to your Wishlist!', 'success');
+        });
 }
 
 function updateCartBadge(count) {
@@ -831,10 +875,10 @@ function getContextPath() {
 function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/&/g, '&amp;')
-              .replace(/</g, '&lt;')
-              .replace(/>/g, '&gt;')
-              .replace(/"/g, '&quot;')
-              .replace(/'/g, '&#039;');
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 }
 /* ==============================================================================
    9. ADDRESS FORM AUTO PINCODE & LOCATION SYNC
@@ -953,7 +997,7 @@ function initAddressAutoPincodeSync() {
     // If postal code is empty (i.e. adding a new address), auto-populate from user's active selected delivery PIN
     if (!postalCodeInput.value || postalCodeInput.value.trim() === '') {
         postalCodeInput.value = savedPin;
-        
+
         // Show auto-filled indicator
         const hintEl = document.createElement('div');
         hintEl.id = 'pincodeAutoFillHint';
@@ -1037,10 +1081,10 @@ function initCheckoutAddressPincodeMatch() {
 /* ==============================================================================
    11. GLOBAL ORDER FILTERING & INVOICE UTILITIES
    ============================================================================== */
-window.filterOrders = function(status, btn) {
+window.filterOrders = function (status, btn) {
     document.querySelectorAll('.order-filter-tab').forEach(t => t.classList.remove('active'));
     if (btn) btn.classList.add('active');
-    
+
     const cards = document.querySelectorAll('.order-record-card');
     cards.forEach(card => {
         const cardStatus = card.getAttribute('data-status');
@@ -1054,14 +1098,14 @@ window.filterOrders = function(status, btn) {
     });
 };
 
-window.printInvoice = function() {
+window.printInvoice = function () {
     window.print();
 };
 
 /* ==============================================================================
    12. CELEBRATORY ORDER SUCCESS MODAL POPUP
    ============================================================================== */
-window.closeOrderSuccessModal = function() {
+window.closeOrderSuccessModal = function () {
     const modal = document.getElementById('orderSuccessModal');
     if (modal) {
         modal.style.opacity = '0';
@@ -1077,13 +1121,13 @@ window.closeOrderSuccessModal = function() {
     }
 };
 
-window.handleOrderModalBackdrop = function(event) {
+window.handleOrderModalBackdrop = function (event) {
     if (event.target && event.target.id === 'orderSuccessModal') {
         closeOrderSuccessModal();
     }
 };
 
-window.copyOrderNumber = function(orderNum, event) {
+window.copyOrderNumber = function (orderNum, event) {
     if (event) {
         event.preventDefault();
         event.stopPropagation();
@@ -1100,7 +1144,7 @@ window.copyOrderNumber = function(orderNum, event) {
 };
 
 // Dismiss modal with Escape key
-document.addEventListener('keydown', function(e) {
+document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
         const orderModal = document.getElementById('orderSuccessModal');
         if (orderModal) {
@@ -1116,7 +1160,7 @@ document.addEventListener('keydown', function(e) {
 /* ==============================================================================
    13. PAYMENT SUCCESSFUL MODAL POPUP (ORDER TRACKING / POST-COD PAYMENT)
    ============================================================================== */
-window.closePaymentSuccessModal = function() {
+window.closePaymentSuccessModal = function () {
     const modal = document.getElementById('paymentSuccessModal');
     if (modal) {
         modal.style.opacity = '0';
@@ -1136,25 +1180,84 @@ window.closePaymentSuccessModal = function() {
     }
 };
 
-window.handlePaymentModalBackdrop = function(event) {
+window.handlePaymentModalBackdrop = function (event) {
     if (event.target && event.target.id === 'paymentSuccessModal') {
         closePaymentSuccessModal();
     }
 };
 
 /* ==============================================================================
-   14. CSP-COMPLIANT EVENT DELEGATION FOR COPY BUTTONS
-   Replaces inline onclick="copyOrderNumber(...)" handlers across all pages.
-   Any button/element with [data-copy-val] will trigger the clipboard copy.
+   14. CSP-COMPLIANT EVENT DELEGATION FOR ALL SHARED GLOBAL ACTIONS
+   Replaces inline onclick="..." handlers across all pages.
+   Any element with [data-copy-val], [data-order-filter], [data-print-invoice],
+   [data-close-order-modal], or [data-close-payment-modal] triggers the
+   corresponding action automatically — no inline attribute JS required.
+   Backdrop clicks are handled via a plain click listener since the backdrop
+   elements themselves carry no inline handler, matching the CSP-safe pattern.
    ============================================================================== */
-document.addEventListener('click', function(event) {
-    const btn = event.target.closest('[data-copy-val]');
-    if (btn) {
+document.addEventListener('click', function (event) {
+    // Copy-to-clipboard buttons (order numbers etc.)
+    const copyBtn = event.target.closest('[data-copy-val]');
+    if (copyBtn) {
         event.preventDefault();
         event.stopPropagation();
-        const val = btn.getAttribute('data-copy-val');
+        const val = copyBtn.getAttribute('data-copy-val');
         if (val) {
             window.copyOrderNumber(val, event);
         }
+        return;
     }
+
+    // Order status filter tabs — expects data-order-filter="ALL|PROCESSING|SHIPPED|..."
+    const filterBtn = event.target.closest('[data-order-filter]');
+    if (filterBtn) {
+        window.filterOrders(filterBtn.getAttribute('data-order-filter'), filterBtn);
+        return;
+    }
+
+    // Print invoice trigger
+    if (event.target.closest('[data-print-invoice]')) {
+        window.printInvoice();
+        return;
+    }
+
+    // Order success modal close button / backdrop
+    if (event.target.closest('[data-close-order-modal]')) {
+        window.closeOrderSuccessModal();
+        return;
+    }
+    const orderModalBackdrop = document.getElementById('orderSuccessModal');
+    if (orderModalBackdrop && event.target === orderModalBackdrop) {
+        window.closeOrderSuccessModal();
+        return;
+    }
+
+    // Payment success modal close button / backdrop
+    if (event.target.closest('[data-close-payment-modal]')) {
+        window.closePaymentSuccessModal();
+        return;
+    }
+    const paymentModalBackdrop = document.getElementById('paymentSuccessModal');
+    if (paymentModalBackdrop && event.target === paymentModalBackdrop) {
+        window.closePaymentSuccessModal();
+    }
+});
+document.addEventListener('DOMContentLoaded', () => {
+    const closeButton = document.getElementById(
+        'registrationSuccessBannerClose'
+    );
+
+    if (!closeButton) {
+        return;
+    }
+
+    closeButton.addEventListener('click', () => {
+        const banner = document.getElementById(
+            'registrationSuccessBanner'
+        );
+
+        if (banner) {
+            banner.classList.add('is-hidden');
+        }
+    });
 });
