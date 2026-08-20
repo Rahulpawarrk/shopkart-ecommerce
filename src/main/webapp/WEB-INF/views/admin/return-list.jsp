@@ -230,7 +230,7 @@
         </div>
     </div>
 
-    <script>
+    <script nonce="${cspNonce}">
         function openAdminReturnModal(returnId, returnNumber, status, resolution, notes) {
             document.getElementById('adminModalReturnId').value = returnId;
             document.getElementById('adminModalTitle').innerText = 'Update Return #' + returnNumber;

@@ -76,17 +76,26 @@ public class SecurityHeadersFilter implements Filter {
             // 4. Referrer Policy
             httpResponse.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
 
-            // 5. Content Security Policy (CSP)
+            // Generate a cryptographically secure random nonce per request for CSP
+            byte[] nonceBytes = new byte[16];
+            new java.security.SecureRandom().nextBytes(nonceBytes);
+            String cspNonce = java.util.Base64.getEncoder().encodeToString(nonceBytes);
+            httpRequest.setAttribute("cspNonce", cspNonce);
+
+            // 5. Content Security Policy (CSP) - Hardened OWASP & Mozilla Observatory Compliant Policy
             httpResponse.setHeader("Content-Security-Policy",
                     "default-src 'self'; " +
-                    "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+                    "script-src 'self' 'nonce-" + cspNonce + "' https://checkout.razorpay.com; " +
                     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
                     "font-src 'self' https://fonts.gstatic.com data:; " +
                     "img-src 'self' data: https: blob:; " +
-                    "connect-src 'self'; " +
-                    "frame-ancestors 'self'; " +
+                    "connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com; " +
+                    "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com; " +
+                    "object-src 'none'; " +
+                    "base-uri 'self'; " +
                     "form-action 'self'; " +
-                    "base-uri 'self';");
+                    "frame-ancestors 'self'; " +
+                    "upgrade-insecure-requests;");
 
             // 6. Permissions Policy (restricting sensitive browser features & APIs)
             httpResponse.setHeader("Permissions-Policy",

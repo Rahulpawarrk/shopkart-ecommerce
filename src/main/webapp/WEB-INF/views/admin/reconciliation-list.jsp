@@ -375,7 +375,7 @@
     </div>
 
     <!-- Scripts -->
-    <script>
+    <script nonce="${cspNonce}">
         function openReconcileModal(recId, orderNo, custName, custEmail, custPhone, txnRef, gwOrderId, method, amount, failureReason, status, notes, resolverName, resolvedAt) {
             document.getElementById('modalRecId').textContent = 'Audit Record #REC-' + recId;
             document.getElementById('modalFormRecId').value = recId;

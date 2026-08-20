@@ -272,7 +272,7 @@
         </footer>
     </div>
 
-    <script>
+    <script nonce="${cspNonce}">
         const otpInput = document.getElementById('otp');
         const verifyForm = document.getElementById('verifyEmailForm');
         const submitBtn = document.getElementById('verifySubmitBtn');

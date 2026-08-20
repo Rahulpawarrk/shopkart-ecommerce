@@ -257,7 +257,7 @@
         </div>
     </div>
 
-    <script>
+    <script nonce="${cspNonce}">
         function openRestockModal(productId, productName, currentQty) {
             document.getElementById('restockProductId').value = productId;
             document.getElementById('restockTitle').innerText = 'Restock: ' + productName + ' (Current: ' + currentQty + ')';

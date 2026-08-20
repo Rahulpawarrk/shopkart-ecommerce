@@ -725,7 +725,7 @@
     </div>
 </div>
 
-<script>
+<script nonce="${cspNonce}">
     let selectedUpiAppGlobal = 'Google Pay';
 
     // Tab switching

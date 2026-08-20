@@ -378,7 +378,7 @@
                 </c:otherwise>
             </c:choose>
 
-            <script>
+            <script nonce="${cspNonce}">
                 let currentFilter = '${selectedStatus}';
                 let currentSort = '${selectedSort}';
                 let currentSearch = '';

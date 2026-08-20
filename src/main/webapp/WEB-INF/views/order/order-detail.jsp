@@ -2244,7 +2244,7 @@
                 <div id="toastContainer" class="toast-container"></div>
 
                 <script src="${pageContext.request.contextPath}/assets/js/ecommerce.js"></script>
-                <script>
+                <script nonce="${cspNonce}">
                     async function syncLiveCarrierTracking(orderId) {
                         const btn = document.getElementById('syncLiveTrackingBtn');
                         const icon = document.getElementById('syncIcon');

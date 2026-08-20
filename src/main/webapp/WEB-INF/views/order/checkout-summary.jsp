@@ -453,7 +453,7 @@
     <!-- Toast Notification Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script>
+    <script nonce="${cspNonce}">
         function applySummaryCoupon(code) {
             const input = document.getElementById('summaryCouponInput');
             if (input) {

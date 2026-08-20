@@ -410,7 +410,7 @@
     <!-- Toast Notification Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script>
+    <script nonce="${cspNonce}">
         function selectPaymentCard(card) {
             document.querySelectorAll('.payment-option-card').forEach(c => c.classList.remove('selected'));
             card.classList.add('selected');

@@ -319,7 +319,7 @@
     <!-- Toast Notification Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script>
+    <script nonce="${cspNonce}">
         function selectAddressCard(card) {
             document.querySelectorAll('.address-card-option').forEach(c => c.classList.remove('selected'));
             card.classList.add('selected');

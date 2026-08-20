@@ -214,7 +214,7 @@
         </footer>
     </div>
 
-    <script>
+    <script nonce="${cspNonce}">
         function togglePwd(fieldId, btn) {
             const field = document.getElementById(fieldId);
             if (!field) return;

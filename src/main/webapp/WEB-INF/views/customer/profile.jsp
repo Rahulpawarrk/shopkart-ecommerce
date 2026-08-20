@@ -425,7 +425,7 @@
     </footer>
 
     <script src="${pageContext.request.contextPath}/assets/js/ecommerce.js"></script>
-    <script>
+    <script nonce="${cspNonce}">
         function toggleEditMode(isEdit) {
             const viewMode = document.getElementById('profileViewMode');
             const editMode = document.getElementById('profileEditMode');

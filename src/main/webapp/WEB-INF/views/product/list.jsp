@@ -532,7 +532,7 @@
     <!-- Toast Notification Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <script>
+    <script nonce="${cspNonce}">
         // Category to Brands dictionary for instantaneous reactivity
         const categoryBrandsMap = ${categoryBrandsJson != null ? categoryBrandsJson : '{}'};
         

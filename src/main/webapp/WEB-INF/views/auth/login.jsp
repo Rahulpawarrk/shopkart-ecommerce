@@ -320,8 +320,8 @@
                 </footer>
             </div>
 
-            <script>
-</script>
+            <script nonce="${cspNonce}">
+            </script>
         </body>
 
         </html>

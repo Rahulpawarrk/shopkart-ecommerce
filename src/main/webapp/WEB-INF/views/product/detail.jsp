@@ -1068,7 +1068,7 @@
                     </div>
                 </div>
 
-                <script>
+                <script nonce="${cspNonce}">
                     function toggleEditReviewForm() {
                         const formCard = document.getElementById('writeReviewForm');
                         if (formCard) {

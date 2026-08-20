@@ -274,7 +274,7 @@
         </footer>
     </div>
 
-    <script>
+    <script nonce="${cspNonce}">
         // Form submission handling for initial send
         const form = document.getElementById('forgotForm');
         const btn  = document.getElementById('forgotSubmitBtn');
