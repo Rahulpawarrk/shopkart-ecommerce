@@ -48,14 +48,16 @@
                             <ul class="admin-nav">
                                 <li><a href="${pageContext.request.contextPath}/admin/dashboard"><span>📊</span>
                                         Dashboard Overview</a></li>
+                                <li><a href="${pageContext.request.contextPath}/admin/admins"><span>👑</span>
+                                        Admin Management</a></li>
                                 <li><a href="${pageContext.request.contextPath}/admin/reports/sales"><span>📈</span>
-                                        Sales & Revenue</a></li>
+                                        Sales &amp; Revenue</a></li>
                                 <li><a href="${pageContext.request.contextPath}/admin/products"><span>📦</span> Product
                                         Catalog</a></li>
                                 <li><a href="${pageContext.request.contextPath}/admin/categories"><span>📁</span>
                                         Categories</a></li>
                                 <li><a href="${pageContext.request.contextPath}/admin/inventory"><span>🏭</span>
-                                        Inventory & Stock</a></li>
+                                        Inventory &amp; Stock</a></li>
                                 <li><a href="${pageContext.request.contextPath}/admin/orders"
                                         class="active"><span>🛒</span> Order Management</a></li>
                                 <li><a href="${pageContext.request.contextPath}/admin/returns"><span>🔄</span> Return
@@ -67,9 +69,7 @@
                                 <li><a href="${pageContext.request.contextPath}/admin/reviews"><span>⭐</span> Review
                                         Moderation</a></li>
                                 <li><a href="${pageContext.request.contextPath}/admin/coupons"><span>🏷️</span> Coupons
-                                        & Offers</a></li>
-                                <li><a href="${pageContext.request.contextPath}/admin/admins"><span>👑</span>
-                                        Admin Management</a></li>
+                                        &amp; Offers</a></li>
                                 <li><a href="${pageContext.request.contextPath}/admin/audit-logs"><span>🛡️</span>
                                         Security Audit Logs</a></li>
                             </ul>

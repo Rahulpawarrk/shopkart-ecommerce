@@ -16,44 +16,39 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        .admin-mgmt-grid {
-            display: grid;
-            grid-template-columns: 1fr 380px;
-            gap: 1.5rem;
-            align-items: start;
-        }
-        @media (max-width: 1024px) {
-            .admin-mgmt-grid {
-                grid-template-columns: 1fr;
-            }
-        }
         .admin-register-card {
             background: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: var(--radius-md);
             padding: 1.5rem;
+            margin-bottom: 1.5rem;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
         }
+        .form-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
         .form-group-sm {
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
         }
         .form-group-sm label {
             display: block;
             font-size: 0.82rem;
             font-weight: 700;
             color: #334155;
-            margin-bottom: 0.3rem;
+            margin-bottom: 0.35rem;
         }
         .form-group-sm input {
             width: 100%;
-            padding: 0.6rem 0.8rem;
+            padding: 0.6rem 0.85rem;
             border: 1.5px solid #cbd5e1;
             border-radius: 6px;
             font-size: 0.88rem;
             font-family: inherit;
             outline: none;
             box-sizing: border-box;
-            transition: border-color 0.2s;
+            transition: all 0.2s ease;
         }
         .form-group-sm input:focus {
             border-color: #2563eb;
@@ -62,7 +57,7 @@
         .admin-role-badge {
             display: inline-flex;
             align-items: center;
-            gap: 0.3rem;
+            gap: 0.25rem;
             background: #fef3c7;
             border: 1px solid #fde047;
             color: #92400e;
@@ -70,6 +65,7 @@
             border-radius: 9999px;
             font-size: 0.75rem;
             font-weight: 800;
+            white-space: nowrap;
         }
         .admin-avatar {
             width: 36px;
@@ -83,6 +79,7 @@
             font-weight: 800;
             font-size: 0.95rem;
             border: 1.5px solid #cbd5e1;
+            flex-shrink: 0;
         }
     </style>
 </head>
@@ -109,16 +106,17 @@
                 <div class="admin-nav-header">MAIN NAVIGATION</div>
                 <ul class="admin-nav">
                     <li><a href="${pageContext.request.contextPath}/admin/dashboard"><span>📊</span> Dashboard Overview</a></li>
+                    <li><a href="${pageContext.request.contextPath}/admin/admins" class="active"><span>👑</span> Admin Management</a></li>
                     <li><a href="${pageContext.request.contextPath}/admin/reports/sales"><span>📈</span> Sales &amp; Revenue</a></li>
                     <li><a href="${pageContext.request.contextPath}/admin/products"><span>📦</span> Product Catalog</a></li>
                     <li><a href="${pageContext.request.contextPath}/admin/categories"><span>📁</span> Categories</a></li>
                     <li><a href="${pageContext.request.contextPath}/admin/inventory"><span>🏭</span> Inventory &amp; Stock</a></li>
                     <li><a href="${pageContext.request.contextPath}/admin/orders"><span>🛒</span> Order Management</a></li>
+                    <li><a href="${pageContext.request.contextPath}/admin/returns"><span>🔄</span> Return Requests</a></li>
                     <li><a href="${pageContext.request.contextPath}/admin/payments"><span>💳</span> Payment History</a></li>
                     <li><a href="${pageContext.request.contextPath}/admin/reconciliation"><span>⚖️</span> Failed Payments &amp; Reconciliation</a></li>
                     <li><a href="${pageContext.request.contextPath}/admin/reviews"><span>⭐</span> Review Moderation</a></li>
                     <li><a href="${pageContext.request.contextPath}/admin/coupons"><span>🏷️</span> Coupons &amp; Offers</a></li>
-                    <li><a href="${pageContext.request.contextPath}/admin/admins" class="active"><span>👑</span> Admin Management</a></li>
                     <li><a href="${pageContext.request.contextPath}/admin/audit-logs"><span>🛡️</span> Security Audit Logs</a></li>
                 </ul>
             </aside>
@@ -126,7 +124,7 @@
             <!-- Main Content Area -->
             <section>
                 <!-- Page Title Header -->
-                <div style="background: #ffffff; padding: 1.25rem 1.5rem; border-radius: var(--radius-md); border: 1px solid #e2e8f0; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
+                <div style="background: #ffffff; padding: 1.25rem 1.5rem; border-radius: var(--radius-md); border: 1px solid #e2e8f0; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                     <div>
                         <h1 style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin: 0 0 0.25rem; display: flex; align-items: center; gap: 0.5rem;">
                             <span>👑</span> Administrator Management
@@ -135,9 +133,11 @@
                             Register new system administrators and manage internal operator accounts.
                         </p>
                     </div>
-                    <span class="badge badge-info" style="font-size: 0.88rem; padding: 0.4rem 0.85rem;">
-                        <strong>${adminCount}</strong> Active Administrators
-                    </span>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span class="badge badge-info" style="font-size: 0.88rem; padding: 0.4rem 0.85rem;">
+                            <strong>${adminCount}</strong> Active Administrators
+                        </span>
+                    </div>
                 </div>
 
                 <!-- Flash Success Notification -->
@@ -157,143 +157,144 @@
                     </div>
                 </c:if>
 
-                <div class="admin-mgmt-grid">
-                    
-                    <!-- LEFT: Admin Accounts Table -->
-                    <div class="card" style="padding: 0; overflow: hidden;">
-                        <div style="padding: 1rem 1.25rem; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-weight: 800; color: #0f172a; font-size: 0.95rem;">
-                                Registered Administrators
-                            </span>
-                            <span style="font-size: 0.8rem; color: #64748b;">
-                                Role: ADMIN (Console Only)
-                            </span>
-                        </div>
+                <!-- 1. Registered Administrators Table (Full Width) -->
+                <div class="card" style="padding: 0; overflow: hidden; margin-bottom: 1.5rem;">
+                    <div style="padding: 1rem 1.25rem; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                        <span style="font-weight: 800; color: #0f172a; font-size: 0.95rem;">
+                            Registered Administrators
+                        </span>
+                        <span style="font-size: 0.8rem; color: #64748b;">
+                            Role: ADMIN (Console Only)
+                        </span>
+                    </div>
 
-                        <div class="table-responsive" style="border: none;">
-                            <table class="admin-table">
-                                <thead>
-                                    <tr>
-                                        <th>Admin User</th>
-                                        <th>Email Address</th>
-                                        <th>Mobile Phone</th>
-                                        <th>Role / Status</th>
-                                        <th>Joined Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <c:choose>
-                                        <c:when test="${empty adminList}">
+                    <div class="table-responsive" style="border: none;">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th style="min-width: 180px;">Admin User</th>
+                                    <th style="min-width: 200px;">Email Address</th>
+                                    <th style="min-width: 130px;">Mobile Phone</th>
+                                    <th style="min-width: 160px;">Role / Status</th>
+                                    <th style="min-width: 120px;">Joined Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <c:choose>
+                                    <c:when test="${empty adminList}">
+                                        <tr>
+                                            <td colspan="5" style="text-align: center; padding: 2.5rem; color: #94a3b8;">
+                                                No administrator accounts found.
+                                            </td>
+                                        </tr>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <c:forEach var="admin" items="${adminList}">
                                             <tr>
-                                                <td colspan="5" style="text-align: center; padding: 2.5rem; color: #94a3b8;">
-                                                    No administrator accounts found.
-                                                </td>
-                                            </tr>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <c:forEach var="admin" items="${adminList}">
-                                                <tr>
-                                                    <td>
-                                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                                            <div class="admin-avatar">
-                                                                <c:out value="${admin.firstName != null ? admin.firstName.substring(0, 1).toUpperCase() : 'A'}" />
-                                                            </div>
-                                                            <div>
-                                                                <strong style="color: #0f172a; font-size: 0.92rem;">
-                                                                    <c:out value="${admin.firstName}" /> <c:out value="${admin.lastName}" />
-                                                                </strong>
-                                                                <div style="font-size: 0.75rem; color: #64748b;">ID: #${admin.userId}</div>
-                                                            </div>
+                                                <td>
+                                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                                        <div class="admin-avatar">
+                                                            <c:out value="${admin.firstName != null ? admin.firstName.substring(0, 1).toUpperCase() : 'A'}" />
                                                         </div>
-                                                    </td>
-                                                    <td>
-                                                        <span style="font-weight: 600; color: #1e293b; font-size: 0.88rem;">
-                                                            <c:out value="${admin.email}" />
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        <span style="color: #475569; font-size: 0.85rem;">
-                                                            <c:out value="${not empty admin.phone ? admin.phone : '—'}" />
-                                                        </span>
-                                                    </td>
-                                                    <td>
+                                                        <div>
+                                                            <strong style="color: #0f172a; font-size: 0.92rem;">
+                                                                <c:out value="${admin.firstName}" /> <c:out value="${admin.lastName}" />
+                                                            </strong>
+                                                            <div style="font-size: 0.75rem; color: #64748b;">ID: #${admin.userId}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span style="font-weight: 600; color: #1e293b; font-size: 0.88rem;">
+                                                        <c:out value="${admin.email}" />
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span style="color: #475569; font-size: 0.85rem;">
+                                                        <c:out value="${not empty admin.phone ? admin.phone : '—'}" />
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div style="display: inline-flex; align-items: center; gap: 0.4rem; flex-wrap: nowrap;">
                                                         <span class="admin-role-badge">
                                                             <span>👑</span> ADMIN
                                                         </span>
-                                                        <span class="badge badge-success" style="margin-left: 0.25rem;">
+                                                        <span class="badge badge-success">
                                                             <c:out value="${admin.status}" />
                                                         </span>
-                                                    </td>
-                                                    <td>
-                                                        <small style="color: #64748b;">
-                                                            <fmt:parseDate value="${admin.createdAt}" pattern="yyyy-MM-dd'T'HH:mm:ss" var="parsedDate" type="both" />
-                                                            <fmt:formatDate value="${parsedDate}" pattern="dd MMM yyyy" />
-                                                        </small>
-                                                    </td>
-                                                </tr>
-                                            </c:forEach>
-                                        </c:otherwise>
-                                    </c:choose>
-                                </tbody>
-                            </table>
-                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <small style="color: #64748b; font-weight: 600;">
+                                                        <fmt:parseDate value="${admin.createdAt}" pattern="yyyy-MM-dd'T'HH:mm:ss" var="parsedDate" type="both" />
+                                                        <fmt:formatDate value="${parsedDate}" pattern="dd MMM yyyy" />
+                                                    </small>
+                                                </td>
+                                            </tr>
+                                        </c:forEach>
+                                    </c:otherwise>
+                                </c:choose>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 2. Register New Admin Form (Structured Card) -->
+                <div class="admin-register-card">
+                    <div style="border-bottom: 1px solid #e2e8f0; padding-bottom: 0.75rem; margin-bottom: 1.25rem;">
+                        <h2 style="font-size: 1.15rem; font-weight: 800; color: #0f172a; margin: 0 0 0.25rem; display: flex; align-items: center; gap: 0.4rem;">
+                            <span>+</span> Register New Administrator
+                        </h2>
+                        <p style="font-size: 0.82rem; color: #64748b; margin: 0;">
+                            Create an authorized administrator profile with full console management access.
+                        </p>
                     </div>
 
-                    <!-- RIGHT: Register New Admin Form -->
-                    <div class="admin-register-card">
-                        <div style="border-bottom: 1px solid #e2e8f0; padding-bottom: 0.75rem; margin-bottom: 1rem;">
-                            <h2 style="font-size: 1.15rem; font-weight: 800; color: #0f172a; margin: 0 0 0.25rem;">
-                                + Register New Administrator
-                            </h2>
-                            <p style="font-size: 0.8rem; color: #64748b; margin: 0;">
-                                Create an authorized administrator profile.
-                            </p>
-                        </div>
-
-                        <form action="${pageContext.request.contextPath}/admin/admins" method="POST">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
-                                <div class="form-group-sm">
-                                    <label for="firstName">First Name *</label>
-                                    <input type="text" id="firstName" name="firstName" required placeholder="e.g. John" value="<c:out value='${firstName}' />">
-                                </div>
-                                <div class="form-group-sm">
-                                    <label for="lastName">Last Name *</label>
-                                    <input type="text" id="lastName" name="lastName" required placeholder="e.g. Doe" value="<c:out value='${lastName}' />">
-                                </div>
+                    <form action="${pageContext.request.contextPath}/admin/admins" method="POST">
+                        <div class="form-grid-3">
+                            <div class="form-group-sm">
+                                <label for="firstName">First Name *</label>
+                                <input type="text" id="firstName" name="firstName" required placeholder="e.g. John" value="<c:out value='${firstName}' />">
                             </div>
-
+                            <div class="form-group-sm">
+                                <label for="lastName">Last Name *</label>
+                                <input type="text" id="lastName" name="lastName" required placeholder="e.g. Doe" value="<c:out value='${lastName}' />">
+                            </div>
                             <div class="form-group-sm">
                                 <label for="email">Admin Work Email *</label>
                                 <input type="email" id="email" name="email" required placeholder="admin@shopkart.com" value="<c:out value='${email}' />">
                             </div>
+                        </div>
 
+                        <div class="form-grid-3" style="margin-top: 0.5rem;">
                             <div class="form-group-sm">
                                 <label for="phone">Mobile Phone (10 Digits)</label>
                                 <input type="tel" id="phone" name="phone" placeholder="9876543210" maxlength="10" pattern="[0-9]{10}" value="<c:out value='${phone}' />">
                             </div>
-
                             <div class="form-group-sm">
                                 <label for="password">Password * (Min 8 Characters)</label>
                                 <input type="password" id="password" name="password" required minlength="8" placeholder="••••••••">
                             </div>
-
                             <div class="form-group-sm">
                                 <label for="confirmPassword">Confirm Password *</label>
                                 <input type="password" id="confirmPassword" name="confirmPassword" required minlength="8" placeholder="••••••••">
                             </div>
+                        </div>
 
-                            <!-- Security Notice Callout -->
-                            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.75rem; margin-bottom: 1.25rem; font-size: 0.78rem; color: #475569; line-height: 1.45;">
-                                <strong style="color: #0f172a; display: block; margin-bottom: 0.2rem;">🔒 Role Restriction Notice:</strong>
-                                Registered accounts are strictly granted <strong>ADMIN</strong> console rights. They cannot perform customer storefront operations (cart, checkout, address management).
-                            </div>
+                        <!-- Security Notice Callout -->
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.85rem 1rem; margin: 1rem 0 1.25rem; font-size: 0.8rem; color: #475569; line-height: 1.45;">
+                            <strong style="color: #0f172a; display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.25rem;">
+                                <span>🔒</span> Role &amp; Access Policy:
+                            </strong>
+                            Registered accounts are strictly granted <strong>ADMIN</strong> console permissions. They manage catalog, orders, and reports but cannot perform customer storefront actions (such as cart, checkout, or address management).
+                        </div>
 
-                            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.75rem; font-weight: 800; font-size: 0.92rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem;">
+                        <div style="display: flex; justify-content: flex-end;">
+                            <button type="submit" class="btn btn-primary" style="padding: 0.75rem 2rem; font-weight: 800; font-size: 0.92rem; display: inline-flex; align-items: center; gap: 0.4rem;">
                                 <span>👑</span> Create Administrator Account
                             </button>
-                        </form>
-                    </div>
-
+                        </div>
+                    </form>
                 </div>
 
             </section>
