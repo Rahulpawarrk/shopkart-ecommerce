@@ -544,7 +544,7 @@ public class OrderService {
             try {
                 orderDAO.updateOrderFulfillment(orderId, newStatus, courierPartner, trackingNumber, deliveryAgentPhone, conn);
 
-                // If admin cancels or marks returned, restore inventory
+                // If admin cancels or marks returned, restore inventory and refund paid order
                 if (newStatus == OrderStatus.CANCELLED || newStatus == OrderStatus.RETURNED) {
                     List<OrderItem> items = orderDAO.getOrderItems(orderId, conn);
                     TransactionType transType = newStatus == OrderStatus.RETURNED ? TransactionType.RETURN : TransactionType.CANCELLATION;
@@ -557,6 +557,9 @@ public class OrderService {
                                 "Admin marked order as " + newStatus,
                                 conn
                         );
+                    }
+                    if (order.getPaymentStatus() == PaymentStatus.PAID) {
+                        orderDAO.updatePaymentStatus(orderId, PaymentStatus.REFUNDED, conn);
                     }
                 }
 

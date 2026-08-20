@@ -214,10 +214,10 @@ public class PaymentDAO {
         Map<String, Object> stats = new HashMap<>();
         String sql = "SELECT " +
                      "COUNT(*) AS total_transactions, " +
-                     "SUM(CASE WHEN p.payment_status = 'SUCCESS' OR o.payment_status = 'PAID' OR o.order_status = 'DELIVERED' THEN 1 ELSE 0 END) AS successful_transactions, " +
+                     "SUM(CASE WHEN (p.payment_status = 'SUCCESS' OR o.payment_status = 'PAID' OR o.order_status = 'DELIVERED') AND o.order_status NOT IN ('CANCELLED', 'RETURNED') AND p.payment_status != 'REFUNDED' THEN 1 ELSE 0 END) AS successful_transactions, " +
                      "SUM(CASE WHEN p.payment_status = 'FAILED' AND o.payment_status != 'PAID' THEN 1 ELSE 0 END) AS failed_transactions, " +
-                     "SUM(CASE WHEN p.payment_status = 'REFUNDED' THEN 1 ELSE 0 END) AS refunded_transactions, " +
-                     "COALESCE(SUM(CASE WHEN p.payment_status = 'SUCCESS' OR o.payment_status = 'PAID' OR o.order_status = 'DELIVERED' THEN p.amount ELSE 0 END), 0) AS total_collected " +
+                     "SUM(CASE WHEN p.payment_status = 'REFUNDED' OR o.payment_status = 'REFUNDED' OR o.order_status = 'RETURNED' THEN 1 ELSE 0 END) AS refunded_transactions, " +
+                     "COALESCE(SUM(CASE WHEN (p.payment_status = 'SUCCESS' OR o.payment_status = 'PAID' OR o.order_status = 'DELIVERED') AND o.order_status NOT IN ('CANCELLED', 'RETURNED') AND p.payment_status != 'REFUNDED' THEN p.amount ELSE 0 END), 0) AS total_collected " +
                      "FROM dbo.payments p " +
                      "INNER JOIN dbo.orders o ON p.order_id = o.order_id";
         try (Connection conn = DBConnection.getConnection();

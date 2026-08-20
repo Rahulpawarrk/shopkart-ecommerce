@@ -108,6 +108,60 @@ public class OrderReturnService {
     public boolean updateReturnStatus(int returnId, String newStatus, String adminNotes, BigDecimal refundAmount) {
         boolean updated = orderReturnDAO.updateStatus(returnId, newStatus, adminNotes, refundAmount);
         if (updated) {
+            String normStatus = newStatus != null ? newStatus.trim().toUpperCase() : "";
+            // When return is approved, refunded, or completed, synchronize order status to RETURNED and restore inventory
+            if ("APPROVED".equals(normStatus) || "REFUNDED".equals(normStatus) || "COMPLETED".equals(normStatus) || "RETURNED".equals(normStatus)) {
+                try {
+                    orderReturnDAO.findById(returnId).ifPresent(ret -> {
+                        int orderId = ret.getOrderId();
+                        try (java.sql.Connection conn = com.example.ecommerce.config.DBConnection.getConnection()) {
+                            conn.setAutoCommit(false);
+                            try {
+                                Optional<Order> optOrder = orderDAO.findById(orderId);
+                                if (optOrder.isPresent()) {
+                                    Order order = optOrder.get();
+                                    if (order.getOrderStatus() != OrderStatus.RETURNED) {
+                                        orderDAO.updateOrderStatus(orderId, OrderStatus.RETURNED, conn);
+                                        if (order.getPaymentStatus() == com.example.ecommerce.order.model.PaymentStatus.PAID || refundAmount != null) {
+                                            orderDAO.updatePaymentStatus(orderId, com.example.ecommerce.order.model.PaymentStatus.REFUNDED, conn);
+                                        }
+
+                                        com.example.ecommerce.inventory.service.InventoryService invService = new com.example.ecommerce.inventory.service.InventoryService();
+                                        List<com.example.ecommerce.order.model.OrderItem> items = orderDAO.getOrderItems(orderId, conn);
+                                        for (com.example.ecommerce.order.model.OrderItem item : items) {
+                                            invService.restoreStockForCancellation(
+                                                    item.getProductId(),
+                                                    item.getQuantity(),
+                                                    orderId,
+                                                    com.example.ecommerce.inventory.model.TransactionType.RETURN,
+                                                    "Return processed: " + ret.getReturnNumber(),
+                                                    conn
+                                            );
+                                        }
+
+                                        com.example.ecommerce.order.model.OrderStatusHistory history = new com.example.ecommerce.order.model.OrderStatusHistory(
+                                                orderId,
+                                                order.getOrderStatus(),
+                                                OrderStatus.RETURNED,
+                                                ret.getUserId(),
+                                                "Return " + normStatus + " by Admin (Ref: " + ret.getReturnNumber() + ")"
+                                        );
+                                        orderDAO.createStatusHistory(history, conn);
+                                    }
+                                }
+                                conn.commit();
+                            } catch (Exception ex) {
+                                conn.rollback();
+                                logger.error("Error processing return order sync for orderId: {}", orderId, ex);
+                            }
+                        } catch (java.sql.SQLException e) {
+                            logger.error("Database connection error during return sync", e);
+                        }
+                    });
+                } catch (Exception ex) {
+                    logger.warn("Non-fatal: Return status updated, secondary order sync error", ex);
+                }
+            }
             logger.info("Admin updated returnId [{}] status to: {}", returnId, newStatus);
         }
         return updated;

@@ -34,8 +34,8 @@ public class DashboardDAO {
                 +
                 "(SELECT COALESCE(SUM(total_amount), 0) FROM dbo.orders WHERE order_status = 'DELIVERED' AND CAST(updated_at AS DATE) = CAST(CURRENT_TIMESTAMP AS DATE)) AS today_revenue, "
                 +
-                "(SELECT COUNT(*) FROM dbo.orders WHERE order_status != 'CANCELLED') AS total_orders, " +
-                "(SELECT COUNT(*) FROM dbo.orders WHERE order_status != 'CANCELLED' AND CAST(created_at AS DATE) = CAST(CURRENT_TIMESTAMP AS DATE)) AS today_orders, "
+                "(SELECT COUNT(*) FROM dbo.orders WHERE order_status NOT IN ('CANCELLED', 'RETURNED')) AS total_orders, " +
+                "(SELECT COUNT(*) FROM dbo.orders WHERE order_status NOT IN ('CANCELLED', 'RETURNED') AND CAST(created_at AS DATE) = CAST(CURRENT_TIMESTAMP AS DATE)) AS today_orders, "
                 +
                 "(SELECT COUNT(*) FROM dbo.orders WHERE order_status IN ('PLACED', 'CONFIRMED', 'PROCESSING', 'DISPATCHED', 'IN_TRANSIT', 'OUT_FOR_DELIVERY')) AS pending_orders, "
                 +
