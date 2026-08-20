@@ -25,7 +25,7 @@
             <span>Online payment was not completed. Your order has not been placed.</span>
         </div>
         <div class="ticker-links">
-            <a href="${pageContext.request.contextPath}/orders">My Orders</a>
+            <a href="${pageContext.request.contextPath}/products?brand=Apple">Brand Store</a>
             <a href="${pageContext.request.contextPath}/cart">Back to Cart</a>
         </div>
     </header>

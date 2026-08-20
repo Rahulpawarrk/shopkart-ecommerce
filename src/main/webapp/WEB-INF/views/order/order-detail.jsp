@@ -667,7 +667,7 @@
                             <a href="${pageContext.request.contextPath}/health"
                                 style="color: #38bdf8; font-weight: 700;">🩺 System Health</a>
                         </c:if>
-                        <a href="${pageContext.request.contextPath}/orders">My Orders</a>
+                        <a href="${pageContext.request.contextPath}/products?brand=Apple">Brand Store</a>
                     </div>
                 </header>
 
