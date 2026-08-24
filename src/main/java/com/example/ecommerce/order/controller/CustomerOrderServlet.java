@@ -100,6 +100,15 @@ public class CustomerOrderServlet extends HttpServlet {
         request.setAttribute("selectedStatus", status != null ? status.trim() : "ALL");
         request.setAttribute("selectedSort", sortBy != null ? sortBy.trim() : "newest");
 
+        // Flash attribute check for freshly placed order confirmation modal
+        com.example.ecommerce.order.model.OrderConfirmationContext confirmationContext = 
+                (session != null) ? (com.example.ecommerce.order.model.OrderConfirmationContext) session.getAttribute("orderConfirmationContext") : null;
+        if (confirmationContext != null) {
+            request.setAttribute("confirmationContext", confirmationContext);
+            request.setAttribute("showOrderSuccessModal", true);
+            session.removeAttribute("orderConfirmationContext");
+        }
+
         request.getRequestDispatcher("/WEB-INF/views/order/order-list.jsp").forward(request, response);
     }
 

@@ -202,7 +202,7 @@ public class PaymentCallbackServlet extends HttpServlet {
             sessionFrom(request).setAttribute("orderConfirmationContext", confirmationContext);
             sessionFrom(request).removeAttribute("pendingPaymentOrderId");
 
-            response.sendRedirect(request.getContextPath() + "/order/confirmation");
+            response.sendRedirect(request.getContextPath() + "/orders");
 
         } catch (Exception e) {
             logger.error("Error finalizing verified Razorpay payment for order #{}", order.getOrderNumber(), e);
@@ -254,7 +254,7 @@ public class PaymentCallbackServlet extends HttpServlet {
                 sessionFrom(request).setAttribute("orderConfirmationContext", confirmationContext);
                 sessionFrom(request).removeAttribute("pendingPaymentOrderId");
 
-                response.sendRedirect(request.getContextPath() + "/order/confirmation");
+                response.sendRedirect(request.getContextPath() + "/orders");
 
             } else {
                 redirectPaymentFailure(request, response, order, gatewayMessage);

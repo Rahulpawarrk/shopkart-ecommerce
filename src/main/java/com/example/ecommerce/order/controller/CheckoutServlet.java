@@ -411,8 +411,8 @@ public class CheckoutServlet extends HttpServlet {
                 session.setAttribute("orderConfirmationContext", confirmationContext);
                 session.setAttribute("justPlacedOrder", confirmedOrder);
 
-                // Clean redirect to Order Confirmation (no URL parameters)
-                response.sendRedirect(request.getContextPath() + "/order/confirmation");
+                // Clean redirect to My Orders with Order Confirmation Modal
+                response.sendRedirect(request.getContextPath() + "/orders");
             } else {
                 // Online Payment (UPI / Cards / NetBanking): store order ID in session and redirect to /payment/gateway
                 session.setAttribute("pendingPaymentOrderId", confirmedOrder.getOrderId());

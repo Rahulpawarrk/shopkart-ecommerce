@@ -533,6 +533,85 @@
         </div>
     </footer>
 
+    <!-- ORDER CONFIRMATION MODAL POPUP (Triggered upon placing order) -->
+    <c:if test="${showOrderSuccessModal and not empty confirmationContext}">
+        <div id="orderConfirmationModal" class="order-confirmation-modal-backdrop" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.75); z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(8px); animation: fadeInModal 0.25s ease-out;">
+            <div class="order-confirmation-card" style="background: #ffffff; border-radius: 24px; max-width: 480px; width: 100%; box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.35); border: 1px solid #e2e8f0; overflow: hidden; animation: popInModal 0.35s cubic-bezier(0.16, 1, 0.3, 1);">
+                
+                <!-- Green Accent Top Bar -->
+                <div style="height: 6px; background: linear-gradient(90deg, #10b981 0%, #059669 100%);"></div>
+
+                <div style="padding: 2.25rem 2rem 2rem; text-align: center;">
+                    
+                    <!-- Green Checkmark Circle -->
+                    <div style="width: 72px; height: 72px; border-radius: 50%; background: #10b981; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 2.25rem; font-weight: 900; margin: 0 auto 1.25rem; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.35);">
+                        ✓
+                    </div>
+
+                    <!-- Heading -->
+                    <h2 style="font-size: 1.65rem; font-weight: 900; color: #0f172a; margin-bottom: 0.6rem; letter-spacing: -0.5px;">
+                        Order Placed Successfully!
+                    </h2>
+
+                    <!-- Message -->
+                    <p style="color: #64748b; font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.5rem;">
+                        Thank you for shopping with <strong>ShopKart India</strong>! Your order has been placed and is currently being prepared by our fulfillment team.
+                    </p>
+
+                    <!-- Order Reference Number Box -->
+                    <div style="background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 14px; padding: 1.1rem 1.25rem; margin-bottom: 1.25rem;">
+                        <div style="font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.4rem;">
+                            ORDER REFERENCE NUMBER
+                        </div>
+                        <div style="font-size: 1.45rem; font-weight: 900; color: #2563eb; letter-spacing: 0.5px; word-break: break-all;">
+                            ${confirmationContext.orderNumber}
+                        </div>
+                    </div>
+
+                    <!-- Order Metadata Grid -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; background: #f1f5f9; border-radius: 14px; padding: 0.85rem 1rem; margin-bottom: 1.75rem; text-align: left;">
+                        <div>
+                            <span style="color: #64748b; display: block; font-size: 0.72rem; font-weight: 700; text-transform: uppercase;">Amount</span>
+                            <strong style="color: #0f172a; font-size: 1.05rem; font-weight: 900;">₹<fmt:formatNumber value="${confirmationContext.totalAmount}" minFractionDigits="2"/></strong>
+                        </div>
+                        <div>
+                            <span style="color: #64748b; display: block; font-size: 0.72rem; font-weight: 700; text-transform: uppercase;">Payment Method</span>
+                            <strong style="color: #0f172a; font-size: 0.9rem; font-weight: 800;">${confirmationContext.paymentMethod}</strong>
+                        </div>
+                    </div>
+
+                    <!-- OK Button -->
+                    <button type="button" onclick="closeOrderConfirmationModal()" style="width: 100%; padding: 1rem 1.5rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; border: none; border-radius: 14px; font-size: 1.05rem; font-weight: 800; cursor: pointer; box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35); transition: all 0.2s ease;">
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            @keyframes fadeInModal {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            @keyframes popInModal {
+                from { opacity: 0; transform: scale(0.92) translateY(10px); }
+                to { opacity: 1; transform: scale(1) translateY(0); }
+            }
+        </style>
+
+        <script>
+            function closeOrderConfirmationModal() {
+                const modal = document.getElementById('orderConfirmationModal');
+                if (modal) {
+                    modal.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+                    modal.style.opacity = '0';
+                    modal.style.transform = 'scale(0.96)';
+                    setTimeout(() => modal.remove(), 200);
+                }
+            }
+        </script>
+    </c:if>
+
     <script src="${pageContext.request.contextPath}/assets/js/ecommerce.js"></script>
 </body>
 </html>

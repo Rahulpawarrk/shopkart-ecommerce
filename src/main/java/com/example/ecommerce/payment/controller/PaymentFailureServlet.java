@@ -147,7 +147,7 @@ public class PaymentFailureServlet extends HttpServlet {
                         "COD-" + System.currentTimeMillis()
                 );
                 session.setAttribute("orderConfirmationContext", confirmationContext);
-                response.sendRedirect(request.getContextPath() + "/order/confirmation");
+                response.sendRedirect(request.getContextPath() + "/orders");
 
             } else if ("retry".equalsIgnoreCase(action)) {
                 // Prepare session for clean gateway redirect

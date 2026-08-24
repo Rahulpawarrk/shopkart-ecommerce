@@ -98,12 +98,10 @@ public class OrderConfirmationServlet extends HttpServlet {
                 session.removeAttribute("justPlacedOrder");
             }
 
-            request.setAttribute("order", order);
-            request.setAttribute("confirmationContext", context);
-            request.getRequestDispatcher("/WEB-INF/views/order/confirmation.jsp").forward(request, response);
+            response.sendRedirect(request.getContextPath() + "/orders");
 
         } catch (Exception e) {
-            logger.error("Error rendering order confirmation for user {}", user.getUserId(), e);
+            logger.error("Error redirecting to orders for user {}", user.getUserId(), e);
             response.sendRedirect(request.getContextPath() + "/orders");
         }
     }
