@@ -337,6 +337,7 @@
 
                 <!-- Status Update Form -->
                 <form action="${pageContext.request.contextPath}/admin/reconciliation/status" method="POST">
+                    <input type="hidden" name="_csrf" value="${csrfToken}">
                     <input type="hidden" id="modalFormRecId" name="reconciliationId">
 
                     <div style="margin-bottom: 1.25rem;">

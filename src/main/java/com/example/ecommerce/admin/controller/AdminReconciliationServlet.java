@@ -1,7 +1,7 @@
 package com.example.ecommerce.admin.controller;
 
 import com.example.ecommerce.audit.service.AuditLogService;
-import com.example.ecommerce.auth.model.User;
+import com.example.ecommerce.auth.model.UserSession;
 import com.example.ecommerce.payment.model.PaymentReconciliation;
 import com.example.ecommerce.payment.service.PaymentService;
 import com.example.ecommerce.util.Pagination;
@@ -40,6 +40,13 @@ public class AdminReconciliationServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
+        String servletPath = request.getServletPath();
+        String requestUri = request.getRequestURI();
+        if ((servletPath != null && servletPath.endsWith("/status")) || (requestUri != null && requestUri.endsWith("/status"))) {
+            response.sendRedirect(request.getContextPath() + "/admin/reconciliation");
+            return;
+        }
+
         String keyword = request.getParameter("q");
         String status = request.getParameter("status");
         if (status == null || status.trim().isEmpty()) {
@@ -74,7 +81,7 @@ public class AdminReconciliationServlet extends HttpServlet {
             throws ServletException, IOException {
         
         HttpSession session = request.getSession(false);
-        User currentUser = session != null ? (User) session.getAttribute("currentUser") : null;
+        UserSession currentUser = session != null ? (UserSession) session.getAttribute("currentUser") : null;
         if (currentUser == null || !currentUser.isAdmin()) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Access denied. Administrator privileges required.");
             return;
