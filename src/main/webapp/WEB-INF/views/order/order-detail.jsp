@@ -1404,7 +1404,7 @@
                                                         </button>
                                                     </c:if>
                                                     <button type="button" id="syncLiveTrackingBtn"
-                                                        data-action="syncLiveTracking" data-order-id="${order.orderNumber}"
+                                                        data-action="syncLiveTracking" data-order-id="${order.orderId}" data-auto-sync="${not empty order.trackingNumber && order.orderStatus != 'DELIVERED'}"
                                                         style="padding: 0.5rem 1.1rem; font-size: 0.82rem; background: #166534; color: #ffffff; border: none; border-radius: 6px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; box-shadow: 0 2px 6px rgba(22, 101, 52, 0.25);">
                                                         <span id="syncIcon">🔄</span> Sync Live Carrier Telemetry
                                                     </button>
@@ -2316,21 +2316,28 @@
 
                     // Auto-load live carrier telemetry if tracking number exists (only for in-transit orders)
                     document.addEventListener('DOMContentLoaded', function () {
-            <c:if test="${not empty order.trackingNumber && order.orderStatus != 'DELIVERED'}">
-                syncLiveCarrierTracking(${order.orderId});
-            </c:if>
-            <c:if test="${param.reviewSubmitted eq 'true'}">
-                showToast('🎉 Thank you! Your product review & photos have been submitted successfully.', 'success');
-            </c:if>
-            <c:if test="${not empty param.reviewError}">
-                showToast('Review Error: <c:out value="${param.reviewError}" />', 'danger');
-            </c:if>
-            <c:if test="${param.returnSubmitted eq 'true'}">
-                showToast('✓ Return request (Ref: <c:out value="${param.returnNum}" />) submitted successfully!', 'success');
-            </c:if>
-            <c:if test="${not empty param.returnError}">
-                showToast('Return Error: <c:out value="${param.returnError}" />', 'danger');
-            </c:if>
+                        const syncBtn = document.getElementById('syncLiveTrackingBtn');
+                        if (syncBtn && syncBtn.getAttribute('data-auto-sync') === 'true') {
+                            const orderId = syncBtn.getAttribute('data-order-id');
+                            if (orderId) {
+                                syncLiveCarrierTracking(orderId);
+                            }
+                        }
+
+                        const urlParams = new URLSearchParams(window.location.search);
+                        if (urlParams.get('reviewSubmitted') === 'true') {
+                            showToast('🎉 Thank you! Your product review & photos have been submitted successfully.', 'success');
+                        }
+                        if (urlParams.has('reviewError')) {
+                            showToast('Review Error: ' + urlParams.get('reviewError'), 'danger');
+                        }
+                        if (urlParams.get('returnSubmitted') === 'true') {
+                            const returnRef = urlParams.get('returnNum');
+                            showToast('✓ Return request' + (returnRef ? ' (Ref: ' + returnRef + ')' : '') + ' submitted successfully!', 'success');
+                        }
+                        if (urlParams.has('returnError')) {
+                            showToast('Return Error: ' + urlParams.get('returnError'), 'danger');
+                        }
                     });
 
                     // CSP-compliant delegation for Sync Live Tracking button

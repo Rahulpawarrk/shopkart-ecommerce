@@ -123,7 +123,7 @@ public class OrderService {
         order.setNotes(notes);
 
         if ("COD".equalsIgnoreCase(order.getPaymentMethod())) {
-            order.setOrderStatus(OrderStatus.PROCESSING);
+            order.setOrderStatus(OrderStatus.CONFIRMED);
             order.setPaymentStatus(PaymentStatus.PENDING);
         } else {
             order.setOrderStatus(OrderStatus.PENDING);
@@ -274,7 +274,7 @@ public class OrderService {
         order.setNotes(notes);
 
         if ("COD".equalsIgnoreCase(order.getPaymentMethod())) {
-            order.setOrderStatus(OrderStatus.PROCESSING);
+            order.setOrderStatus(OrderStatus.CONFIRMED);
             order.setPaymentStatus(PaymentStatus.PENDING);
         } else {
             order.setOrderStatus(OrderStatus.PENDING);

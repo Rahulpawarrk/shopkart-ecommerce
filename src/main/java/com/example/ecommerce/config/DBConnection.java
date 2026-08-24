@@ -552,7 +552,11 @@ public final class DBConnection {
                         "    CREATE NONCLUSTERED INDEX IX_order_returns_order ON dbo.order_returns(order_id); " +
                         "    CREATE NONCLUSTERED INDEX IX_order_returns_user ON dbo.order_returns(user_id); " +
                         "    CREATE NONCLUSTERED INDEX IX_order_returns_status ON dbo.order_returns(return_status); " +
-                        "END"
+                        "END",
+
+                // 23. Standardize initial placed orders to CONFIRMED
+                "UPDATE dbo.orders SET order_status = 'CONFIRMED', updated_at = SYSDATETIME() " +
+                        "WHERE order_status = 'PROCESSING' AND (tracking_number IS NULL OR tracking_number = '') AND (courier_partner IS NULL OR courier_partner = ''); "
         };
 
         try (Connection conn = dataSource.getConnection();
