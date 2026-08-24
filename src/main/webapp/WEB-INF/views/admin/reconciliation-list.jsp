@@ -212,9 +212,9 @@
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    <a href="${pageContext.request.contextPath}/admin/orders/detail?id=${item.orderId}" style="font-weight: 800; color: #0284c7; text-decoration: underline;" target="_blank">
-                                                        #<c:out value="${item.orderNumber}" /> ↗
-                                                    </a>
+                                                    <div style="font-weight: 800; color: #0f172a; font-family: monospace; font-size: 0.88rem;">
+                                                        #<c:out value="${item.orderNumber}" />
+                                                    </div>
                                                 </td>
                                                 <td>
                                                     <div style="font-weight: 700; color: #0f172a;"><c:out value="${item.customerName}" /></div>
