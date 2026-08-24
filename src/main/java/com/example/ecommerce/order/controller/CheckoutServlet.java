@@ -90,6 +90,7 @@ public class CheckoutServlet extends HttpServlet {
                     } catch (NumberFormatException ignored) {}
                 }
                 if (qty <= 0) qty = 1;
+                if (qty > 3) qty = 3;
 
                 session.setAttribute("directBuyProductId", pid);
                 session.setAttribute("directBuyQuantity", qty);
@@ -328,6 +329,8 @@ public class CheckoutServlet extends HttpServlet {
                     if (qtyParam != null && !qtyParam.trim().isEmpty()) {
                         try { qty = Integer.parseInt(qtyParam.trim()); } catch (NumberFormatException ignored) {}
                     }
+                    if (qty <= 0) qty = 1;
+                    if (qty > 3) qty = 3;
                     session.setAttribute("directBuyProductId", pid);
                     session.setAttribute("directBuyQuantity", qty);
                     response.sendRedirect(request.getContextPath() + "/checkout/address");

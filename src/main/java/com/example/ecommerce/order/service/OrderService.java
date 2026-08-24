@@ -100,6 +100,12 @@ public class OrderService {
         if (cart.hasUnavailableItems()) {
             throw new ValidationException("Some items in your cart are out of stock. Please update your cart.");
         }
+        for (CartItem item : cart.getItems()) {
+            if (item.getQuantity() > 3) {
+                throw new ValidationException("Purchase limit exceeded: Product '" + item.getProductName() + 
+                        "' exceeds the maximum limit of 3 units per customer.");
+            }
+        }
 
         if (appliedCoupon != null) {
             BigDecimal couponDiscount = appliedCoupon.calculateDiscount(cart.getSubtotal());
@@ -238,6 +244,9 @@ public class OrderService {
     public Order processDirectBuyCheckout(int userId, int addressId, int productId, int quantity, 
                                           String paymentMethod, String notes, Coupon appliedCoupon) {
         int finalQty = quantity > 0 ? quantity : 1;
+        if (finalQty > 3) {
+            throw new ValidationException("Purchase limit exceeded: Maximum allowed is 3 units of this product per customer.");
+        }
 
         // 1. Verify Product & Live Stock
         Product product = productDAO.findById(productId)

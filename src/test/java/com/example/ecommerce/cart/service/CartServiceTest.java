@@ -69,17 +69,27 @@ class CartServiceTest {
 
         Inventory inv = new Inventory();
         inv.setProductId(2);
-        inv.setQuantity(5); // 5 in stock
+        inv.setQuantity(2); // 2 in stock
 
         when(productDAO.findById(2)).thenReturn(Optional.of(p));
         when(inventoryDAO.findByProductId(2)).thenReturn(Optional.of(inv));
         when(cartDAO.getCartWithItems(10)).thenReturn(Optional.of(new Cart(1, 10)));
 
         ValidationException ex = assertThrows(ValidationException.class, () ->
-            cartService.addToCart(10, 2, 8) // Requesting 8 units
+            cartService.addToCart(10, 2, 3) // Requesting 3 units (within max limit 3, but exceeds stock 2)
         );
 
-        assertTrue(ex.getMessage().contains("Only 5 units available"));
+        assertTrue(ex.getMessage().contains("Only 2 units available"));
+    }
+
+    @Test
+    @DisplayName("Should reject adding quantity exceeding max purchase limit (3 units)")
+    void testAddToCartExceedsPurchaseLimit() {
+        ValidationException ex = assertThrows(ValidationException.class, () ->
+            cartService.addToCart(10, 2, 4) // Requesting 4 units
+        );
+
+        assertTrue(ex.getMessage().contains("Maximum allowed is 3 units"));
     }
 
     @Test

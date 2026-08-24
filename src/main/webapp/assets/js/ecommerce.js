@@ -721,8 +721,14 @@ function initQuantitySteppers() {
         if (plusBtn) {
             plusBtn.addEventListener('click', () => {
                 let val = parseInt(input.value) || 1;
-                input.value = val + 1;
-                triggerChangeEvent(input);
+                if (val < 3) {
+                    input.value = val + 1;
+                    triggerChangeEvent(input);
+                } else {
+                    if (typeof showToast === 'function') {
+                        showToast('Maximum purchase limit is 3 units of this item per customer.', 'info');
+                    }
+                }
             });
         }
     });

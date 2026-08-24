@@ -143,12 +143,22 @@ class OrderServiceTest {
         when(productDAO.findById(88)).thenReturn(Optional.of(product));
 
         ValidationException ex = assertThrows(ValidationException.class, () ->
-            orderService.processDirectBuyCheckout(10, 1, 88, 5, "COD", "Urgent delivery", null)
+            orderService.processDirectBuyCheckout(10, 1, 88, 3, "COD", "Urgent delivery", null)
         );
 
         assertTrue(ex.getMessage().contains("Insufficient stock available"));
         verifyNoInteractions(cartService);
         verifyNoInteractions(cartDAO);
+    }
+
+    @Test
+    @DisplayName("Should reject Direct Buy when quantity exceeds max purchase limit (3 units)")
+    void testDirectBuyRejectsExceedingPurchaseLimit() {
+        ValidationException ex = assertThrows(ValidationException.class, () ->
+            orderService.processDirectBuyCheckout(10, 1, 88, 5, "COD", "Urgent delivery", null)
+        );
+
+        assertTrue(ex.getMessage().contains("Maximum allowed is 3 units"));
     }
 
     @Test

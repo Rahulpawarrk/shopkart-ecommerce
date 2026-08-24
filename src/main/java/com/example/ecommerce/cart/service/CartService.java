@@ -49,6 +49,8 @@ public class CartService {
                 .orElseGet(() -> new Cart(0, userId));
     }
 
+    public static final int MAX_QTY_PER_PRODUCT = 3;
+
     /**
      * Adds an item to the shopping cart with live stock availability verification.
      */
@@ -56,8 +58,8 @@ public class CartService {
         if (quantity <= 0) {
             throw new ValidationException("Quantity must be at least 1.");
         }
-        if (quantity > 100) {
-            throw new ValidationException("Cannot add more than 100 units of a single product at once.");
+        if (quantity > MAX_QTY_PER_PRODUCT) {
+            throw new ValidationException("Purchase limit exceeded: Maximum allowed is " + MAX_QTY_PER_PRODUCT + " units of this product per customer.");
         }
 
         // 1. Verify Product is Active
@@ -87,6 +89,10 @@ public class CartService {
         }
 
         int totalRequested = currentInCartQty + quantity;
+        if (totalRequested > MAX_QTY_PER_PRODUCT) {
+            throw new ValidationException("Purchase limit exceeded: You cannot add more than " + MAX_QTY_PER_PRODUCT + 
+                    " units of this product to your cart (You already have " + currentInCartQty + " in your cart).");
+        }
         if (totalRequested > inventory.getQuantity()) {
             throw new ValidationException("Cannot add " + quantity + " units. Only " + inventory.getQuantity() + 
                     " units available in stock (You already have " + currentInCartQty + " in your cart).");
@@ -111,8 +117,8 @@ public class CartService {
             removeFromCart(userId, productId);
             return;
         }
-        if (newQuantity > 100) {
-            throw new ValidationException("Cannot add more than 100 units of a single product at once.");
+        if (newQuantity > MAX_QTY_PER_PRODUCT) {
+            throw new ValidationException("Purchase limit exceeded: Maximum allowed is " + MAX_QTY_PER_PRODUCT + " units of this product per customer.");
         }
 
         Inventory inventory = inventoryDAO.findByProductId(productId)

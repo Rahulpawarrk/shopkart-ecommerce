@@ -680,6 +680,7 @@
                                         <input type="text" id="pdpQtyInput" class="qty-input" value="1" readonly>
                                         <button type="button" class="qty-btn qty-plus">+</button>
                                     </div>
+                                    <span style="font-size: 0.75rem; color: #64748b; font-weight: 600;">(Max 3 per customer)</span>
                                 </div>
 
                                 <div class="buy-box-actions" style="display: flex; flex-direction: column; gap: 0.75rem; width: 100%;">

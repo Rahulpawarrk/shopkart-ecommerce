@@ -214,9 +214,12 @@
                                                 <input type="hidden" name="_csrf" value="${csrfToken}">
                                                 <input type="hidden" name="productId" value="${item.productId}">
                                                 <input type="hidden" name="quantity" value="${item.quantity + 1}">
-                                                <button type="submit" class="qty-btn">+</button>
+                                                <button type="submit" class="qty-btn" ${item.quantity >= 3 ? 'disabled' : ''} title="${item.quantity >= 3 ? 'Maximum limit of 3 units reached' : 'Increase quantity'}">+</button>
                                             </form>
                                         </div>
+                                        <c:if test="${item.quantity >= 3}">
+                                            <span style="font-size: 0.75rem; color: #f59e0b; font-weight: 700;">(Max limit: 3 per user)</span>
+                                        </c:if>
 
                                         <button type="button" class="cart-action-btn" onclick="quickAddToWishlist(${item.productId}, event)">
                                             ❤️ Save for Later
