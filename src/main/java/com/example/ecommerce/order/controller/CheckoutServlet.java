@@ -286,7 +286,29 @@ public class CheckoutServlet extends HttpServlet {
 
         String path = request.getServletPath();
 
-        // 0. Handle initial Buy Now POST without query parameters
+        // 1. Step 1: Submit Address on /checkout/address or /checkout (with addressId and no paymentMethod) -> redirect to Step 2 (/checkout/summary)
+        if ("/checkout/address".equals(path) || (request.getParameter("addressId") != null && (request.getParameter("paymentMethod") == null || request.getParameter("paymentMethod").trim().isEmpty()))) {
+            String aidParam = request.getParameter("addressId");
+            if (aidParam != null && !aidParam.trim().isEmpty()) {
+                try {
+                    session.setAttribute("checkoutAddressId", Integer.parseInt(aidParam.trim()));
+                } catch (NumberFormatException ignored) {}
+            }
+            response.sendRedirect(request.getContextPath() + "/checkout/summary");
+            return;
+        }
+
+        // 2. Step 2: Submit Summary & Notes on /checkout/summary -> redirect to Step 3 (/checkout/payment)
+        if ("/checkout/summary".equals(path)) {
+            String notes = request.getParameter("notes");
+            if (notes != null) {
+                session.setAttribute("checkoutNotes", notes.trim());
+            }
+            response.sendRedirect(request.getContextPath() + "/checkout/payment");
+            return;
+        }
+
+        // 3. Initial Buy Now entry via POST (from PDP or product card, without address)
         String initialBuyNowPid = request.getParameter("buyNowProductId");
         if (initialBuyNowPid != null && !initialBuyNowPid.trim().isEmpty() && (request.getParameter("paymentMethod") == null || request.getParameter("paymentMethod").trim().isEmpty())) {
             try {
@@ -298,34 +320,12 @@ public class CheckoutServlet extends HttpServlet {
                 }
                 session.setAttribute("directBuyProductId", pid);
                 session.setAttribute("directBuyQuantity", qty);
-                response.sendRedirect(request.getContextPath() + "/checkout");
+                response.sendRedirect(request.getContextPath() + "/checkout/address");
                 return;
             } catch (NumberFormatException ignored) {}
         }
 
-        // 1. If POST to /checkout/address -> save addressId and go to /checkout/summary
-        if ("/checkout/address".equals(path)) {
-            String aidParam = request.getParameter("addressId");
-            if (aidParam != null && !aidParam.trim().isEmpty()) {
-                try {
-                    session.setAttribute("checkoutAddressId", Integer.parseInt(aidParam.trim()));
-                } catch (NumberFormatException ignored) {}
-            }
-            response.sendRedirect(request.getContextPath() + "/checkout/summary");
-            return;
-        }
-
-        // 2. If POST to /checkout/summary -> save delivery notes and go to /checkout/payment
-        if ("/checkout/summary".equals(path)) {
-            String notes = request.getParameter("notes");
-            if (notes != null) {
-                session.setAttribute("checkoutNotes", notes.trim());
-            }
-            response.sendRedirect(request.getContextPath() + "/checkout/payment");
-            return;
-        }
-
-        // 3. Final Order Submission on /checkout or /checkout/payment
+        // 4. Final Order Submission on /checkout/payment or /checkout (with paymentMethod)
         String addressIdParam = request.getParameter("addressId");
         Integer sessionAddressId = (session != null) ? (Integer) session.getAttribute("checkoutAddressId") : null;
         
@@ -352,8 +352,7 @@ public class CheckoutServlet extends HttpServlet {
         boolean isDirectBuy = (sessionBuyNowPid != null && sessionBuyNowPid > 0);
 
         if (addressId <= 0) {
-            request.setAttribute("error", "Please select a shipping delivery address.");
-            doGet(request, response);
+            response.sendRedirect(request.getContextPath() + "/checkout/address");
             return;
         }
 

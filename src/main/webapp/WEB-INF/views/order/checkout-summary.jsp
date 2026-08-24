@@ -459,8 +459,10 @@
         }
 
         function submitToPayment() {
-            const notes = document.getElementById('deliveryNotesInput').value;
-            document.getElementById('hiddenNotesInput').value = notes;
+            const notesEl = document.getElementById('deliveryNotesInput');
+            if (notesEl) {
+                document.getElementById('hiddenNotesInput').value = notesEl.value;
+            }
             document.getElementById('proceedToPaymentForm').submit();
         }
     </script>
