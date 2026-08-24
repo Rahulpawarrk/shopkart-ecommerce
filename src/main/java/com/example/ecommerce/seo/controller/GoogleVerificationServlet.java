@@ -12,7 +12,11 @@ import java.io.IOException;
  * Handles Google Search Console verification HTML file requests dynamically.
  * Mapped to /google*.html so ANY Google verification file is verified instantly.
  */
-@WebServlet(name = "GoogleVerificationServlet", urlPatterns = {"/google*.html"})
+@WebServlet(name = "GoogleVerificationServlet", urlPatterns = {
+    "/google33c7bac26ade82d4.html",
+    "/google5c0320ea15284d10.html",
+    "/googlepzfFJyk1bR6DXUw00hc_ffbD2amT6dgRCta6yGsyhKM.html"
+})
 public class GoogleVerificationServlet extends HttpServlet {
 
     @Override
