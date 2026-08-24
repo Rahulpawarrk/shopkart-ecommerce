@@ -275,39 +275,27 @@
 
                         <div class="payment-options-list">
                             
-                            <!-- COD -->
-                            <label class="payment-option-card selected" onclick="selectPaymentCard(this)">
-                                <input type="radio" name="paymentMethod" value="COD" checked required style="accent-color: #2563eb; width: 20px; height: 20px; cursor: pointer;">
-                                <div style="font-size: 1.6rem; width: 40px; text-align: center;">💵</div>
-                                <div style="flex: 1; min-width: 0;">
-                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                        <strong style="font-size: 1.05rem; color: #0f172a;">Cash on Delivery (COD)</strong>
-                                        <span class="pill-badge badge-success" style="font-size: 0.72rem; padding: 0.15rem 0.5rem; font-weight: 800;">POPULAR</span>
-                                    </div>
-                                    <div style="color: #64748b; font-size: 0.85rem; margin-top: 0.2rem;">
-                                        Pay with cash or UPI scan when your order arrives at your doorstep.
-                                    </div>
-                                </div>
-                            </label>
-
-                            <!-- UPI -->
-                            <label class="payment-option-card" onclick="selectPaymentCard(this)">
-                                <input type="radio" name="paymentMethod" value="UPI" style="accent-color: #2563eb; width: 20px; height: 20px; cursor: pointer;">
+                            <!-- UPI / Razorpay (Default) -->
+                            <label class="payment-option-card selected" onclick="selectPaymentCard(this, 'UPI')">
+                                <input type="radio" name="paymentMethod" value="UPI" checked required style="accent-color: #0284c7; width: 20px; height: 20px; cursor: pointer;">
                                 <div style="font-size: 1.6rem; width: 40px; text-align: center;">⚡</div>
                                 <div style="flex: 1; min-width: 0;">
-                                    <strong style="font-size: 1.05rem; color: #0f172a;">UPI / QR Code Instant</strong>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                                        <strong style="font-size: 1.05rem; color: #0f172a;">UPI / QR Code (Razorpay Secure)</strong>
+                                        <span class="pill-badge" style="font-size: 0.72rem; padding: 0.15rem 0.55rem; font-weight: 800; background: #0284c7; color: #fff; border-radius: 6px;">RECOMMENDED &bull; INSTANT</span>
+                                    </div>
                                     <div style="color: #64748b; font-size: 0.85rem; margin-top: 0.2rem;">
-                                        Google Pay, PhonePe, Paytm, BHIM &amp; all UPI Apps.
+                                        Google Pay, PhonePe, Paytm, BHIM, CRED UPI, Dynamic QR &amp; all UPI Apps.
                                     </div>
                                 </div>
                             </label>
 
                             <!-- Credit / Debit Card -->
-                            <label class="payment-option-card" onclick="selectPaymentCard(this)">
-                                <input type="radio" name="paymentMethod" value="CREDIT_CARD" style="accent-color: #2563eb; width: 20px; height: 20px; cursor: pointer;">
+                            <label class="payment-option-card" onclick="selectPaymentCard(this, 'ONLINE')">
+                                <input type="radio" name="paymentMethod" value="CREDIT_CARD" style="accent-color: #0284c7; width: 20px; height: 20px; cursor: pointer;">
                                 <div style="font-size: 1.6rem; width: 40px; text-align: center;">💳</div>
                                 <div style="flex: 1; min-width: 0;">
-                                    <strong style="font-size: 1.05rem; color: #0f172a;">Credit / Debit Card</strong>
+                                    <strong style="font-size: 1.05rem; color: #0f172a;">Credit / Debit Card (Razorpay)</strong>
                                     <div style="color: #64748b; font-size: 0.85rem; margin-top: 0.2rem;">
                                         Visa, MasterCard, RuPay, Diners Club &amp; American Express.
                                     </div>
@@ -315,13 +303,27 @@
                             </label>
 
                             <!-- Internet Banking -->
-                            <label class="payment-option-card" onclick="selectPaymentCard(this)">
-                                <input type="radio" name="paymentMethod" value="NET_BANKING" style="accent-color: #2563eb; width: 20px; height: 20px; cursor: pointer;">
+                            <label class="payment-option-card" onclick="selectPaymentCard(this, 'ONLINE')">
+                                <input type="radio" name="paymentMethod" value="NET_BANKING" style="accent-color: #0284c7; width: 20px; height: 20px; cursor: pointer;">
                                 <div style="font-size: 1.6rem; width: 40px; text-align: center;">🏦</div>
                                 <div style="flex: 1; min-width: 0;">
-                                    <strong style="font-size: 1.05rem; color: #0f172a;">Net Banking</strong>
+                                    <strong style="font-size: 1.05rem; color: #0f172a;">Net Banking (Razorpay)</strong>
                                     <div style="color: #64748b; font-size: 0.85rem; margin-top: 0.2rem;">
                                         HDFC, SBI, ICICI, Axis, Kotak, and 50+ Indian Banks.
+                                    </div>
+                                </div>
+                            </label>
+
+                            <!-- COD -->
+                            <label class="payment-option-card" onclick="selectPaymentCard(this, 'COD')">
+                                <input type="radio" name="paymentMethod" value="COD" style="accent-color: #059669; width: 20px; height: 20px; cursor: pointer;">
+                                <div style="font-size: 1.6rem; width: 40px; text-align: center;">💵</div>
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <strong style="font-size: 1.05rem; color: #0f172a;">Cash on Delivery (COD)</strong>
+                                    </div>
+                                    <div style="color: #64748b; font-size: 0.85rem; margin-top: 0.2rem;">
+                                        Pay with cash or UPI scan when your order arrives at your doorstep.
                                     </div>
                                 </div>
                             </label>
@@ -369,7 +371,7 @@
 
                         <div style="display: flex; justify-content: space-between; border-top: 2px solid #e2e8f0; padding-top: 1rem; margin-top: 1rem; font-size: 1.35rem; font-weight: 900; color: #0f172a;">
                             <span>Grand Total:</span>
-                            <span style="color: #2563eb;">₹<fmt:formatNumber value="${cart.grandTotal}" minFractionDigits="2" /></span>
+                            <span style="color: #0284c7;">₹<fmt:formatNumber value="${cart.grandTotal}" minFractionDigits="2" /></span>
                         </div>
 
                         <c:if test="${cart.totalSavings > 0}">
@@ -378,15 +380,15 @@
                             </div>
                         </c:if>
 
-                        <!-- Place Order Button -->
+                        <!-- Place Order / Pay with Razorpay Button -->
                         <div style="margin-top: 1.5rem;">
-                            <button type="submit" id="btnPlaceOrder" class="hero-cta-btn" style="width: 100%; padding: 1.05rem; font-size: 1.1rem; font-weight: 900; border-radius: 12px; cursor: pointer; border: none; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; box-shadow: 0 4px 18px rgba(37, 99, 235, 0.35); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                                <span>Place Order</span>
+                            <button type="submit" id="btnPlaceOrder" class="hero-cta-btn" style="width: 100%; padding: 1.05rem; font-size: 1.05rem; font-weight: 900; border-radius: 12px; cursor: pointer; border: none; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff; box-shadow: 0 4px 18px rgba(2, 132, 199, 0.35); display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s ease;">
+                                <span>🔒 Pay ₹<fmt:formatNumber value="${cart.grandTotal}" minFractionDigits="2" /> with Razorpay Secure &rarr;</span>
                             </button>
                         </div>
 
                         <div style="margin-top: 1rem; text-align: center; font-size: 0.78rem; color: #64748b;">
-                            🛡️ Safe &amp; Secure 256-Bit SSL Encrypted Checkout
+                            🛡️ Safe &amp; Secure 256-Bit SSL Encrypted Checkout &bull; Razorpay
                         </div>
                     </div>
                 </aside>
@@ -414,11 +416,22 @@
     <div id="toastContainer" class="toast-container"></div>
 
     <script nonce="${cspNonce}">
-        function selectPaymentCard(card) {
+        function selectPaymentCard(card, method) {
             document.querySelectorAll('.payment-option-card').forEach(c => c.classList.remove('selected'));
             card.classList.add('selected');
             const radio = card.querySelector('input[type="radio"]');
             if (radio) radio.checked = true;
+
+            const btn = document.getElementById('btnPlaceOrder');
+            if (method === 'COD') {
+                btn.innerHTML = '<span>📦 Place Cash on Delivery Order &rarr;</span>';
+                btn.style.background = 'linear-gradient(135deg, #059669 0%, #047857 100%)';
+                btn.style.boxShadow = '0 4px 18px rgba(5, 150, 105, 0.35)';
+            } else {
+                btn.innerHTML = '<span>🔒 Pay ₹<fmt:formatNumber value="${cart.grandTotal}" minFractionDigits="2" /> with Razorpay Secure &rarr;</span>';
+                btn.style.background = 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)';
+                btn.style.boxShadow = '0 4px 18px rgba(2, 132, 199, 0.35)';
+            }
         }
     </script>
     <script src="${pageContext.request.contextPath}/assets/js/ecommerce.js"></script>

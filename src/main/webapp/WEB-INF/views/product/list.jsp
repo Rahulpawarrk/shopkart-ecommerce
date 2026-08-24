@@ -152,13 +152,13 @@
             <span>☰</span> <strong>All Departments</strong>
         </a>
         <div class="nav-links-strip">
-            <a href="${pageContext.request.contextPath}/products?category=1">💻 Laptops & Computers</a>
-            <a href="${pageContext.request.contextPath}/products?category=2">📱 Smartphones & Tablets</a>
-            <a href="${pageContext.request.contextPath}/products?category=3">🎧 Audio & Headphones</a>
-            <a href="${pageContext.request.contextPath}/products?category=4">⌚ Smartwatches</a>
-            <a href="${pageContext.request.contextPath}/products?category=5">👕 Men's Fashion</a>
-            <a href="${pageContext.request.contextPath}/products?category=6">👗 Women's Fashion</a>
-            <a href="${pageContext.request.contextPath}/products?category=8">🏠 Home & Kitchen</a>
+            <a href="${pageContext.request.contextPath}/category/1">💻 Laptops & Computers</a>
+            <a href="${pageContext.request.contextPath}/category/2">📱 Smartphones & Tablets</a>
+            <a href="${pageContext.request.contextPath}/category/3">🎧 Audio & Headphones</a>
+            <a href="${pageContext.request.contextPath}/category/4">⌚ Smartwatches</a>
+            <a href="${pageContext.request.contextPath}/category/5">👕 Men's Fashion</a>
+            <a href="${pageContext.request.contextPath}/category/6">👗 Women's Fashion</a>
+            <a href="${pageContext.request.contextPath}/category/8">🏠 Home & Kitchen</a>
             <a href="${pageContext.request.contextPath}/products?deals=true" class="hot-deal ${criteria.dealsOnly or not empty criteria.minDiscount ? 'active' : ''}">🔥 Flash Deals</a>
             <a href="${pageContext.request.contextPath}/products?sortBy=price&sortDirection=ASC">🏷️ Under ₹50,000</a>
         </div>

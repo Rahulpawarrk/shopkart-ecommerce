@@ -124,11 +124,11 @@
             <span>☰</span> <strong>All Departments</strong>
         </a>
         <div class="nav-links-strip">
-            <a href="${pageContext.request.contextPath}/products?category=1">💻 Laptops</a>
-            <a href="${pageContext.request.contextPath}/products?category=2">📱 Mobiles</a>
-            <a href="${pageContext.request.contextPath}/products?category=3">🎧 Audio</a>
-            <a href="${pageContext.request.contextPath}/products?category=5">👕 Fashion</a>
-            <a href="${pageContext.request.contextPath}/products?category=8">🏠 Kitchen</a>
+            <a href="${pageContext.request.contextPath}/category/1">💻 Laptops</a>
+            <a href="${pageContext.request.contextPath}/category/2">📱 Mobiles</a>
+            <a href="${pageContext.request.contextPath}/category/3">🎧 Audio</a>
+            <a href="${pageContext.request.contextPath}/category/5">👕 Fashion</a>
+            <a href="${pageContext.request.contextPath}/category/8">🏠 Kitchen</a>
         </div>
     </div>
 

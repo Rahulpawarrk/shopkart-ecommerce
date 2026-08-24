@@ -30,10 +30,10 @@ import java.util.List;
  * Controller managing 3-Step Guided Checkout workflow:
  * 1. /checkout or /checkout/address -> Step 1: Select or Add Delivery Address
  * 2. /checkout/summary -> Step 2: Order Items Summary, Delivery Notes & Apply Coupon
- * 3. /checkout/payment -> Step 3: Select Payment Channel (COD, UPI, Card, NetBanking) & Confirm
+ * 3. /checkout/payment -> Step 3: Select Payment Channel (UPI, Cards, NetBanking, COD) & Confirm
  * 
- * Supports clean address bar URLs via session-bound state for both standard Cart and instant Buy Now.
- * Administrators are strictly blocked from placing customer orders.
+ * Supports 100% clean address bar URLs via session-bound state for both standard Cart and instant Buy Now.
+ * Automatically cleans query parameters from browser address bar upon arrival.
  */
 @WebServlet(name = "CheckoutServlet", urlPatterns = { "/checkout", "/checkout/address", "/checkout/summary",
         "/checkout/payment" })
@@ -77,34 +77,35 @@ public class CheckoutServlet extends HttpServlet {
 
         String path = request.getServletPath();
 
-        // 1. Resolve Direct Buy parameters from request or session
+        // 1. If Buy Now query params are present in URL, store into session and REDIRECT immediately to clean the address bar!
         String buyNowPidParam = request.getParameter("buyNowProductId");
-        Integer sessionBuyNowPid = (session != null) ? (Integer) session.getAttribute("directBuyProductId") : null;
-
-        boolean isDirectBuy = (buyNowPidParam != null && !buyNowPidParam.trim().isEmpty()) || (sessionBuyNowPid != null && sessionBuyNowPid > 0);
-        int directProductId = 0;
-        int directQuantity = 1;
-
         if (buyNowPidParam != null && !buyNowPidParam.trim().isEmpty()) {
             try {
-                directProductId = Integer.parseInt(buyNowPidParam.trim());
+                int pid = Integer.parseInt(buyNowPidParam.trim());
+                int qty = 1;
                 String qtyParam = request.getParameter("quantity");
                 if (qtyParam != null && !qtyParam.trim().isEmpty()) {
                     try {
-                        directQuantity = Integer.parseInt(qtyParam.trim());
+                        qty = Integer.parseInt(qtyParam.trim());
                     } catch (NumberFormatException ignored) {}
                 }
-                if (directQuantity <= 0) directQuantity = 1;
+                if (qty <= 0) qty = 1;
 
-                if (session != null) {
-                    session.setAttribute("directBuyProductId", directProductId);
-                    session.setAttribute("directBuyQuantity", directQuantity);
-                }
+                session.setAttribute("directBuyProductId", pid);
+                session.setAttribute("directBuyQuantity", qty);
+
+                // Clean address bar immediately!
+                response.sendRedirect(request.getContextPath() + "/checkout");
+                return;
             } catch (NumberFormatException ignored) {}
-        } else if (sessionBuyNowPid != null && sessionBuyNowPid > 0) {
-            directProductId = sessionBuyNowPid;
-            Integer sessionQty = (Integer) session.getAttribute("directBuyQuantity");
-            directQuantity = (sessionQty != null && sessionQty > 0) ? sessionQty : 1;
+        }
+
+        Integer sessionBuyNowPid = (session != null) ? (Integer) session.getAttribute("directBuyProductId") : null;
+        boolean isDirectBuy = (sessionBuyNowPid != null && sessionBuyNowPid > 0);
+        int directProductId = isDirectBuy ? sessionBuyNowPid : 0;
+        int directQuantity = 1;
+        if (isDirectBuy && session.getAttribute("directBuyQuantity") != null) {
+            directQuantity = (Integer) session.getAttribute("directBuyQuantity");
         }
 
         // 2. Prepare Cart Object (Direct Buy vs Standard Cart)
@@ -158,7 +159,7 @@ public class CheckoutServlet extends HttpServlet {
         List<Address> addresses = addressService.getUserAddresses(user.getUserId());
         request.setAttribute("addresses", addresses);
 
-        // Store selected address in session if present in request
+        // Store selected address in session if present in request and clean URL if needed
         String addressIdParam = request.getParameter("addressId");
         if (addressIdParam != null && !addressIdParam.trim().isEmpty()) {
             try {
@@ -283,6 +284,48 @@ public class CheckoutServlet extends HttpServlet {
             return;
         }
 
+        String path = request.getServletPath();
+
+        // 0. Handle initial Buy Now POST without query parameters
+        String initialBuyNowPid = request.getParameter("buyNowProductId");
+        if (initialBuyNowPid != null && !initialBuyNowPid.trim().isEmpty() && (request.getParameter("paymentMethod") == null || request.getParameter("paymentMethod").trim().isEmpty())) {
+            try {
+                int pid = Integer.parseInt(initialBuyNowPid.trim());
+                int qty = 1;
+                String qtyParam = request.getParameter("quantity");
+                if (qtyParam != null && !qtyParam.trim().isEmpty()) {
+                    try { qty = Integer.parseInt(qtyParam.trim()); } catch (NumberFormatException ignored) {}
+                }
+                session.setAttribute("directBuyProductId", pid);
+                session.setAttribute("directBuyQuantity", qty);
+                response.sendRedirect(request.getContextPath() + "/checkout");
+                return;
+            } catch (NumberFormatException ignored) {}
+        }
+
+        // 1. If POST to /checkout/address -> save addressId and go to /checkout/summary
+        if ("/checkout/address".equals(path)) {
+            String aidParam = request.getParameter("addressId");
+            if (aidParam != null && !aidParam.trim().isEmpty()) {
+                try {
+                    session.setAttribute("checkoutAddressId", Integer.parseInt(aidParam.trim()));
+                } catch (NumberFormatException ignored) {}
+            }
+            response.sendRedirect(request.getContextPath() + "/checkout/summary");
+            return;
+        }
+
+        // 2. If POST to /checkout/summary -> save delivery notes and go to /checkout/payment
+        if ("/checkout/summary".equals(path)) {
+            String notes = request.getParameter("notes");
+            if (notes != null) {
+                session.setAttribute("checkoutNotes", notes.trim());
+            }
+            response.sendRedirect(request.getContextPath() + "/checkout/payment");
+            return;
+        }
+
+        // 3. Final Order Submission on /checkout or /checkout/payment
         String addressIdParam = request.getParameter("addressId");
         Integer sessionAddressId = (session != null) ? (Integer) session.getAttribute("checkoutAddressId") : null;
         
@@ -296,14 +339,17 @@ public class CheckoutServlet extends HttpServlet {
         }
 
         String paymentMethod = request.getParameter("paymentMethod");
+        if (paymentMethod == null || paymentMethod.trim().isEmpty()) {
+            paymentMethod = "UPI"; // Default to online UPI / Razorpay
+        }
+
         String notes = request.getParameter("notes");
         if (notes == null || notes.trim().isEmpty()) {
             notes = (session != null) ? (String) session.getAttribute("checkoutNotes") : "";
         }
 
-        String buyNowPid = request.getParameter("buyNowProductId");
         Integer sessionBuyNowPid = (session != null) ? (Integer) session.getAttribute("directBuyProductId") : null;
-        boolean isDirectBuy = (buyNowPid != null && !buyNowPid.trim().isEmpty()) || (sessionBuyNowPid != null && sessionBuyNowPid > 0);
+        boolean isDirectBuy = (sessionBuyNowPid != null && sessionBuyNowPid > 0);
 
         if (addressId <= 0) {
             request.setAttribute("error", "Please select a shipping delivery address.");
@@ -316,14 +362,9 @@ public class CheckoutServlet extends HttpServlet {
 
             Order confirmedOrder;
             if (isDirectBuy) {
-                int productId = (buyNowPid != null && !buyNowPid.trim().isEmpty()) ? Integer.parseInt(buyNowPid.trim()) : sessionBuyNowPid;
+                int productId = sessionBuyNowPid;
                 int quantity = 1;
-                String qtyParam = request.getParameter("quantity");
-                if (qtyParam != null && !qtyParam.trim().isEmpty()) {
-                    try {
-                        quantity = Integer.parseInt(qtyParam.trim());
-                    } catch (NumberFormatException ignored) {}
-                } else if (session != null && session.getAttribute("directBuyQuantity") != null) {
+                if (session != null && session.getAttribute("directBuyQuantity") != null) {
                     quantity = (Integer) session.getAttribute("directBuyQuantity");
                 }
                 if (quantity <= 0) quantity = 1;
@@ -363,7 +404,7 @@ public class CheckoutServlet extends HttpServlet {
                 // Clean redirect to Order Confirmation (no URL parameters)
                 response.sendRedirect(request.getContextPath() + "/order/confirmation");
             } else {
-                // Online Payment: store order ID in session and redirect to /payment/gateway
+                // Online Payment (UPI / Cards / NetBanking): store order ID in session and redirect to /payment/gateway
                 session.setAttribute("pendingPaymentOrderId", confirmedOrder.getOrderId());
                 response.sendRedirect(request.getContextPath() + "/payment/gateway");
             }

@@ -70,6 +70,13 @@ public class ProductListServlet extends HttpServlet {
         if (categoryIdParam == null || categoryIdParam.trim().isEmpty()) {
             categoryIdParam = request.getParameter("categoryId");
         }
+
+        // Auto-clean address bar: redirect /products?category=X to clean /category/X
+        if (pathInfo == null && categoryIdParam != null && !categoryIdParam.trim().isEmpty() && (kw == null || kw.trim().isEmpty()) && request.getQueryString() != null && !request.getQueryString().contains("brand") && !request.getQueryString().contains("price")) {
+            response.sendRedirect(request.getContextPath() + "/category/" + categoryIdParam.trim());
+            return;
+        }
+
         if (categoryIdParam != null && !categoryIdParam.trim().isEmpty()) {
             try {
                 criteria.setCategoryId(Integer.parseInt(categoryIdParam.trim()));

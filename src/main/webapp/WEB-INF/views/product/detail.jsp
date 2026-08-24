@@ -492,13 +492,13 @@
                         <span>☰</span> <strong>All Departments</strong>
                     </a>
                     <div class="nav-links-strip">
-                        <a href="${pageContext.request.contextPath}/products?category=1">💻 Laptops & Computers</a>
-                        <a href="${pageContext.request.contextPath}/products?category=2">📱 Smartphones & Tablets</a>
-                        <a href="${pageContext.request.contextPath}/products?category=3">🎧 Audio & Headphones</a>
-                        <a href="${pageContext.request.contextPath}/products?category=4">⌚ Smartwatches</a>
-                        <a href="${pageContext.request.contextPath}/products?category=5">👕 Men's Fashion</a>
-                        <a href="${pageContext.request.contextPath}/products?category=6">👗 Women's Fashion</a>
-                        <a href="${pageContext.request.contextPath}/products?category=8">🏠 Home & Kitchen</a>
+                        <a href="${pageContext.request.contextPath}/category/1">💻 Laptops & Computers</a>
+                        <a href="${pageContext.request.contextPath}/category/2">📱 Smartphones & Tablets</a>
+                        <a href="${pageContext.request.contextPath}/category/3">🎧 Audio & Headphones</a>
+                        <a href="${pageContext.request.contextPath}/category/4">⌚ Smartwatches</a>
+                        <a href="${pageContext.request.contextPath}/category/5">👕 Men's Fashion</a>
+                        <a href="${pageContext.request.contextPath}/category/6">👗 Women's Fashion</a>
+                        <a href="${pageContext.request.contextPath}/category/8">🏠 Home & Kitchen</a>
                         <a href="${pageContext.request.contextPath}/products?deals=true" class="hot-deal">🔥 Flash Deals</a>
                         <a href="${pageContext.request.contextPath}/products?sortBy=price&sortDirection=ASC">🏷️ Under ₹50,000</a>
                     </div>
@@ -508,7 +508,7 @@
                 <div
                     style="max-width: 1500px; margin: 1rem auto 0; padding: 0 2rem; font-size: 0.8rem; color: var(--text-muted);">
                     <a href="${pageContext.request.contextPath}/" style="color: var(--primary);">Home</a> &gt;
-                    <a href="${pageContext.request.contextPath}/products?category=${product.categoryId}"
+                    <a href="${pageContext.request.contextPath}/category/${product.categoryId}"
                         style="color: var(--primary);">${not empty product.category ? product.category.categoryName : 'Catalog'}</a> &gt;
                     <span>${product.brand}</span> &gt;
                     <span>${product.productName}</span>

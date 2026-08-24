@@ -789,8 +789,26 @@ function quickBuyNow(productId, quantity = 1, event) {
 
     const contextPath = getContextPath();
     const finalQty = quantity && parseInt(quantity, 10) > 0 ? parseInt(quantity, 10) : 1;
-    // Direct checkout without adding item to persistent cart or including carted items
-    window.location.href = `${contextPath}/checkout?buyNowProductId=${encodeURIComponent(productId)}&quantity=${encodeURIComponent(finalQty)}`;
+    
+    // Clean POST form submission to keep address bar 100% clean
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `${contextPath}/checkout`;
+    
+    const pidInput = document.createElement('input');
+    pidInput.type = 'hidden';
+    pidInput.name = 'buyNowProductId';
+    pidInput.value = productId;
+    form.appendChild(pidInput);
+
+    const qtyInput = document.createElement('input');
+    qtyInput.type = 'hidden';
+    qtyInput.name = 'quantity';
+    qtyInput.value = finalQty;
+    form.appendChild(qtyInput);
+
+    document.body.appendChild(form);
+    form.submit();
 }
 
 function quickAddToWishlist(productId, event) {
