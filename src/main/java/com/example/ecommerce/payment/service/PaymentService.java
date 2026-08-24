@@ -176,6 +176,19 @@ public class PaymentService {
         return processGatewayCallback(orderId, userId, transactionReference, gatewayOrderId, isSuccess, gatewayResponse);
     }
 
+    /**
+     * Records a payment failure or cancellation event safely for an order.
+     */
+    public boolean handlePaymentFailure(int orderId, String reason) {
+        Order order = orderDAO.findById(orderId).orElse(null);
+        if (order == null) return false;
+        return processGatewayCallback(orderId, order.getUserId(), "TXN-CANCELLED-" + System.currentTimeMillis(), null, false, reason);
+    }
+
+    public boolean handlePaymentFailure(int orderId, int userId, String reason) {
+        return processGatewayCallback(orderId, userId, "TXN-CANCELLED-" + System.currentTimeMillis(), null, false, reason);
+    }
+
     public boolean processSimulatedGatewayCallback(int orderId, int userId, String transactionReference, 
                                                    boolean isSuccess, String gatewayResponse) {
         return processGatewayCallback(orderId, userId, transactionReference, null, isSuccess, gatewayResponse);

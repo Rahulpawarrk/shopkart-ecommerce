@@ -85,12 +85,12 @@ public class SecurityHeadersFilter implements Filter {
             // 5. Content Security Policy (CSP) - Production Security Policy allowing application inline handlers & integrations
             httpResponse.setHeader("Content-Security-Policy",
                     "default-src 'self'; " +
-                    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com https://cdn.jsdelivr.net; " +
+                    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com https://*.razorpay.com https://cdn.jsdelivr.net; " +
                     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
                     "font-src 'self' https://fonts.gstatic.com data:; " +
                     "img-src 'self' data: https: blob:; " +
-                    "connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com https://nominatim.openstreetmap.org; " +
-                    "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com; " +
+                    "connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com https://*.razorpay.com https://nominatim.openstreetmap.org; " +
+                    "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com https://*.razorpay.com; " +
                     "object-src 'none'; " +
                     "base-uri 'self'; " +
                     "form-action 'self'; " +
@@ -110,11 +110,11 @@ public class SecurityHeadersFilter implements Filter {
                     "magnetometer=(), " +
                     "microphone=(), " +
                     "midi=(), " +
-                    "payment=(self), " +
+                    "payment=*, " +
                     "usb=()");
 
-            // 7. Cross-Origin Opener Policy
-            httpResponse.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+            // 7. Cross-Origin Opener Policy (allows Razorpay checkout popup/iframe communication)
+            httpResponse.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
 
             // 8. Enforce HTTPS via HSTS if request is secure
             if (isHttps) {

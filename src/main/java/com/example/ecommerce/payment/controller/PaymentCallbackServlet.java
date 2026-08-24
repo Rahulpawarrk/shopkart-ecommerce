@@ -99,6 +99,7 @@ public class PaymentCallbackServlet extends HttpServlet {
         String rzpSignature = trimToNull(request.getParameter("razorpay_signature"));
         String clientStatus = trimToNull(request.getParameter("status"));
         String clientReason = trimToNull(request.getParameter("reason"));
+        String transactionReference = trimToNull(request.getParameter("transactionReference"));
 
         // 4. Handle client-initiated cancellation or window dismissal
         if ("FAILED".equalsIgnoreCase(clientStatus) || "CANCELLED".equalsIgnoreCase(clientStatus)) {
