@@ -11,6 +11,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="contextPath" content="${pageContext.request.contextPath}">
 <meta name="theme-color" content="#2563eb">
+<!-- Google Search Console Verification -->
+<meta name="google-site-verification" content="pzfFJyk1bR6DXUw00hc_ffbD2amT6dgRCta6yGsyhKM" />
 
 <%-- Dynamic SEO Meta Tags --%>
 <c:choose>
