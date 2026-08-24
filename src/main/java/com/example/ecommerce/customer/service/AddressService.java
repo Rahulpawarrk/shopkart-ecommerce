@@ -4,6 +4,7 @@ import com.example.ecommerce.customer.dao.AddressDAO;
 import com.example.ecommerce.customer.model.Address;
 import com.example.ecommerce.exception.ResourceNotFoundException;
 import com.example.ecommerce.exception.ValidationException;
+import com.example.ecommerce.util.ValidationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,23 +122,68 @@ public class AddressService {
 
     private void validateAddress(Address address) {
         List<String> errors = new ArrayList<>();
+
         if (address.getFullName() == null || address.getFullName().trim().isEmpty()) {
             errors.add("Full recipient name is required.");
+        } else if (!ValidationUtils.isValidPersonName(address.getFullName())) {
+            errors.add("Please enter a valid recipient name (letters and spaces only, 2 to 50 characters).");
+        } else {
+            address.setFullName(address.getFullName().trim());
         }
+
         if (address.getPhone() == null || address.getPhone().trim().isEmpty()) {
             errors.add("Contact phone number is required.");
+        } else if (!ValidationUtils.isValidPhone(address.getPhone())) {
+            errors.add("Please enter a valid 10-digit mobile number (e.g. 9876543210).");
+        } else {
+            address.setPhone(ValidationUtils.normalizePhone(address.getPhone()));
         }
+
         if (address.getAddressLine1() == null || address.getAddressLine1().trim().isEmpty()) {
             errors.add("Street address line 1 is required.");
+        } else if (!ValidationUtils.isValidAddressLine1(address.getAddressLine1())) {
+            errors.add("Address Line 1 must be between 5 and 255 characters with valid street/building details.");
+        } else {
+            address.setAddressLine1(address.getAddressLine1().trim());
         }
+
+        if (address.getAddressLine2() != null) {
+            address.setAddressLine2(address.getAddressLine2().trim());
+            if (address.getAddressLine2().length() > 255) {
+                errors.add("Address Line 2 cannot exceed 255 characters.");
+            }
+        }
+
         if (address.getCity() == null || address.getCity().trim().isEmpty()) {
             errors.add("City is required.");
+        } else if (!ValidationUtils.isValidCityOrState(address.getCity())) {
+            errors.add("Please enter a valid City name (letters and spaces only, no numbers).");
+        } else {
+            address.setCity(address.getCity().trim());
         }
+
         if (address.getState() == null || address.getState().trim().isEmpty()) {
             errors.add("State / Province is required.");
+        } else if (!ValidationUtils.isValidCityOrState(address.getState())) {
+            errors.add("Please enter a valid State name (letters and spaces only, no numbers).");
+        } else {
+            address.setState(address.getState().trim());
         }
+
         if (address.getPostalCode() == null || address.getPostalCode().trim().isEmpty()) {
             errors.add("Postal PIN code is required.");
+        } else if (!ValidationUtils.isValidPincode(address.getPostalCode())) {
+            errors.add("Postal PIN code must be exactly 6 digits.");
+        } else {
+            address.setPostalCode(address.getPostalCode().trim());
+        }
+
+        if (address.getCountry() != null && !address.getCountry().trim().isEmpty()) {
+            if (!ValidationUtils.isValidCityOrState(address.getCountry())) {
+                errors.add("Please enter a valid Country name.");
+            } else {
+                address.setCountry(address.getCountry().trim());
+            }
         }
 
         if (!errors.isEmpty()) {

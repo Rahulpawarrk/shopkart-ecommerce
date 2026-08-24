@@ -190,6 +190,8 @@
                                 Full Recipient Name *
                             </label>
                             <input type="text" id="fullName" name="fullName" class="auth-form-input" 
+                                   pattern="[a-zA-Z\s.'-]{2,50}" maxlength="50" minlength="2"
+                                   title="Please enter a valid name (letters, spaces, dots, hyphens only, 2-50 characters, no numbers)"
                                    value="<c:out value='${address.fullName}' />" required placeholder="e.g. Rahul Sharma">
                         </div>
                         <div>
@@ -197,7 +199,9 @@
                                 Contact Mobile Number *
                             </label>
                             <input type="tel" id="phone" name="phone" class="auth-form-input" 
-                                   value="<c:out value='${address.phone}' />" required placeholder="e.g. +91 9876543210">
+                                   pattern="[6-9][0-9]{9}" maxlength="10" minlength="10"
+                                   title="Please enter a valid 10-digit Indian mobile number (e.g. 9876543210)"
+                                   value="<c:out value='${address.phone}' />" required placeholder="e.g. 9876543210">
                         </div>
                     </div>
 
@@ -216,7 +220,8 @@
                             <label for="postalCode" class="form-label" style="font-weight: 700; font-size: 0.85rem; margin-bottom: 0.35rem; display: block;">
                                 6-Digit PIN Code *
                             </label>
-                            <input type="text" id="postalCode" name="postalCode" class="auth-form-input" maxlength="6"
+                            <input type="text" id="postalCode" name="postalCode" class="auth-form-input" maxlength="6" minlength="6"
+                                   pattern="[0-9]{6}" title="Please enter a valid 6-digit PIN code (e.g. 560100)"
                                    value="<c:out value='${address.postalCode}' />" required placeholder="e.g. 560100">
                         </div>
                     </div>
@@ -226,6 +231,8 @@
                             Flat, House no., Building, Company, Apartment *
                         </label>
                         <input type="text" id="addressLine1" name="addressLine1" class="auth-form-input" 
+                               minlength="5" maxlength="255"
+                               title="Please enter complete street/building details (at least 5 characters)"
                                value="<c:out value='${address.addressLine1}' />" required placeholder="e.g. Flat 402, Sunshine Residency, 5th Main">
                     </div>
 
@@ -234,6 +241,7 @@
                             Area, Street, Sector, Village, Landmark (Optional)
                         </label>
                         <input type="text" id="addressLine2" name="addressLine2" class="auth-form-input" 
+                               maxlength="255"
                                value="<c:out value='${address.addressLine2}' />" placeholder="e.g. Near Indiranagar Metro Station">
                     </div>
 
@@ -243,6 +251,8 @@
                                 Town / City *
                             </label>
                             <input type="text" id="city" name="city" class="auth-form-input" 
+                                   pattern="[a-zA-Z\s.'-]{2,50}" maxlength="50" minlength="2"
+                                   title="Please enter a valid City name (letters and spaces only, no numbers)"
                                    value="<c:out value='${address.city}' />" required placeholder="e.g. Bengaluru">
                         </div>
                         <div>
@@ -250,6 +260,8 @@
                                 State / Region *
                             </label>
                             <input type="text" id="state" name="state" class="auth-form-input" 
+                                   pattern="[a-zA-Z\s.'-]{2,50}" maxlength="50" minlength="2"
+                                   title="Please enter a valid State name (letters and spaces only, no numbers)"
                                    value="<c:out value='${address.state}' />" required placeholder="e.g. Karnataka">
                         </div>
                         <div>
@@ -257,6 +269,7 @@
                                 Country *
                             </label>
                             <input type="text" id="country" name="country" class="auth-form-input" 
+                                   pattern="[a-zA-Z\s.'-]{2,50}" maxlength="50"
                                    value="<c:out value='${not empty address.country ? address.country : \"India\"}' />" required>
                         </div>
                     </div>

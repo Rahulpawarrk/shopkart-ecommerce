@@ -115,14 +115,21 @@
                         </p>
 
                         <form action="${pageContext.request.contextPath}/profile" method="POST">
+                            <input type="hidden" name="_csrf" value="${csrfToken}">
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
                                 <div>
                                     <label class="form-label">First Name *</label>
-                                    <input type="text" name="firstName" class="form-input" value="<c:out value='${user.firstName}' />" required>
+                                    <input type="text" name="firstName" class="form-input" 
+                                           pattern="[a-zA-Z\s.'-]{2,50}" maxlength="50" minlength="2"
+                                           title="Please enter a valid first name (letters and spaces only, 2-50 characters, no numbers)"
+                                           value="<c:out value='${user.firstName}' />" required>
                                 </div>
                                 <div>
                                     <label class="form-label">Last Name *</label>
-                                    <input type="text" name="lastName" class="form-input" value="<c:out value='${user.lastName}' />" required>
+                                    <input type="text" name="lastName" class="form-input" 
+                                           pattern="[a-zA-Z\s.'-]{1,50}" maxlength="50" minlength="1"
+                                           title="Please enter a valid last name (letters and spaces only, 1-50 characters, no numbers)"
+                                           value="<c:out value='${user.lastName}' />" required>
                                 </div>
                             </div>
 
@@ -134,7 +141,10 @@
 
                             <div style="margin-bottom: 1.5rem;">
                                 <label class="form-label">Contact Phone Number</label>
-                                <input type="text" name="phone" class="form-input" value="<c:out value='${user.phone}' />" placeholder="+91 98765 43210">
+                                <input type="tel" name="phone" class="form-input" 
+                                       value="<c:out value='${user.phone}' />" placeholder="e.g. 9876543210 (10-digit mobile)"
+                                       pattern="[6-9][0-9]{9}" maxlength="10" minlength="10"
+                                       title="Please enter a valid 10-digit Indian mobile number (e.g. 9876543210)">
                             </div>
 
                             <button type="submit" class="btn btn-primary" style="font-weight: 800; padding: 0.65rem 1.5rem;">

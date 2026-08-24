@@ -12,6 +12,7 @@ import com.example.ecommerce.exception.DatabaseException;
 import com.example.ecommerce.exception.ValidationException;
 import com.example.ecommerce.util.EmailService;
 import com.example.ecommerce.util.PasswordUtil;
+import com.example.ecommerce.util.ValidationUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,8 +35,6 @@ import com.example.ecommerce.util.SmsService;
 public class AuthService {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
-    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
-    private static final Pattern PHONE_PATTERN = Pattern.compile("^[0-9]{10}$");
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final UserDAO userDAO;
@@ -80,16 +79,13 @@ public class AuthService {
         List<String> errors = new ArrayList<>();
 
         // 1. Validation Rules
-        if (email == null || !EMAIL_PATTERN.matcher(email.trim()).matches()) {
+        if (email == null || !ValidationUtils.isValidEmail(email)) {
             errors.add("Please enter a valid email address.");
         }
         if (phone == null || phone.trim().isEmpty()) {
             errors.add("Mobile number is required.");
-        } else {
-            String cleanPhone = phone.trim().replaceAll("[^0-9]", "");
-            if (!PHONE_PATTERN.matcher(cleanPhone).matches()) {
-                errors.add("Please enter a valid 10-digit mobile number.");
-            }
+        } else if (!ValidationUtils.isValidPhone(phone)) {
+            errors.add("Please enter a valid 10-digit mobile number (e.g. 9876543210).");
         }
         if (password == null || password.length() < 8) {
             errors.add("Password must be at least 8 characters long.");
@@ -99,9 +95,13 @@ public class AuthService {
         }
         if (firstName == null || firstName.trim().isEmpty()) {
             errors.add("First name is required.");
+        } else if (!ValidationUtils.isValidPersonName(firstName)) {
+            errors.add("Please enter a valid first name (letters and spaces only, 2 to 50 characters).");
         }
         if (lastName == null || lastName.trim().isEmpty()) {
             errors.add("Last name is required.");
+        } else if (!ValidationUtils.isValidPersonName(lastName)) {
+            errors.add("Please enter a valid last name (letters and spaces only, 2 to 50 characters).");
         }
 
         if (!errors.isEmpty()) {
@@ -228,13 +228,33 @@ public class AuthService {
     }
 
     /**
-     * Updates profile details.
+     * Updates profile details with strict validation.
      */
     public void updateProfile(int userId, String firstName, String lastName, String phone) {
-        if (firstName == null || firstName.trim().isEmpty() || lastName == null || lastName.trim().isEmpty()) {
-            throw new ValidationException("First name and last name cannot be empty.");
+        List<String> errors = new ArrayList<>();
+
+        if (firstName == null || firstName.trim().isEmpty()) {
+            errors.add("First name is required.");
+        } else if (!ValidationUtils.isValidPersonName(firstName)) {
+            errors.add("Please enter a valid first name (letters and spaces only, 2 to 50 characters).");
         }
-        userDAO.updateProfile(userId, firstName, lastName, phone);
+
+        if (lastName == null || lastName.trim().isEmpty()) {
+            errors.add("Last name is required.");
+        } else if (!ValidationUtils.isValidPersonName(lastName)) {
+            errors.add("Please enter a valid last name (letters and spaces only, 2 to 50 characters).");
+        }
+
+        String cleanPhone = phone != null ? ValidationUtils.normalizePhone(phone) : "";
+        if (phone != null && !phone.trim().isEmpty() && !ValidationUtils.isValidPhone(phone)) {
+            errors.add("Please enter a valid 10-digit mobile number (e.g. 9876543210).");
+        }
+
+        if (!errors.isEmpty()) {
+            throw new ValidationException(errors);
+        }
+
+        userDAO.updateProfile(userId, firstName.trim(), lastName.trim(), cleanPhone);
         logger.info("Updated profile for userId {}", userId);
     }
 

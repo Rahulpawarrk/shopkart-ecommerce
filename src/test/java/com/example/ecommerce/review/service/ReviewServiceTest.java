@@ -62,7 +62,7 @@ class ReviewServiceTest {
         when(reviewDAO.isVerifiedPurchase(10, 2)).thenReturn(false); // Unverified
 
         ValidationException ex = assertThrows(ValidationException.class, () ->
-            reviewService.submitReview(10, 2, 5, "Great product", "Love it!")
+            reviewService.submitReview(10, 2, 5, "Great product", "Love it, really good!")
         );
 
         assertTrue(ex.getMessage().contains("verified delivered orders"));
@@ -73,10 +73,10 @@ class ReviewServiceTest {
     @DisplayName("Should reject ratings outside 1-5 bounds")
     void testSubmitReviewInvalidRatingBounds() {
         assertThrows(ValidationException.class, () ->
-            reviewService.submitReview(10, 1, 6, "Title", "Comment")
+            reviewService.submitReview(10, 1, 6, "Title here", "Valid review comment text exceeding 10 chars")
         );
         assertThrows(ValidationException.class, () ->
-            reviewService.submitReview(10, 1, 0, "Title", "Comment")
+            reviewService.submitReview(10, 1, 0, "Title here", "Valid review comment text exceeding 10 chars")
         );
     }
 

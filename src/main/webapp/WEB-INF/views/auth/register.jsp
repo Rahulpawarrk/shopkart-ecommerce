@@ -222,11 +222,15 @@
                     <div class="auth-form-group">
                         <label for="firstName" class="auth-form-label">First Name *</label>
                         <input type="text" id="firstName" name="firstName" class="auth-form-input" 
+                               pattern="[a-zA-Z\s.'-]{2,50}" maxlength="50" minlength="2"
+                               title="Please enter a valid first name (letters and spaces only, 2-50 characters, no numbers)"
                                value="<c:out value='${firstName}' />" required placeholder="First Name" autofocus>
                     </div>
                     <div class="auth-form-group">
                         <label for="lastName" class="auth-form-label">Last Name *</label>
                         <input type="text" id="lastName" name="lastName" class="auth-form-input" 
+                               pattern="[a-zA-Z\s.'-]{1,50}" maxlength="50" minlength="1"
+                               title="Please enter a valid last name (letters and spaces only, 1-50 characters, no numbers)"
                                value="<c:out value='${lastName}' />" required placeholder="Last Name">
                     </div>
                 </div>
@@ -234,15 +238,16 @@
                 <div class="auth-form-group">
                     <label for="email" class="auth-form-label">Email Address *</label>
                     <input type="email" id="email" name="email" class="auth-form-input" 
+                           maxlength="100"
                            value="<c:out value='${email}' />" required placeholder="you@example.com">
                 </div>
 
                 <div class="auth-form-group">
                     <label for="phone" class="auth-form-label">Mobile Number *</label>
                     <input type="tel" id="phone" name="phone" class="auth-form-input" 
-                           value="<c:out value='${phone}' />" required pattern="[0-9]{10}" maxlength="10" 
+                           value="<c:out value='${phone}' />" required pattern="[6-9][0-9]{9}" maxlength="10" minlength="10"
                            placeholder="10-digit mobile number (e.g. 9876543210)"
-                           title="Please enter a valid 10-digit mobile number">
+                           title="Please enter a valid 10-digit Indian mobile number (e.g. 9876543210)">
                 </div>
 
                 <div class="form-row">

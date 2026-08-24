@@ -340,5 +340,46 @@ class AuthServiceTest {
 
         assertTrue(ex.getMessage().contains("Invalid or expired OTP"));
     }
+
+    @Test
+    @DisplayName("Should reject registration with digits in first name or last name")
+    void testRegisterInvalidNamesWithDigits() {
+        ValidationException ex = assertThrows(ValidationException.class, () ->
+            authService.validateRegistrationDetails("valid@example.com", "Password@123", "Password@123", "Rahul123", "Pawar456", "9876543210")
+        );
+
+        assertTrue(ex.getErrors().stream().anyMatch(e -> e.contains("valid first name")));
+        assertTrue(ex.getErrors().stream().anyMatch(e -> e.contains("valid last name")));
+    }
+
+    @Test
+    @DisplayName("Should successfully update profile with valid name and phone")
+    void testUpdateProfileSuccess() {
+        assertDoesNotThrow(() ->
+            authService.updateProfile(1, "Rahul", "Pawar", "+91 9876543210")
+        );
+
+        verify(userDAO).updateProfile(1, "Rahul", "Pawar", "9876543210");
+    }
+
+    @Test
+    @DisplayName("Should reject profile update with numbers in first name")
+    void testUpdateProfileInvalidNameWithDigits() {
+        ValidationException ex = assertThrows(ValidationException.class, () ->
+            authService.updateProfile(1, "Rahul12345", "Pawar", "9876543210")
+        );
+
+        assertTrue(ex.getErrors().stream().anyMatch(e -> e.contains("valid first name")));
+    }
+
+    @Test
+    @DisplayName("Should reject profile update with invalid mobile number")
+    void testUpdateProfileInvalidPhone() {
+        ValidationException ex = assertThrows(ValidationException.class, () ->
+            authService.updateProfile(1, "Rahul", "Pawar", "767676633333232322")
+        );
+
+        assertTrue(ex.getErrors().stream().anyMatch(e -> e.contains("valid 10-digit mobile number")));
+    }
 }
 

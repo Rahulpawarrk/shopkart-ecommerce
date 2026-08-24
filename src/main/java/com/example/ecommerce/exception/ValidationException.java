@@ -23,4 +23,8 @@ public class ValidationException extends AppException {
     public List<String> getErrorMessages() {
         return errorMessages;
     }
+
+    public List<String> getErrors() {
+        return errorMessages;
+    }
 }

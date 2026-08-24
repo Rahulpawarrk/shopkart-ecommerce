@@ -81,11 +81,15 @@
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label for="productName" class="form-label">Product Title *</label>
                                 <input type="text" id="productName" name="productName" class="form-input" 
+                                       minlength="3" maxlength="255"
+                                       title="Product title must be between 3 and 255 characters"
                                        value="<c:out value='${product.productName}' />" required placeholder="e.g. Dell XPS 15 OLED Laptop">
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label for="sku" class="form-label">SKU Code * (Unique)</label>
                                 <input type="text" id="sku" name="sku" class="form-input" 
+                                       pattern="[A-Za-z0-9-_]{3,50}" maxlength="50" minlength="3"
+                                       title="SKU must be 3-50 alphanumeric characters or hyphens"
                                        value="<c:out value='${product.sku}' />" required placeholder="e.g. DELL-XPS-15-01">
                             </div>
                         </div>

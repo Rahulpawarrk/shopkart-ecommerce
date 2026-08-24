@@ -124,6 +124,10 @@ public class CouponService {
         List<String> errors = new ArrayList<>();
         if (coupon.getCode() == null || coupon.getCode().trim().isEmpty()) {
             errors.add("Coupon code is required.");
+        } else if (!com.example.ecommerce.util.ValidationUtils.isValidCouponCode(coupon.getCode())) {
+            errors.add("Coupon code must be 3 to 30 alphanumeric characters (letters, numbers, hyphens, underscores).");
+        } else {
+            coupon.setCode(coupon.getCode().trim().toUpperCase());
         }
         if (coupon.getDiscountType() == null) {
             errors.add("Discount type (PERCENTAGE or FIXED_AMOUNT) is required.");

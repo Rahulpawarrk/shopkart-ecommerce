@@ -49,9 +49,13 @@ public class ReviewService {
         }
         if (title == null || title.trim().isEmpty()) {
             errors.add("Review headline / title is required.");
+        } else if (title.trim().length() < 3 || title.trim().length() > 150) {
+            errors.add("Review headline must be between 3 and 150 characters.");
         }
         if (comment == null || comment.trim().isEmpty()) {
             errors.add("Review text / feedback is required.");
+        } else if (comment.trim().length() < 10 || comment.trim().length() > 2000) {
+            errors.add("Review feedback must be between 10 and 2000 characters.");
         }
         if (!errors.isEmpty()) {
             throw new ValidationException(errors);

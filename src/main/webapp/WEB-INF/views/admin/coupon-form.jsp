@@ -87,6 +87,8 @@
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label class="form-label">Promo Code *</label>
                                 <input type="text" name="code" required class="form-input" value="<c:out value='${coupon.code}' />" 
+                                       pattern="[A-Za-z0-9_-]{3,30}" maxlength="30" minlength="3"
+                                       title="Promo code must be 3-30 characters containing letters, numbers, hyphens, and underscores"
                                        placeholder="e.g. SAVE20" style="text-transform: uppercase; font-family: monospace; font-weight: 800; letter-spacing: 1px;">
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">

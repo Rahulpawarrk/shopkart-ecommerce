@@ -347,11 +347,17 @@
                         <div class="form-grid-2">
                             <div>
                                 <label class="form-label" for="firstName">First Name *</label>
-                                <input type="text" id="firstName" name="firstName" class="auth-form-input" value="<c:out value='${user.firstName}' />" required placeholder="Enter first name">
+                                <input type="text" id="firstName" name="firstName" class="auth-form-input" 
+                                       pattern="[a-zA-Z\s.'-]{2,50}" maxlength="50" minlength="2"
+                                       title="Please enter a valid first name (letters and spaces only, 2-50 characters, no numbers)"
+                                       value="<c:out value='${user.firstName}' />" required placeholder="Enter first name">
                             </div>
                             <div>
                                 <label class="form-label" for="lastName">Last Name *</label>
-                                <input type="text" id="lastName" name="lastName" class="auth-form-input" value="<c:out value='${user.lastName}' />" required placeholder="Enter last name">
+                                <input type="text" id="lastName" name="lastName" class="auth-form-input" 
+                                       pattern="[a-zA-Z\s.'-]{1,50}" maxlength="50" minlength="1"
+                                       title="Please enter a valid last name (letters and spaces only, 1-50 characters, no numbers)"
+                                       value="<c:out value='${user.lastName}' />" required placeholder="Enter last name">
                             </div>
                         </div>
 
@@ -365,7 +371,10 @@
 
                         <div class="form-group">
                             <label class="form-label" for="phone">Phone / Mobile Number</label>
-                            <input type="tel" id="phone" name="phone" class="auth-form-input" value="<c:out value='${user.phone}' />" placeholder="e.g. 9876543210 (10-digit mobile)" pattern="[0-9]{10}" maxlength="10">
+                            <input type="tel" id="phone" name="phone" class="auth-form-input" 
+                                   value="<c:out value='${user.phone}' />" placeholder="e.g. 9876543210 (10-digit mobile)" 
+                                   pattern="[6-9][0-9]{9}" maxlength="10" minlength="10"
+                                   title="Please enter a valid 10-digit Indian mobile number (e.g. 9876543210)">
                             <div class="profile-field-hint">
                                 <span>📱</span> Used for order SMS notifications and OTP verification.
                             </div>

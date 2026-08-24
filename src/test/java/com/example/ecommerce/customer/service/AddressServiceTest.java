@@ -45,6 +45,7 @@ class AddressServiceTest {
         Address saved = addressService.saveAddress(addr);
 
         assertTrue(saved.isDefaultAddress());
+        assertEquals("9876543210", saved.getPhone()); // normalized
         verify(addressDAO, times(1)).setDefaultAddress(101, 1);
     }
 
@@ -56,6 +57,102 @@ class AddressServiceTest {
         // Missing full name, phone, addressLine1, etc.
 
         assertThrows(ValidationException.class, () -> addressService.saveAddress(addr));
+    }
+
+    @Test
+    @DisplayName("Should reject address with digits in recipient name (e.g. Rahul434343434)")
+    void testSaveAddressInvalidNameWithDigits() {
+        Address addr = new Address();
+        addr.setUserId(1);
+        addr.setFullName("Rahul434343434");
+        addr.setPhone("9876543210");
+        addr.setAddressLine1("Flat 402, Sunshine Residency");
+        addr.setCity("Bengaluru");
+        addr.setState("Karnataka");
+        addr.setPostalCode("560001");
+
+        ValidationException ex = assertThrows(ValidationException.class, () -> addressService.saveAddress(addr));
+        assertTrue(ex.getErrors().stream().anyMatch(e -> e.contains("valid recipient name")));
+    }
+
+    @Test
+    @DisplayName("Should reject address with invalid mobile number (e.g. 767676633333232322)")
+    void testSaveAddressInvalidPhoneLength() {
+        Address addr = new Address();
+        addr.setUserId(1);
+        addr.setFullName("Rahul Sharma");
+        addr.setPhone("767676633333232322");
+        addr.setAddressLine1("Flat 402, Sunshine Residency");
+        addr.setCity("Bengaluru");
+        addr.setState("Karnataka");
+        addr.setPostalCode("560001");
+
+        ValidationException ex = assertThrows(ValidationException.class, () -> addressService.saveAddress(addr));
+        assertTrue(ex.getErrors().stream().anyMatch(e -> e.contains("valid 10-digit mobile number")));
+    }
+
+    @Test
+    @DisplayName("Should reject address with digits in city name (e.g. pune4343434)")
+    void testSaveAddressInvalidCityWithDigits() {
+        Address addr = new Address();
+        addr.setUserId(1);
+        addr.setFullName("Rahul Sharma");
+        addr.setPhone("9876543210");
+        addr.setAddressLine1("Flat 402, Sunshine Residency");
+        addr.setCity("pune4343434");
+        addr.setState("Maharashtra");
+        addr.setPostalCode("411001");
+
+        ValidationException ex = assertThrows(ValidationException.class, () -> addressService.saveAddress(addr));
+        assertTrue(ex.getErrors().stream().anyMatch(e -> e.contains("valid City name")));
+    }
+
+    @Test
+    @DisplayName("Should reject address with digits in state name (e.g. Maharashtra3343434)")
+    void testSaveAddressInvalidStateWithDigits() {
+        Address addr = new Address();
+        addr.setUserId(1);
+        addr.setFullName("Rahul Sharma");
+        addr.setPhone("9876543210");
+        addr.setAddressLine1("Flat 402, Sunshine Residency");
+        addr.setCity("Pune");
+        addr.setState("Maharashtra3343434");
+        addr.setPostalCode("411001");
+
+        ValidationException ex = assertThrows(ValidationException.class, () -> addressService.saveAddress(addr));
+        assertTrue(ex.getErrors().stream().anyMatch(e -> e.contains("valid State name")));
+    }
+
+    @Test
+    @DisplayName("Should reject address with too short/invalid address line 1 (e.g. 402)")
+    void testSaveAddressShortAddressLine1() {
+        Address addr = new Address();
+        addr.setUserId(1);
+        addr.setFullName("Rahul Sharma");
+        addr.setPhone("9876543210");
+        addr.setAddressLine1("402");
+        addr.setCity("Pune");
+        addr.setState("Maharashtra");
+        addr.setPostalCode("411001");
+
+        ValidationException ex = assertThrows(ValidationException.class, () -> addressService.saveAddress(addr));
+        assertTrue(ex.getErrors().stream().anyMatch(e -> e.contains("Address Line 1 must be between 5 and 255 characters")));
+    }
+
+    @Test
+    @DisplayName("Should reject address with invalid pincode (e.g. 56010)")
+    void testSaveAddressInvalidPincode() {
+        Address addr = new Address();
+        addr.setUserId(1);
+        addr.setFullName("Rahul Sharma");
+        addr.setPhone("9876543210");
+        addr.setAddressLine1("Flat 402, Sunshine Residency");
+        addr.setCity("Pune");
+        addr.setState("Maharashtra");
+        addr.setPostalCode("56010");
+
+        ValidationException ex = assertThrows(ValidationException.class, () -> addressService.saveAddress(addr));
+        assertTrue(ex.getErrors().stream().anyMatch(e -> e.contains("Postal PIN code must be exactly 6 digits")));
     }
 
     @Test
