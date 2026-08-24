@@ -16,17 +16,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        .checkout-layout {
-            display: grid;
-            grid-template-columns: 1fr 380px;
-            gap: 2rem;
-            margin-top: 1.5rem;
-        }
-        @media (max-width: 900px) {
-            .checkout-layout {
-                grid-template-columns: 1fr;
-            }
-        }
         .checkout-stepper {
             display: flex;
             justify-content: center;
@@ -51,19 +40,33 @@
             font-size: 0.9rem;
             transition: all 0.2s ease;
         }
-        .step-bubble.completed {
-            background: #10b981;
-            color: #ffffff;
-        }
         .step-bubble.active {
             background: #2563eb;
             color: #ffffff;
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
         }
+        .step-bubble.completed {
+            background: #10b981;
+            color: #ffffff;
+        }
+        .step-bubble.inactive {
+            background: #e2e8f0;
+            color: #64748b;
+        }
         .step-divider {
             width: 40px;
             height: 2px;
             background: #cbd5e1;
+        }
+        .checkout-layout {
+            display: grid;
+            grid-template-columns: 1.8fr 1.2fr;
+            gap: 2rem;
+        }
+        @media (max-width: 900px) {
+            .checkout-layout {
+                grid-template-columns: 1fr;
+            }
         }
         .payment-option-card {
             border: 2px solid #e2e8f0;
@@ -75,7 +78,7 @@
             gap: 1.25rem;
             align-items: center;
             background: #ffffff;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.2s ease;
         }
         .payment-option-card:hover {
             border-color: #93c5fd;
@@ -200,12 +203,12 @@
 
         <!-- Progress Stepper: Step 3 Active -->
         <div class="checkout-stepper">
-            <a href="${pageContext.request.contextPath}/checkout/address${isDirectBuy ? '?buyNowProductId='.concat(directBuyProductId).concat('&quantity=').concat(directBuyQuantity).concat('&addressId=').concat(selectedAddress.addressId) : '?addressId='.concat(selectedAddress.addressId)}" class="step-item" style="text-decoration: none;">
+            <a href="${pageContext.request.contextPath}/checkout/address" class="step-item" style="text-decoration: none;">
                 <div class="step-bubble completed">✓</div>
                 <span style="color: #10b981; font-size: 0.95rem; font-weight: 700;">1. Delivery Address</span>
             </a>
             <div class="step-divider"></div>
-            <a href="${pageContext.request.contextPath}/checkout/summary?addressId=${selectedAddress.addressId}${isDirectBuy ? '&buyNowProductId='.concat(directBuyProductId).concat('&quantity=').concat(directBuyQuantity) : ''}" class="step-item" style="text-decoration: none;">
+            <a href="${pageContext.request.contextPath}/checkout/summary" class="step-item" style="text-decoration: none;">
                 <div class="step-bubble completed">✓</div>
                 <span style="color: #10b981; font-size: 0.95rem; font-weight: 700;">2. Order Summary</span>
             </a>
@@ -241,7 +244,7 @@
                             <h2 style="font-size: 1.15rem; font-weight: 900; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
                                 <span>📍 Shipping Address</span>
                             </h2>
-                            <a href="${pageContext.request.contextPath}/checkout/address${isDirectBuy ? '?buyNowProductId='.concat(directBuyProductId).concat('&quantity=').concat(directBuyQuantity).concat('&addressId=').concat(selectedAddress.addressId) : '?addressId='.concat(selectedAddress.addressId)}" style="font-size: 0.82rem; font-weight: 800; color: #2563eb; text-decoration: none; border: 1px solid #bfdbfe; padding: 0.35rem 0.75rem; border-radius: 6px; background: #eff6ff;">
+                            <a href="${pageContext.request.contextPath}/checkout/address" style="font-size: 0.82rem; font-weight: 800; color: #2563eb; text-decoration: none; border: 1px solid #bfdbfe; padding: 0.35rem 0.75rem; border-radius: 6px; background: #eff6ff;">
                                 ✏️ Change Address
                             </a>
                         </div>

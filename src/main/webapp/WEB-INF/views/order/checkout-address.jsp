@@ -211,7 +211,7 @@
             </div>
         </div>
 
-        <c:set var="addressReturnUrl" value="/checkout/address${isDirectBuy ? '?buyNowProductId='.concat(directBuyProductId).concat('&quantity=').concat(directBuyQuantity) : ''}" />
+        <c:set var="addressReturnUrl" value="/checkout/address" />
 
         <c:if test="${not empty error}">
             <div style="background: #fee2e2; border-left: 4px solid var(--danger); padding: 1rem 1.25rem; border-radius: var(--radius-sm); margin-bottom: 1.5rem; color: #991b1b; font-weight: 700;">
@@ -236,7 +236,7 @@
                 </a>
             </div>
 
-            <form id="addressSelectionForm" action="${pageContext.request.contextPath}/checkout/summary" method="GET">
+            <form id="addressSelectionForm" action="${pageContext.request.contextPath}/checkout/address" method="POST">
                 <c:if test="${isDirectBuy}">
                     <input type="hidden" name="buyNowProductId" value="${directBuyProductId}">
                     <input type="hidden" name="quantity" value="${directBuyQuantity}">

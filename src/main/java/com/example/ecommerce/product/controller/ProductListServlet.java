@@ -20,7 +20,7 @@ import java.util.List;
  * Controller handling public product catalog browsing, filtering, search, sorting, and pagination.
  * Mapped to /products.
  */
-@WebServlet(name = "ProductListServlet", urlPatterns = {"/products"})
+@WebServlet(name = "ProductListServlet", urlPatterns = {"/products", "/category/*"})
 public class ProductListServlet extends HttpServlet {
 
     private ProductService productService;
@@ -40,7 +40,26 @@ public class ProductListServlet extends HttpServlet {
         ProductSearchCriteria criteria = new ProductSearchCriteria();
         criteria.setStatus("ACTIVE"); // Public storefront only displays active items
 
-        // 1. Parse Query Parameters
+        // 1. Support clean RESTful /category/{id or slug}
+        String pathInfo = request.getPathInfo();
+        if (pathInfo != null && pathInfo.length() > 1) {
+            String catSegment = pathInfo.substring(1).trim();
+            try {
+                int catId = Integer.parseInt(catSegment);
+                criteria.setCategoryId(catId);
+            } catch (NumberFormatException e) {
+                List<Category> allCategories = categoryService.getAllCategories(true);
+                for (Category c : allCategories) {
+                    if (c.getCategoryName().equalsIgnoreCase(catSegment) || 
+                        c.getCategoryName().toLowerCase().replace(" ", "-").equals(catSegment.toLowerCase())) {
+                        criteria.setCategoryId(c.getCategoryId());
+                        break;
+                    }
+                }
+            }
+        }
+
+        // 2. Parse Query Parameters
         String kw = request.getParameter("q");
         if (kw == null || kw.trim().isEmpty()) {
             kw = request.getParameter("keyword");

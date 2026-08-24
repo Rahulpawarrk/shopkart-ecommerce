@@ -213,7 +213,7 @@ public class OrderDAO {
     }
 
     public Pagination<Order> findByUserId(int userId, String statusFilter, String sortBy, int page, int pageSize) {
-        StringBuilder where = new StringBuilder(" WHERE o.user_id = ? ");
+        StringBuilder where = new StringBuilder(" WHERE o.user_id = ? AND NOT (o.order_status = 'CANCELLED' AND o.payment_status = 'FAILED') ");
         List<Object> params = new ArrayList<>();
         params.add(userId);
 

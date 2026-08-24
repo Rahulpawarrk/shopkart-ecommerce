@@ -216,6 +216,85 @@
             color: #0f172a;
             text-decoration: underline;
         }
+
+        /* ── Cancellation / Failure Modal Overlay ── */
+        .cancel-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(4px);
+            z-index: 99999;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            animation: fadeIn 0.25s ease-out;
+        }
+        .cancel-modal-box {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 2.5rem 2rem;
+            max-width: 460px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border-top: 6px solid #ef4444;
+            animation: scaleUp 0.25s ease-out;
+        }
+        .btn-go-home {
+            width: 100%;
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: #ffffff;
+            font-weight: 800;
+            padding: 0.95rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+            text-decoration: none;
+            margin-top: 1.25rem;
+            transition: all 0.2s ease;
+        }
+        .btn-go-home:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(5, 150, 105, 0.4);
+        }
+
+        .btn-reopen {
+            width: 100%;
+            background: #ffffff;
+            color: #0284c7;
+            font-weight: 800;
+            padding: 0.85rem 1.5rem;
+            border: 1.5px solid #bae6fd;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            transition: all 0.2s ease;
+        }
+        .btn-reopen:hover {
+            background: #f0f9ff;
+            border-color: #0284c7;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes scaleUp {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -264,23 +343,6 @@
             <span>Customer<b><c:out value="${sessionScope.currentUser.fullName}"/></b></span>
             <span>Items<b><c:out value="${order.totalItems}" default="1"/> Items</b></span>
         </div>
-
-        <%-- PAYMENT FAILED ALERT / RETRY BANNER --%>
-        <c:if test="${param.paymentFailed eq 'true' || not empty param.error || not empty error}">
-            <div style="background: #fef2f2; border: 1.5px solid #f87171; border-radius: 12px; margin: 1.25rem 1.75rem 0; padding: 1rem 1.25rem; text-align: left; display: flex; gap: 0.85rem; align-items: flex-start; box-shadow: 0 4px 14px rgba(239, 68, 68, 0.12);">
-                <span style="font-size: 1.6rem; line-height: 1; flex-shrink: 0;">❌</span>
-                <div style="flex: 1;">
-                    <strong style="color: #991b1b; font-size: 0.98rem; display: block; margin-bottom: 0.25rem;">Payment Incomplete</strong>
-                    <div style="font-size: 0.84rem; color: #b91c1c; line-height: 1.45;">
-                        <c:choose>
-                            <c:when test="${not empty param.error}"><c:out value="${param.error}" /></c:when>
-                            <c:when test="${not empty error}"><c:out value="${error}" /></c:when>
-                            <c:otherwise>Your online transaction was cancelled or declined. Please click below to try again.</c:otherwise>
-                        </c:choose>
-                    </div>
-                </div>
-            </div>
-        </c:if>
 
         <%-- 1. REAL-TIME RAZORPAY STANDARD CHECKOUT LAUNCHER --%>
         <div class="rzp-action-box">
@@ -333,6 +395,29 @@
 
 </div>
 
+<!-- Payment Cancelled / Failed Modal Popup -->
+<div id="paymentCancelledModal" class="cancel-modal-overlay">
+    <div class="cancel-modal-box">
+        <div style="width: 64px; height: 64px; border-radius: 50%; background: #fee2e2; color: #dc2626; font-size: 2rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem;">
+            ✕
+        </div>
+        <h2 style="font-size: 1.5rem; font-weight: 900; color: #0f172a; margin-bottom: 0.5rem;">
+            Payment Cancelled
+        </h2>
+        <p style="color: #64748b; font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.25rem;">
+            Your payment was not completed and no money was deducted. Your order has not been placed.
+        </p>
+
+        <a href="${pageContext.request.contextPath}/home" class="btn-go-home">
+            <span>🏠 Click to Go Home</span>
+        </a>
+
+        <button type="button" class="btn-reopen" onclick="reopenRazorpay()">
+            <span>🔄 Try Payment Again</span>
+        </button>
+    </div>
+</div>
+
 <script nonce="${cspNonce}">
     // Real-Time Razorpay Standard Checkout Modal
     function launchRazorpayCheckout() {
@@ -372,6 +457,7 @@
             "modal": {
                 "ondismiss": function() {
                     console.log('Razorpay checkout popup dismissed by user.');
+                    handlePaymentDismissed('Customer closed payment window before authorization');
                 }
             }
         };
@@ -379,23 +465,44 @@
         try {
             const rzp = new Razorpay(options);
             rzp.on('payment.failed', function (response){
-                document.getElementById('statusField').value = 'FAILED';
-                document.getElementById('reasonField').value = response.error.description || 'Payment Failed';
-                document.getElementById('paymentForm').submit();
+                console.warn('Razorpay payment failed:', response.error);
+                handlePaymentDismissed(response.error.description || 'Payment declined by bank');
             });
             rzp.open();
         } catch (e) {
             console.error('Razorpay SDK initialization error:', e);
-            alert('Unable to open Razorpay payment popup. Please ensure popups are allowed or click the payment button again.');
+            alert('Unable to open Razorpay payment popup. Please click the payment button again.');
         }
+    }
+
+    // Handles user cancelling or bank decline: logs to server for admin audit & opens failure popup with Go Home button
+    function handlePaymentDismissed(reason) {
+        // Asynchronously log to server for Admin Reconciliation Log without navigating away
+        const formData = new URLSearchParams();
+        formData.append('orderId', '${order.orderId}');
+        formData.append('status', 'FAILED');
+        formData.append('reason', reason || 'Customer cancelled transaction window');
+
+        fetch('${pageContext.request.contextPath}/payment/callback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData.toString()
+        }).catch(err => console.log('Log recorded:', err));
+
+        // Show Payment Cancelled Modal Popup with Go Home button
+        document.getElementById('paymentCancelledModal').style.display = 'flex';
+    }
+
+    function reopenRazorpay() {
+        document.getElementById('paymentCancelledModal').style.display = 'none';
+        launchRazorpayCheckout();
     }
 
     // Auto-launch Razorpay Checkout popup upon page load
     window.addEventListener('DOMContentLoaded', () => {
-        // Auto launch with a small delay for smooth DOM render
         setTimeout(() => {
             launchRazorpayCheckout();
-        }, 500);
+        }, 400);
     });
 </script>
 

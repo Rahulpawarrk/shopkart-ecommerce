@@ -16,17 +16,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        .checkout-layout {
-            display: grid;
-            grid-template-columns: 1fr 380px;
-            gap: 2rem;
-            margin-top: 1.5rem;
-        }
-        @media (max-width: 900px) {
-            .checkout-layout {
-                grid-template-columns: 1fr;
-            }
-        }
         .checkout-stepper {
             display: flex;
             justify-content: center;
@@ -51,14 +40,14 @@
             font-size: 0.9rem;
             transition: all 0.2s ease;
         }
-        .step-bubble.completed {
-            background: #10b981;
-            color: #ffffff;
-        }
         .step-bubble.active {
             background: #2563eb;
             color: #ffffff;
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+        }
+        .step-bubble.completed {
+            background: #10b981;
+            color: #ffffff;
         }
         .step-bubble.inactive {
             background: #e2e8f0;
@@ -69,15 +58,22 @@
             height: 2px;
             background: #cbd5e1;
         }
-        .order-item-card {
-            display: flex;
-            gap: 1.25rem;
-            padding: 1rem 0;
-            border-bottom: 1px solid #f1f5f9;
-            align-items: center;
+        .checkout-layout {
+            display: grid;
+            grid-template-columns: 1.8fr 1.2fr;
+            gap: 2rem;
         }
-        .order-item-card:last-child {
-            border-bottom: none;
+        @media (max-width: 900px) {
+            .checkout-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+        .order-item-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 0.85rem;
+            background: #ffffff;
         }
     </style>
 </head>
@@ -190,11 +186,11 @@
 
     <main class="container" style="max-width: 1200px; margin: 2rem auto 4rem; padding: 0 1.5rem;">
         
-        <c:set var="summaryReturnUrl" value="${pageContext.request.contextPath}/checkout/summary?addressId=${selectedAddress.addressId}${isDirectBuy ? '&buyNowProductId='.concat(directBuyProductId).concat('&quantity=').concat(directBuyQuantity) : ''}" />
+        <c:set var="summaryReturnUrl" value="/checkout/summary" />
 
         <!-- Progress Stepper: Step 2 Active -->
         <div class="checkout-stepper">
-            <a href="${pageContext.request.contextPath}/checkout/address${isDirectBuy ? '?buyNowProductId='.concat(directBuyProductId).concat('&quantity=').concat(directBuyQuantity).concat('&addressId=').concat(selectedAddress.addressId) : '?addressId='.concat(selectedAddress.addressId)}" class="step-item" style="text-decoration: none;">
+            <a href="${pageContext.request.contextPath}/checkout/address" class="step-item" style="text-decoration: none;">
                 <div class="step-bubble completed">✓</div>
                 <span style="color: #10b981; font-size: 0.95rem; font-weight: 700;">1. Delivery Address</span>
             </a>
@@ -251,7 +247,7 @@
                         <h2 style="font-size: 1.15rem; font-weight: 900; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
                             <span>📍 Delivery Location</span>
                         </h2>
-                        <a href="${pageContext.request.contextPath}/checkout/address${isDirectBuy ? '?buyNowProductId='.concat(directBuyProductId).concat('&quantity=').concat(directBuyQuantity).concat('&addressId=').concat(selectedAddress.addressId) : '?addressId='.concat(selectedAddress.addressId)}" style="font-size: 0.85rem; font-weight: 800; color: #2563eb; text-decoration: none; border: 1px solid #bfdbfe; padding: 0.35rem 0.75rem; border-radius: 6px; background: #eff6ff;">
+                        <a href="${pageContext.request.contextPath}/checkout/address" style="font-size: 0.85rem; font-weight: 800; color: #2563eb; text-decoration: none; border: 1px solid #bfdbfe; padding: 0.35rem 0.75rem; border-radius: 6px; background: #eff6ff;">
                             ✏️ Change Address
                         </a>
                     </div>
@@ -412,7 +408,7 @@
                     </c:if>
 
                     <!-- Proceed to Step 3: Payment Button -->
-                    <form id="proceedToPaymentForm" action="${pageContext.request.contextPath}/checkout/payment" method="GET">
+                    <form id="proceedToPaymentForm" action="${pageContext.request.contextPath}/checkout/summary" method="POST">
                         <input type="hidden" name="addressId" value="${selectedAddress.addressId}">
                         <c:if test="${isDirectBuy}">
                             <input type="hidden" name="buyNowProductId" value="${directBuyProductId}">
