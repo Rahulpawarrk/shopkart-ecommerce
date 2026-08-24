@@ -408,15 +408,10 @@
                     </c:if>
 
                     <!-- Proceed to Step 3: Payment Button -->
-                    <form id="proceedToPaymentForm" action="${pageContext.request.contextPath}/checkout/summary" method="POST">
-                        <input type="hidden" name="addressId" value="${selectedAddress.addressId}">
-                        <c:if test="${isDirectBuy}">
-                            <input type="hidden" name="buyNowProductId" value="${directBuyProductId}">
-                            <input type="hidden" name="quantity" value="${directBuyQuantity}">
-                        </c:if>
+                    <form id="proceedToPaymentForm" action="${pageContext.request.contextPath}/checkout/summary" method="POST" onsubmit="copyNotesBeforeSubmit()">
                         <input type="hidden" name="notes" id="hiddenNotesInput" value="">
 
-                        <button type="button" onclick="submitToPayment()" class="hero-cta-btn" style="width: 100%; margin-top: 1.5rem; padding: 1rem; font-size: 1.05rem; font-weight: 900; border-radius: 10px; cursor: pointer; border: none; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.35); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <button type="submit" class="hero-cta-btn" style="width: 100%; margin-top: 1.5rem; padding: 1rem; font-size: 1.05rem; font-weight: 900; border-radius: 10px; cursor: pointer; border: none; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.35); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
                             <span>Proceed to Payment &rarr;</span>
                         </button>
                     </form>
@@ -458,12 +453,11 @@
             }
         }
 
-        function submitToPayment() {
+        function copyNotesBeforeSubmit() {
             const notesEl = document.getElementById('deliveryNotesInput');
             if (notesEl) {
                 document.getElementById('hiddenNotesInput').value = notesEl.value;
             }
-            document.getElementById('proceedToPaymentForm').submit();
         }
     </script>
     <script src="${pageContext.request.contextPath}/assets/js/ecommerce.js"></script>
