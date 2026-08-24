@@ -9,7 +9,8 @@
     <link rel="apple-touch-icon" href="${pageContext.request.contextPath}/assets/images/favicon.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Your TechZone Account | India's Premier Online Store</title>
+    <meta name="robots" content="noindex, nofollow">
+    <title>Create Your ShopKart Account | India's Premier Online Store</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
     <style>
         .auth-page-wrapper {

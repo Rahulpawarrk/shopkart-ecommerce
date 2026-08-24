@@ -9,7 +9,8 @@
     <link rel="apple-touch-icon" href="${pageContext.request.contextPath}/assets/images/favicon.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>500 - Server Error | E-Commerce Platform</title>
+    <meta name="robots" content="noindex, nofollow">
+    <title>500 - Server Error | ShopKart</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
 </head>
 <body>

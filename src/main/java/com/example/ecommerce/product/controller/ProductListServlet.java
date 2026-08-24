@@ -5,6 +5,7 @@ import com.example.ecommerce.category.service.CategoryService;
 import com.example.ecommerce.product.dto.ProductSearchCriteria;
 import com.example.ecommerce.product.model.Product;
 import com.example.ecommerce.product.service.ProductService;
+import com.example.ecommerce.seo.model.SeoMetadata;
 import com.example.ecommerce.util.Pagination;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -18,9 +19,9 @@ import java.util.List;
 
 /**
  * Controller handling public product catalog browsing, filtering, search, sorting, and pagination.
- * Mapped to /products.
+ * Mapped to /products, /category, and /category/* for clean SEO-friendly category routing.
  */
-@WebServlet(name = "ProductListServlet", urlPatterns = {"/products", "/category/*"})
+@WebServlet(name = "ProductListServlet", urlPatterns = {"/products", "/category", "/category/*"})
 public class ProductListServlet extends HttpServlet {
 
     private ProductService productService;
@@ -33,27 +34,55 @@ public class ProductListServlet extends HttpServlet {
         this.categoryService = new CategoryService();
     }
 
+    public ProductListServlet(ProductService productService, CategoryService categoryService) {
+        this.productService = productService;
+        this.categoryService = categoryService;
+    }
+
+    public ProductListServlet() {}
+
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+    public void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
         ProductSearchCriteria criteria = new ProductSearchCriteria();
         criteria.setStatus("ACTIVE"); // Public storefront only displays active items
 
+        Category currentCategory = null;
+        boolean shouldRedirectCategory = false;
+        String canonicalCategorySlug = null;
+
         // 1. Support clean RESTful /category/{id or slug}
         String pathInfo = request.getPathInfo();
         if (pathInfo != null && pathInfo.length() > 1) {
             String catSegment = pathInfo.substring(1).trim();
-            try {
-                int catId = Integer.parseInt(catSegment);
-                criteria.setCategoryId(catId);
-            } catch (NumberFormatException e) {
-                List<Category> allCategories = categoryService.getAllCategories(true);
-                for (Category c : allCategories) {
-                    if (c.getCategoryName().equalsIgnoreCase(catSegment) || 
-                        c.getCategoryName().toLowerCase().replace(" ", "-").equals(catSegment.toLowerCase())) {
-                        criteria.setCategoryId(c.getCategoryId());
-                        break;
+            if (catSegment.matches("\\d+")) {
+                try {
+                    int catId = Integer.parseInt(catSegment);
+                    currentCategory = categoryService.getCategoryById(catId);
+                    if (currentCategory != null) {
+                        criteria.setCategoryId(currentCategory.getCategoryId());
+                        canonicalCategorySlug = currentCategory.getSlug() != null ? currentCategory.getSlug() : String.valueOf(currentCategory.getCategoryId());
+                        shouldRedirectCategory = true;
+                    }
+                } catch (Exception ignored) {}
+            } else {
+                try {
+                    currentCategory = categoryService.getCategoryBySlug(catSegment);
+                    if (currentCategory != null) {
+                        criteria.setCategoryId(currentCategory.getCategoryId());
+                        canonicalCategorySlug = currentCategory.getSlug();
+                    }
+                } catch (Exception e) {
+                    List<Category> allCategories = categoryService.getAllCategories(true);
+                    for (Category c : allCategories) {
+                        if (c.getCategoryName().equalsIgnoreCase(catSegment) || 
+                            c.getCategoryName().toLowerCase().replace(" ", "-").equals(catSegment.toLowerCase())) {
+                            currentCategory = c;
+                            criteria.setCategoryId(c.getCategoryId());
+                            canonicalCategorySlug = c.getSlug() != null ? c.getSlug() : String.valueOf(c.getCategoryId());
+                            break;
+                        }
                     }
                 }
             }
@@ -71,15 +100,40 @@ public class ProductListServlet extends HttpServlet {
             categoryIdParam = request.getParameter("categoryId");
         }
 
-        // Auto-clean address bar: redirect /products?category=X to clean /category/X
-        if (pathInfo == null && categoryIdParam != null && !categoryIdParam.trim().isEmpty() && (kw == null || kw.trim().isEmpty()) && request.getQueryString() != null && !request.getQueryString().contains("brand") && !request.getQueryString().contains("price")) {
-            response.sendRedirect(request.getContextPath() + "/category/" + categoryIdParam.trim());
+        // Auto-clean address bar: 301 redirect legacy /products?category=X to clean /category/slug
+        if (pathInfo == null && categoryIdParam != null && !categoryIdParam.trim().isEmpty() && 
+            (kw == null || kw.trim().isEmpty()) && request.getQueryString() != null && 
+            !request.getQueryString().contains("brand") && !request.getQueryString().contains("price")) {
+            try {
+                int cId = Integer.parseInt(categoryIdParam.trim());
+                Category c = categoryService.getCategoryById(cId);
+                if (c != null) {
+                    String slug = (c.getSlug() != null && !c.getSlug().trim().isEmpty()) ? c.getSlug().trim() : String.valueOf(c.getCategoryId());
+                    response.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
+                    response.setHeader("Location", request.getContextPath() + "/category/" + slug);
+                    return;
+                }
+            } catch (Exception ignored) {}
+        }
+
+        // 301 redirect numeric /category/123 to /category/{slug}
+        if (shouldRedirectCategory && canonicalCategorySlug != null) {
+            String target = request.getContextPath() + "/category/" + canonicalCategorySlug;
+            if (request.getQueryString() != null && !request.getQueryString().isEmpty()) {
+                target += "?" + request.getQueryString();
+            }
+            response.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
+            response.setHeader("Location", target);
             return;
         }
 
-        if (categoryIdParam != null && !categoryIdParam.trim().isEmpty()) {
+        if (criteria.getCategoryId() == null && categoryIdParam != null && !categoryIdParam.trim().isEmpty()) {
             try {
-                criteria.setCategoryId(Integer.parseInt(categoryIdParam.trim()));
+                int cId = Integer.parseInt(categoryIdParam.trim());
+                criteria.setCategoryId(cId);
+                if (currentCategory == null) {
+                    try { currentCategory = categoryService.getCategoryById(cId); } catch (Exception ignored) {}
+                }
             } catch (NumberFormatException ignored) {}
         }
 
@@ -109,7 +163,7 @@ public class ProductListServlet extends HttpServlet {
             criteria.setPriceRanges(list);
         }
 
-        // Brands Filter Selection (Support both multiple or single brand params)
+        // Brands Filter Selection
         String[] brandParams = request.getParameterValues("brand");
         if (brandParams != null && brandParams.length > 0) {
             java.util.List<String> bList = new java.util.ArrayList<>();
@@ -119,33 +173,15 @@ public class ProductListServlet extends HttpServlet {
                 }
             }
             criteria.setBrands(bList);
-            if (bList.size() == 1) {
-                criteria.setBrand(bList.get(0));
-            }
         }
 
-        // Deals & Discount Filter
-        String dealsParam = request.getParameter("deals");
-        if (dealsParam == null || dealsParam.trim().isEmpty()) {
-            dealsParam = request.getParameter("deal");
-        }
-        if ("true".equalsIgnoreCase(dealsParam) || "1".equals(dealsParam)) {
-            criteria.setDealsOnly(true);
-        }
-
-        String minDiscountParam = request.getParameter("minDiscount");
-        if (minDiscountParam != null && !minDiscountParam.trim().isEmpty()) {
-            try {
-                criteria.setMinDiscount(new BigDecimal(minDiscountParam.trim()));
-            } catch (Exception ignored) {}
-        }
-
+        // Sorting Option
         String sortParam = request.getParameter("sort");
         if (sortParam == null || sortParam.trim().isEmpty()) {
             sortParam = request.getParameter("sortBy");
         }
         if (sortParam != null) {
-            switch (sortParam) {
+            switch (sortParam.trim()) {
                 case "price_asc", "price_low", "price" -> {
                     criteria.setSortBy("price");
                     criteria.setSortDirection("ASC");
@@ -169,14 +205,32 @@ public class ProductListServlet extends HttpServlet {
             }
         }
 
+        // Deals & Discount Filter
+        String dealsParam = request.getParameter("deals");
+        if (dealsParam == null || dealsParam.trim().isEmpty()) {
+            dealsParam = request.getParameter("deal");
+        }
+        if ("true".equalsIgnoreCase(dealsParam) || "1".equals(dealsParam)) {
+            criteria.setDealsOnly(true);
+        }
+
+        String minDiscountParam = request.getParameter("minDiscount");
+        if (minDiscountParam != null && !minDiscountParam.trim().isEmpty()) {
+            try {
+                criteria.setMinDiscount(new BigDecimal(minDiscountParam.trim()));
+            } catch (Exception ignored) {}
+        }
+
         String pageParam = request.getParameter("page");
+        int currentPage = 1;
         if (pageParam != null && !pageParam.trim().isEmpty()) {
             try {
-                criteria.setPage(Integer.parseInt(pageParam.trim()));
+                currentPage = Math.max(1, Integer.parseInt(pageParam.trim()));
+                criteria.setPage(currentPage);
             } catch (NumberFormatException ignored) {}
         }
 
-        // 2. Fetch Data
+        // 3. Fetch Data
         Pagination<Product> pagination = productService.searchCatalog(criteria);
         List<Category> allCategories = categoryService.getAllCategories(true);
         List<Category> categoryTree = categoryService.getCategoryTree(true);
@@ -199,7 +253,6 @@ public class ProductListServlet extends HttpServlet {
             }
             jsonBuilder.append("]");
         }
-        // Include "all" key for root
         if (!firstEntry) jsonBuilder.append(",");
         jsonBuilder.append("\"all\":[");
         boolean firstAllB = true;
@@ -210,7 +263,11 @@ public class ProductListServlet extends HttpServlet {
         }
         jsonBuilder.append("]}");
 
-        // 3. Bind Request Attributes
+        // 4. Build Dynamic SEO Metadata
+        SeoMetadata seo = buildCatalogSeoMetadata(currentCategory, criteria, currentPage, pagination.getTotalItems());
+        request.setAttribute("seo", seo);
+
+        // 5. Bind Request Attributes
         request.setAttribute("pagination", pagination);
         request.setAttribute("criteria", criteria);
         request.setAttribute("categories", allCategories);
@@ -219,8 +276,59 @@ public class ProductListServlet extends HttpServlet {
         request.setAttribute("allBrands", allBrands);
         request.setAttribute("categoryBrandsJson", jsonBuilder.toString());
         request.setAttribute("selectedCategory", criteria.getCategoryId());
+        request.setAttribute("currentCategory", currentCategory);
         request.setAttribute("sortParam", sortParam != null ? sortParam : "newest");
 
         request.getRequestDispatcher("/WEB-INF/views/product/list.jsp").forward(request, response);
+    }
+
+    private SeoMetadata buildCatalogSeoMetadata(Category currentCategory, ProductSearchCriteria criteria, int page, int totalCount) {
+        SeoMetadata seo = new SeoMetadata();
+        seo.addBreadcrumb("Home", SeoMetadata.BASE_URL + "/");
+
+        if (criteria.getKeyword() != null && !criteria.getKeyword().trim().isEmpty()) {
+            // Search Results Page -> NOINDEX, FOLLOW to prevent index explosion
+            String kw = criteria.getKeyword().trim();
+            seo.setTitle("Search Results for \"" + kw + "\" | ShopKart");
+            seo.setDescription("Explore search results for \"" + kw + "\" on ShopKart India. Enjoy top discounts, secure payments, and fast shipping.");
+            seo.setRobots("noindex, follow");
+            seo.setCanonicalUrl(SeoMetadata.BASE_URL + "/products");
+            seo.addBreadcrumb("Search", SeoMetadata.BASE_URL + "/products");
+        } else if (currentCategory != null) {
+            // Category Page -> Clean Canonical & Indexable
+            String catName = currentCategory.getCategoryName();
+            String catSlug = currentCategory.getSlug() != null ? currentCategory.getSlug() : String.valueOf(currentCategory.getCategoryId());
+            
+            seo.setTitle(catName + " - Buy Online at Best Prices | ShopKart");
+            
+            String desc = currentCategory.getDescription();
+            if (desc == null || desc.trim().isEmpty()) {
+                desc = "Discover top deals on " + catName + " at ShopKart India. Free delivery, verified customer reviews, and best price guarantee.";
+            }
+            seo.setDescription(desc);
+            
+            String canonical = SeoMetadata.BASE_URL + "/category/" + catSlug;
+            if (page > 1) {
+                canonical += "?page=" + page;
+            }
+            seo.setCanonicalUrl(canonical);
+            seo.setRobots("index, follow");
+            seo.setOgTitle(catName + " Online Shopping | ShopKart");
+            seo.setOgDescription(desc);
+            seo.addBreadcrumb(catName, SeoMetadata.BASE_URL + "/category/" + catSlug);
+        } else {
+            // All Products Catalog
+            seo.setTitle("All Products - Shop Electronics, Mobiles, Fashion & More | ShopKart");
+            seo.setDescription("Browse the full catalog of products on ShopKart India. Discover top electronics, audio gear, apparel, and lifestyle accessories.");
+            String canonical = SeoMetadata.BASE_URL + "/products";
+            if (page > 1) {
+                canonical += "?page=" + page;
+            }
+            seo.setCanonicalUrl(canonical);
+            seo.setRobots("index, follow");
+            seo.addBreadcrumb("All Products", SeoMetadata.BASE_URL + "/products");
+        }
+
+        return seo;
     }
 }

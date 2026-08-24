@@ -9,44 +9,45 @@
             <html lang="en">
 
             <head>
-                <!-- Favicon -->
-                <link rel="icon" type="image/svg+xml"
-                    href="${pageContext.request.contextPath}/assets/images/favicon.svg">
-                <link rel="shortcut icon" href="${pageContext.request.contextPath}/favicon.svg">
-                <link rel="apple-touch-icon" href="${pageContext.request.contextPath}/assets/images/favicon.svg">
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <meta name="contextPath" content="${pageContext.request.contextPath}">
-                <title>ShopKart | India's Premier Online Shopping Destination</title>
-                <meta name="description"
-                    content="ShopKart India - Discover top deals on smartphones, laptops, electronics, audio, and fashion. Free express delivery, verified reviews, and secure checkout.">
-                <meta name="keywords"
-                    content="ShopKart, online shopping India, electronics, smartphones, laptops, headphones, deals, fashion, discounts">
-                <meta name="robots" content="index, follow">
-                <meta name="theme-color" content="#2563eb">
+                <jsp:include page="/WEB-INF/views/common/seo-head.jsp" />
 
-                <!-- OpenGraph Social Sharing -->
-                <meta property="og:title" content="ShopKart | India's Premier Online Shopping Destination">
-                <meta property="og:description"
-                    content="Discover top deals on smartphones, laptops, audio & fashion with instant express delivery.">
-                <meta property="og:type" content="website">
-                <meta property="og:url" content="https://shopkart-ecommerce-1m2n.onrender.com/">
-                <meta property="og:image" content="${pageContext.request.contextPath}/assets/images/logo.svg">
-
-                <!-- Schema.org JSON-LD -->
+                <!-- Organization & WebSite Structured Data -->
                 <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "ShopKart",
-      "url": "https://shopkart-ecommerce-1m2n.onrender.com/",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://shopkart-ecommerce-1m2n.onrender.com/products?q={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
-    }
-    </script>
+                {
+                  "@context": "https://schema.org",
+                  "@graph": [
+                    {
+                      "@type": "Organization",
+                      "@id": "https://shopkart-ecommerce-1m2n.onrender.com/#organization",
+                      "name": "ShopKart",
+                      "url": "https://shopkart-ecommerce-1m2n.onrender.com/",
+                      "logo": "https://shopkart-ecommerce-1m2n.onrender.com/assets/images/logo.svg",
+                      "description": "India's premier online shopping destination for electronics, smartphones, laptops, audio, and fashion.",
+                      "contactPoint": {
+                        "@type": "ContactPoint",
+                        "telephone": "+91-9876543210",
+                        "contactType": "customer service",
+                        "areaServed": "IN",
+                        "availableLanguage": ["English", "Hindi"]
+                      }
+                    },
+                    {
+                      "@type": "WebSite",
+                      "@id": "https://shopkart-ecommerce-1m2n.onrender.com/#website",
+                      "url": "https://shopkart-ecommerce-1m2n.onrender.com/",
+                      "name": "ShopKart",
+                      "publisher": {
+                        "@id": "https://shopkart-ecommerce-1m2n.onrender.com/#organization"
+                      },
+                      "potentialAction": {
+                        "@type": "SearchAction",
+                        "target": "https://shopkart-ecommerce-1m2n.onrender.com/products?q={search_term_string}",
+                        "query-input": "required name=search_term_string"
+                      }
+                    }
+                  ]
+                }
+                </script>
 
                 <link rel="preload" as="image"
                     href="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=1200&q=75"
@@ -380,10 +381,10 @@
                                         </span>
                                     </c:if>
 
-                                    <a href="${pageContext.request.contextPath}/product?id=${deal.productId}">
+                                    <a href="${pageContext.request.contextPath}/product/${not empty deal.slug ? deal.slug : deal.productId}">
                                         <div class="product-img-container">
                                             <img src="${not empty deal.primaryImageUrl ? deal.primaryImageUrl : 'https://placehold.co/300x300?text=ShopKart'}"
-                                                alt="${deal.productName}" loading="lazy">
+                                                alt="${deal.brand} ${deal.productName} - ShopKart Deals" loading="lazy">
                                         </div>
                                         <div class="product-brand">${deal.brand}</div>
                                         <div class="product-title">${deal.productName}</div>
@@ -444,10 +445,10 @@
                         <h3 class="quad-title">Upgrade Your Workspace</h3>
                         <div class="quad-items-grid">
                             <c:forEach var="p" items="${techQuad}">
-                                <a href="${pageContext.request.contextPath}/product?id=${p.productId}"
+                                <a href="${pageContext.request.contextPath}/product/${not empty p.slug ? p.slug : p.productId}"
                                     class="quad-mini-item">
                                     <div class="img-wrapper">
-                                        <img src="${p.primaryImageUrl}" alt="${p.productName}" loading="lazy">
+                                        <img src="${p.primaryImageUrl}" alt="${p.brand} ${p.productName} - ShopKart" loading="lazy">
                                     </div>
                                     <div class="mini-caption">${p.productName}</div>
                                     <div class="mini-price">₹
@@ -457,7 +458,7 @@
                                 </a>
                             </c:forEach>
                         </div>
-                        <a href="${pageContext.request.contextPath}/products?category=1" class="quad-footer-link">See
+                        <a href="${pageContext.request.contextPath}/category/laptops-computers" class="quad-footer-link">See
                             all laptops & workstations →</a>
                     </div>
 
@@ -466,10 +467,10 @@
                         <h3 class="quad-title">Audio & Smart Wearables</h3>
                         <div class="quad-items-grid">
                             <c:forEach var="p" items="${audioQuad}">
-                                <a href="${pageContext.request.contextPath}/product?id=${p.productId}"
+                                <a href="${pageContext.request.contextPath}/product/${not empty p.slug ? p.slug : p.productId}"
                                     class="quad-mini-item">
                                     <div class="img-wrapper">
-                                        <img src="${p.primaryImageUrl}" alt="${p.productName}" loading="lazy">
+                                        <img src="${p.primaryImageUrl}" alt="${p.brand} ${p.productName} - ShopKart" loading="lazy">
                                     </div>
                                     <div class="mini-caption">${p.productName}</div>
                                     <div class="mini-price">₹
@@ -479,7 +480,7 @@
                                 </a>
                             </c:forEach>
                         </div>
-                        <a href="${pageContext.request.contextPath}/products?category=3"
+                        <a href="${pageContext.request.contextPath}/category/audio-wearables"
                             class="quad-footer-link">Explore headphones & smartwatches →</a>
                     </div>
 
@@ -488,10 +489,10 @@
                         <h3 class="quad-title">Trending Styles & Fashion</h3>
                         <div class="quad-items-grid">
                             <c:forEach var="p" items="${fashionQuad}">
-                                <a href="${pageContext.request.contextPath}/product?id=${p.productId}"
+                                <a href="${pageContext.request.contextPath}/product/${not empty p.slug ? p.slug : p.productId}"
                                     class="quad-mini-item">
                                     <div class="img-wrapper">
-                                        <img src="${p.primaryImageUrl}" alt="${p.productName}" loading="lazy">
+                                        <img src="${p.primaryImageUrl}" alt="${p.brand} ${p.productName} - ShopKart" loading="lazy">
                                     </div>
                                     <div class="mini-caption">${p.productName}</div>
                                     <div class="mini-price">₹
@@ -501,7 +502,7 @@
                                 </a>
                             </c:forEach>
                         </div>
-                        <a href="${pageContext.request.contextPath}/products?category=5" class="quad-footer-link">Browse
+                        <a href="${pageContext.request.contextPath}/category/fashion" class="quad-footer-link">Browse
                             apparel & footwear →</a>
                     </div>
 
@@ -510,10 +511,10 @@
                         <h3 class="quad-title">Home & Kitchen Essentials</h3>
                         <div class="quad-items-grid">
                             <c:forEach var="p" items="${lifestyleQuad}">
-                                <a href="${pageContext.request.contextPath}/product?id=${p.productId}"
+                                <a href="${pageContext.request.contextPath}/product/${not empty p.slug ? p.slug : p.productId}"
                                     class="quad-mini-item">
                                     <div class="img-wrapper">
-                                        <img src="${p.primaryImageUrl}" alt="${p.productName}" loading="lazy">
+                                        <img src="${p.primaryImageUrl}" alt="${p.brand} ${p.productName} - ShopKart" loading="lazy">
                                     </div>
                                     <div class="mini-caption">${p.productName}</div>
                                     <div class="mini-price">₹
@@ -523,7 +524,7 @@
                                 </a>
                             </c:forEach>
                         </div>
-                        <a href="${pageContext.request.contextPath}/products?category=8" class="quad-footer-link">Shop
+                        <a href="${pageContext.request.contextPath}/category/home-kitchen" class="quad-footer-link">Shop
                             home appliances →</a>
                     </div>
                 </section>
@@ -695,10 +696,10 @@
                                         </span>
                                     </c:if>
 
-                                    <a href="${pageContext.request.contextPath}/product?id=${item.productId}">
+                                    <a href="${pageContext.request.contextPath}/product/${not empty item.slug ? item.slug : item.productId}">
                                         <div class="product-img-container">
                                             <img src="${not empty item.primaryImageUrl ? item.primaryImageUrl : 'https://placehold.co/300x300?text=ShopKart'}"
-                                                alt="${item.productName}" loading="lazy">
+                                                alt="${item.brand} ${item.productName} - ShopKart" loading="lazy">
                                         </div>
                                         <div class="product-brand">${item.brand}</div>
                                         <div class="product-title">${item.productName}</div>

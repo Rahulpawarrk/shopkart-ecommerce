@@ -4,14 +4,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="${pageContext.request.contextPath}/assets/images/favicon.svg">
-    <link rel="shortcut icon" href="${pageContext.request.contextPath}/favicon.svg">
-    <link rel="apple-touch-icon" href="${pageContext.request.contextPath}/assets/images/favicon.svg">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="contextPath" content="${pageContext.request.contextPath}">
-    <title>Product Catalog | ShopKart Shopping</title>
+    <jsp:include page="/WEB-INF/views/common/seo-head.jsp" />
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -432,9 +425,9 @@
                             <span class="card-discount-badge"><fmt:formatNumber value="${product.discountPercentage}" maxFractionDigits="0"/>% OFF</span>
                         </c:if>
 
-                        <a href="${pageContext.request.contextPath}/product?id=${product.productId}">
+                        <a href="${pageContext.request.contextPath}/product/${not empty product.slug ? product.slug : product.productId}">
                             <div class="product-img-container">
-                                <img src="${not empty product.primaryImageUrl ? product.primaryImageUrl : 'https://placehold.co/300x300?text=TechZone'}" alt="<c:out value='${product.productName}'/>" loading="lazy">
+                                <img src="${not empty product.primaryImageUrl ? product.primaryImageUrl : 'https://placehold.co/300x300?text=ShopKart'}" alt="<c:out value='${product.brand}'/> <c:out value='${product.productName}'/> - ShopKart" loading="lazy">
                             </div>
                             <div class="product-brand"><c:out value="${product.brand}"/></div>
                             <div class="product-title"><c:out value="${product.productName}"/></div>

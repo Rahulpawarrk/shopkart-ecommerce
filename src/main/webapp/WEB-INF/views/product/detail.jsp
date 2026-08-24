@@ -5,16 +5,50 @@
             <html lang="en">
 
             <head>
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="${pageContext.request.contextPath}/assets/images/favicon.svg">
-    <link rel="shortcut icon" href="${pageContext.request.contextPath}/favicon.svg">
-    <link rel="apple-touch-icon" href="${pageContext.request.contextPath}/assets/images/favicon.svg">
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <meta name="contextPath" content="${pageContext.request.contextPath}">
-                <title>
-                    <c:out value="${product.productName}" /> | ShopKart
-                </title>
+                <jsp:include page="/WEB-INF/views/common/seo-head.jsp" />
+
+                <!-- Product Schema.org JSON-LD -->
+                <script type="application/ld+json">
+                {
+                  "@context": "https://schema.org/",
+                  "@type": "Product",
+                  "name": "<c:out value='${product.productName}' />",
+                  <c:if test="${not empty product.primaryImageUrl}">
+                  "image": [
+                    "<c:out value='${product.primaryImageUrl}' />"
+                  ],
+                  </c:if>
+                  "description": "<c:out value='${product.description}' />",
+                  <c:if test="${not empty product.sku}">
+                  "sku": "<c:out value='${product.sku}' />",
+                  </c:if>
+                  <c:if test="${not empty product.brand}">
+                  "brand": {
+                    "@type": "Brand",
+                    "name": "<c:out value='${product.brand}' />"
+                  },
+                  </c:if>
+                  "offers": {
+                    "@type": "Offer",
+                    "url": "https://shopkart-ecommerce-1m2n.onrender.com/product/<c:out value='${product.slug}' />",
+                    "priceCurrency": "INR",
+                    "price": "${product.discountedPrice != null ? product.discountedPrice : product.price}",
+                    "priceValidUntil": "2027-12-31",
+                    "itemCondition": "https://schema.org/NewCondition",
+                    "availability": "https://schema.org/${product.stockQuantity > 0 ? 'InStock' : 'OutOfStock'}",
+                    "seller": {
+                      "@type": "Organization",
+                      "name": "ShopKart"
+                    }
+                  }<c:if test="${not empty ratingSummary and ratingSummary.totalReviews > 0}">,
+                  "aggregateRating": {
+                    "@type": "AggregateRating",
+                    "ratingValue": "${ratingSummary.averageRating}",
+                    "reviewCount": "${ratingSummary.totalReviews}"
+                  }
+                  </c:if>
+                }
+                </script>
                 <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
                 <link rel="preconnect" href="https://fonts.googleapis.com">
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

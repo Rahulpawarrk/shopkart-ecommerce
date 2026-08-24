@@ -144,6 +144,19 @@ public class HomeServlet extends HttpServlet {
                     .collect(Collectors.toList());
             request.setAttribute("bestSellers", bestSellers.isEmpty() ? featuredProducts : bestSellers);
 
+            // 10. Homepage SEO Metadata
+            com.example.ecommerce.seo.model.SeoMetadata seo = new com.example.ecommerce.seo.model.SeoMetadata();
+            seo.setTitle("ShopKart | India's Premier Online Shopping Destination for Electronics, Mobiles & Fashion");
+            seo.setDescription("ShopKart India - Discover top deals on smartphones, laptops, electronics, audio gear, and designer fashion. Enjoy free express delivery, verified reviews, and secure checkout.");
+            seo.setCanonicalUrl(com.example.ecommerce.seo.model.SeoMetadata.BASE_URL + "/");
+            seo.setRobots("index, follow");
+            seo.setOgTitle("ShopKart | India's Premier Online Shopping Destination");
+            seo.setOgDescription("Discover top deals on smartphones, laptops, audio & fashion with instant express delivery.");
+            seo.setOgType("website");
+            seo.setOgImage(com.example.ecommerce.seo.model.SeoMetadata.DEFAULT_IMAGE);
+            seo.addBreadcrumb("Home", com.example.ecommerce.seo.model.SeoMetadata.BASE_URL + "/");
+            request.setAttribute("seo", seo);
+
         } catch (Exception e) {
             logger.error("Error populating homepage showcase", e);
             request.setAttribute("catalogError", "Unable to load dynamic catalog items.");

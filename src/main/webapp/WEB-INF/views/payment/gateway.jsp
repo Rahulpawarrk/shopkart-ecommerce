@@ -10,6 +10,7 @@
     <link rel="apple-touch-icon" href="${pageContext.request.contextPath}/assets/images/favicon.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
     <title>Secure Payment | ShopKart India</title>
     <meta name="description" content="Complete your secure payment with Razorpay. Supports UPI (Google Pay, PhonePe, Paytm, BHIM, CRED), Credit/Debit Cards, NetBanking, and Wallets.">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
