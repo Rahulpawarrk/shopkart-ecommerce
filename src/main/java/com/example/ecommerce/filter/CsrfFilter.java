@@ -94,9 +94,7 @@ public class CsrfFilter implements Filter {
                     // Check Origin / Referer header validation as secondary defense
                     String origin = httpRequest.getHeader("Origin");
                     String referer = httpRequest.getHeader("Referer");
-                    String serverName = httpRequest.getServerName();
-
-                    boolean isSameOrigin = isAllowedOrigin(origin, serverName) || isAllowedOrigin(referer, serverName);
+                    boolean isSameOrigin = isAllowedOrigin(httpRequest, origin) || isAllowedOrigin(httpRequest, referer);
 
                     if (!isSameOrigin && (reqCsrfToken == null || !reqCsrfToken.equals(sessionCsrfToken))) {
                         logger.warn("CSRF validation blocked request to [{}] from IP [{}] (Method: {})", path, httpRequest.getRemoteAddr(), method);
@@ -115,12 +113,29 @@ public class CsrfFilter implements Filter {
         logger.info("CsrfFilter destroyed.");
     }
 
-    private boolean isAllowedOrigin(String header, String serverName) {
+    private boolean isAllowedOrigin(HttpServletRequest request, String header) {
         if (header == null || header.isBlank()) return false;
         try {
             java.net.URI uri = new java.net.URI(header);
             String host = uri.getHost();
-            return host != null && host.equalsIgnoreCase(serverName);
+            if (host == null) return false;
+
+            String serverName = request.getServerName();
+            if (host.equalsIgnoreCase(serverName)) return true;
+
+            String hostHeader = request.getHeader("Host");
+            if (hostHeader != null) {
+                String cleanHost = hostHeader.contains(":") ? hostHeader.split(":")[0] : hostHeader;
+                if (host.equalsIgnoreCase(cleanHost)) return true;
+            }
+
+            String forwardedHost = request.getHeader("X-Forwarded-Host");
+            if (forwardedHost != null) {
+                String cleanForwardedHost = forwardedHost.contains(":") ? forwardedHost.split(":")[0] : forwardedHost;
+                if (host.equalsIgnoreCase(cleanForwardedHost)) return true;
+            }
+
+            return false;
         } catch (java.net.URISyntaxException e) {
             return false;
         }

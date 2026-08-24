@@ -601,7 +601,7 @@
             }
         </style>
 
-        <script>
+        <script nonce="${cspNonce}">
             function closeOrderConfirmationModal() {
                 const modal = document.getElementById('orderConfirmationModal');
                 if (modal) {

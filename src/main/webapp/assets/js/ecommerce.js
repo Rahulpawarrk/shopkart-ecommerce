@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initCouponChips();
     initAddressAutoPincodeSync();
     initCheckoutAddressPincodeMatch();
+    initProfileEdit();
+    initGlobalActionListeners();
 });
 
 /* ==============================================================================
@@ -753,6 +755,14 @@ function initCouponChips() {
 /* ==============================================================================
    9. 1-CLICK AJAX ADD TO CART & WISHLIST WITH TOAST NOTIFICATIONS
    ============================================================================== */
+function getCsrfToken() {
+    const csrfInput = document.querySelector('input[name="_csrf"]');
+    if (csrfInput && csrfInput.value) return csrfInput.value;
+    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    if (csrfMeta && csrfMeta.content) return csrfMeta.content;
+    return '';
+}
+
 function quickAddToCart(productId, quantity = 1, event) {
     if (event) {
         event.preventDefault();
@@ -763,13 +773,18 @@ function quickAddToCart(productId, quantity = 1, event) {
     const formData = new URLSearchParams();
     formData.append('productId', productId);
     formData.append('quantity', quantity);
+    const csrf = getCsrfToken();
+    if (csrf) formData.append('_csrf', csrf);
+
+    const headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-Requested-With': 'XMLHttpRequest'
+    };
+    if (csrf) headers['X-CSRF-Token'] = csrf;
 
     fetch(`${contextPath}/cart/add`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-Requested-With': 'XMLHttpRequest'
-        },
+        headers: headers,
         body: formData.toString()
     })
         .then(response => {
@@ -807,6 +822,15 @@ function quickBuyNow(productId, quantity = 1, event) {
     qtyInput.value = finalQty;
     form.appendChild(qtyInput);
 
+    const csrf = getCsrfToken();
+    if (csrf) {
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = '_csrf';
+        csrfInput.value = csrf;
+        form.appendChild(csrfInput);
+    }
+
     document.body.appendChild(form);
     form.submit();
 }
@@ -821,13 +845,18 @@ function quickAddToWishlist(productId, event) {
     const formData = new URLSearchParams();
     formData.append('productId', productId);
     formData.append('ajax', 'true');
+    const csrf = getCsrfToken();
+    if (csrf) formData.append('_csrf', csrf);
+
+    const headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-Requested-With': 'XMLHttpRequest'
+    };
+    if (csrf) headers['X-CSRF-Token'] = csrf;
 
     fetch(`${contextPath}/wishlist/add`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-Requested-With': 'XMLHttpRequest'
-        },
+        headers: headers,
         body: formData.toString()
     })
         .then(response => {
@@ -1279,3 +1308,122 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+/* ==============================================================================
+   14. CSP-COMPLIANT GLOBAL ACTION LISTENERS & PROFILE CONTROLS
+   ============================================================================== */
+function toggleEditMode(isEdit) {
+    const viewMode = document.getElementById('profileViewMode');
+    const editMode = document.getElementById('profileEditMode');
+    if (!viewMode || !editMode) return;
+    if (isEdit) {
+        viewMode.style.display = 'none';
+        editMode.style.display = 'block';
+        const firstNameInput = document.getElementById('firstName');
+        if (firstNameInput) firstNameInput.focus();
+    } else {
+        editMode.style.display = 'none';
+        viewMode.style.display = 'block';
+    }
+}
+
+function initProfileEdit() {
+    const editBtn = document.getElementById('editProfileBtn');
+    if (editBtn) {
+        editBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleEditMode(true);
+        });
+    }
+    const cancelBtn = document.getElementById('cancelEditProfileBtn') || document.querySelector('#profileEditMode button.order-btn-outline');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleEditMode(false);
+        });
+    }
+}
+
+function initGlobalActionListeners() {
+    document.addEventListener('click', (e) => {
+        // 1. Delivery / Pincode modal trigger
+        const pincodeTrigger = e.target.closest('#headerDeliveryTrigger, .delivery-locator');
+        if (pincodeTrigger) {
+            if (typeof openPinCodeModal === 'function') {
+                e.preventDefault();
+                openPinCodeModal();
+            }
+            return;
+        }
+
+        // 2. Add to Cart button delegation
+        const addCartBtn = e.target.closest('[data-action="add-cart"], .card-add-cart-btn');
+        if (addCartBtn && !addCartBtn.disabled) {
+            const pid = addCartBtn.dataset.productId;
+            if (pid) {
+                e.preventDefault();
+                quickAddToCart(pid, 1, e);
+                return;
+            }
+        }
+
+        // 3. Buy Now button delegation
+        const buyNowBtn = e.target.closest('[data-action="buy-now"], .card-buy-now-btn');
+        if (buyNowBtn && !buyNowBtn.disabled) {
+            const pid = buyNowBtn.dataset.productId;
+            if (pid) {
+                e.preventDefault();
+                quickBuyNow(pid, 1, e);
+                return;
+            }
+        }
+
+        // 4. Wishlist button delegation
+        const wishlistBtn = e.target.closest('[data-action="add-wishlist"]');
+        if (wishlistBtn && !wishlistBtn.disabled) {
+            const pid = wishlistBtn.dataset.productId;
+            if (pid) {
+                e.preventDefault();
+                quickAddToWishlist(pid, e);
+                return;
+            }
+        }
+
+        // 5. Fallback for inline onclick handlers to ensure 100% functionality under strict CSP
+        const inlineOnclickEl = e.target.closest('[onclick]');
+        if (inlineOnclickEl) {
+            const onclickAttr = inlineOnclickEl.getAttribute('onclick');
+            if (onclickAttr) {
+                const cartMatch = onclickAttr.match(/quickAddToCart\s*\(\s*['"]?(\d+)['"]?/);
+                if (cartMatch && cartMatch[1]) {
+                    e.preventDefault();
+                    quickAddToCart(cartMatch[1], 1, e);
+                    return;
+                }
+                const buyMatch = onclickAttr.match(/quickBuyNow\s*\(\s*['"]?(\d+)['"]?/);
+                if (buyMatch && buyMatch[1]) {
+                    e.preventDefault();
+                    quickBuyNow(buyMatch[1], 1, e);
+                    return;
+                }
+                const wishMatch = onclickAttr.match(/quickAddToWishlist\s*\(\s*['"]?(\d+)['"]?/);
+                if (wishMatch && wishMatch[1]) {
+                    e.preventDefault();
+                    quickAddToWishlist(wishMatch[1], e);
+                    return;
+                }
+                const editMatch = onclickAttr.match(/toggleEditMode\s*\(\s*(true|false)\s*\)/);
+                if (editMatch) {
+                    e.preventDefault();
+                    toggleEditMode(editMatch[1] === 'true');
+                    return;
+                }
+                if (onclickAttr.includes('openPinCodeModal')) {
+                    e.preventDefault();
+                    if (typeof openPinCodeModal === 'function') openPinCodeModal();
+                    return;
+                }
+            }
+        }
+    });
+}

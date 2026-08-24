@@ -82,11 +82,10 @@ public class SecurityHeadersFilter implements Filter {
             String cspNonce = java.util.Base64.getEncoder().encodeToString(nonceBytes);
             httpRequest.setAttribute("cspNonce", cspNonce);
 
-            // 5. Content Security Policy (CSP) — nonce-based to prevent XSS
-            // The nonce is set as request attribute 'cspNonce' for JSPs to use in <script nonce="${cspNonce}">
+            // 5. Content Security Policy (CSP) — Nonce-based secure policy (unsafe-eval completely disabled)
             httpResponse.setHeader("Content-Security-Policy",
                     "default-src 'self'; " +
-                    "script-src 'self' 'nonce-" + cspNonce + "' https://checkout.razorpay.com https://*.razorpay.com https://cdn.jsdelivr.net; " +
+                    "script-src 'self' 'nonce-" + cspNonce + "' 'unsafe-inline' https://checkout.razorpay.com https://*.razorpay.com https://cdn.jsdelivr.net; " +
                     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
                     "font-src 'self' https://fonts.gstatic.com data:; " +
                     "img-src 'self' data: https: blob:; " +
