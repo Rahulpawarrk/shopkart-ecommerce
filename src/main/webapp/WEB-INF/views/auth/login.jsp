@@ -263,6 +263,7 @@
 
                     <!-- Login Form -->
                     <form action="${pageContext.request.contextPath}/login" method="POST" autocomplete="on">
+                        <input type="hidden" name="_csrf" value="${csrfToken}">
                         <div class="auth-form-group">
                             <label for="email" class="auth-form-label">Email or mobile phone number</label>
                             <input type="email" id="email" name="email" class="auth-form-input"

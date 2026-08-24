@@ -217,6 +217,7 @@
             </c:if>
 
             <form action="${pageContext.request.contextPath}/register" method="POST">
+                <input type="hidden" name="_csrf" value="${csrfToken}">
                 <div class="form-row">
                     <div class="auth-form-group">
                         <label for="firstName" class="auth-form-label">First Name *</label>

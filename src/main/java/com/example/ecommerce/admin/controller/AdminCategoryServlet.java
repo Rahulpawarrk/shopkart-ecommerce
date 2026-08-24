@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.util.List;
+import com.example.ecommerce.util.ServletUtils;
 
 /**
  * Controller for Administrative Category Management.
@@ -81,7 +82,11 @@ public class AdminCategoryServlet extends HttpServlet {
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        int id = Integer.parseInt(request.getParameter("id"));
+        int id = ServletUtils.parseIntParam(request, "id", -1);
+        if (id <= 0) {
+            response.sendRedirect(request.getContextPath() + "/admin/categories?error=invalid_id");
+            return;
+        }
         Category category = categoryService.getCategoryById(id);
         List<Category> parentOptions = categoryService.getAllCategories(true);
 
@@ -96,12 +101,21 @@ public class AdminCategoryServlet extends HttpServlet {
         
         Category category = new Category();
         if (isEdit) {
-            category.setCategoryId(Integer.parseInt(request.getParameter("categoryId")));
+            int catId = ServletUtils.parseIntParam(request, "categoryId", -1);
+            if (catId <= 0) {
+                response.sendRedirect(request.getContextPath() + "/admin/categories?error=invalid_id");
+                return;
+            }
+            category.setCategoryId(catId);
         }
 
         String parentIdParam = request.getParameter("parentCategoryId");
         if (parentIdParam != null && !parentIdParam.trim().isEmpty() && !"0".equals(parentIdParam)) {
-            category.setParentCategoryId(Integer.parseInt(parentIdParam.trim()));
+            try {
+                category.setParentCategoryId(Integer.parseInt(parentIdParam.trim()));
+            } catch (NumberFormatException e) {
+                // Ignore or handle
+            }
         }
 
         category.setCategoryName(request.getParameter("categoryName"));
@@ -127,7 +141,11 @@ public class AdminCategoryServlet extends HttpServlet {
 
     private void toggleStatus(HttpServletRequest request, HttpServletResponse response) 
             throws IOException {
-        int id = Integer.parseInt(request.getParameter("id"));
+        int id = ServletUtils.parseIntParam(request, "id", -1);
+        if (id <= 0) {
+            response.sendRedirect(request.getContextPath() + "/admin/categories?error=invalid_id");
+            return;
+        }
         boolean active = Boolean.parseBoolean(request.getParameter("active"));
         categoryService.toggleStatus(id, active);
         response.sendRedirect(request.getContextPath() + "/admin/categories?statusUpdated=true");

@@ -157,7 +157,10 @@ public class OrderService {
 
                 // Step B: Increment Coupon Usage if applicable
                 if (order.getCouponId() != null) {
-                    couponDAO.incrementUsedCount(order.getCouponId(), conn);
+                    boolean success = couponDAO.incrementUsedCountAtomic(order.getCouponId(), conn);
+                    if (!success) {
+                        throw new ValidationException("Coupon usage limit has been reached.");
+                    }
                 }
 
                 // Step C: Insert Order Line Items & Reserve Stock with UPDLOCK
@@ -308,7 +311,10 @@ public class OrderService {
 
                 // Step B: Increment Coupon Usage if applicable
                 if (order.getCouponId() != null) {
-                    couponDAO.incrementUsedCount(order.getCouponId(), conn);
+                    boolean success = couponDAO.incrementUsedCountAtomic(order.getCouponId(), conn);
+                    if (!success) {
+                        throw new ValidationException("Coupon usage limit has been reached.");
+                    }
                 }
 
                 // Step C: Insert Single Direct Buy Order Item & Deduct Stock
@@ -467,6 +473,10 @@ public class OrderService {
                             "Cancelled Customer Order #" + orderId,
                             conn
                     );
+                }
+
+                if (order.getCouponId() != null && order.getCouponId() > 0) {
+                    couponDAO.decrementUsedCount(order.getCouponId(), conn);
                 }
 
                 // 4. Record Status History

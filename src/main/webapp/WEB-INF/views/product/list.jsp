@@ -24,7 +24,7 @@
         <div class="admin-storefront-bar">
             <div class="admin-bar-left">
                 <span class="admin-crown-badge">👑 ADMIN MODE</span>
-                <span>ShopKart Control Center &bull; Logged in as <strong>${sessionScope.currentUser.fullName}</strong></span>
+                <span>ShopKart Control Center &bull; Logged in as <strong><c:out value="${sessionScope.currentUser.fullName}"/></strong></span>
             </div>
             <div class="admin-bar-actions">
                 <a href="${pageContext.request.contextPath}/admin/dashboard" class="admin-bar-btn admin-bar-btn-primary">⚙️ Admin Console</a>
@@ -78,7 +78,7 @@
                         <option value="${cat.categoryId}" ${criteria.categoryId == cat.categoryId ? 'selected' : ''}>${cat.categoryName}</option>
                     </c:forEach>
                 </select>
-                <input type="text" name="keyword" class="search-input" id="globalSearchInput" placeholder="Search for products, brands and tech essentials..." value="${criteria.keyword}" autocomplete="off">
+                <input type="text" name="keyword" class="search-input" id="globalSearchInput" placeholder="Search for products, brands and tech essentials..." value="<c:out value='${criteria.keyword}'/>" autocomplete="off">
                 <button type="submit" class="search-button" aria-label="Search">🔍</button>
             </form>
             <div class="search-autocomplete-dropdown" id="searchAutocompleteDropdown"></div>
@@ -92,13 +92,13 @@
                     <c:when test="${not empty sessionScope.currentUser}">
                         <div class="user-nav-btn" tabindex="0" role="button">
                             <span class="user-avatar-icon">👤</span>
-                            <span class="user-nav-name">${sessionScope.currentUser.fullName}</span>
+                            <span class="user-nav-name"><c:out value="${sessionScope.currentUser.fullName}"/></span>
                             <span class="arrow-down">▾</span>
                         </div>
                         <div class="account-dropdown">
                             <div class="dropdown-header">
-                                <div class="user-name">Hello, ${sessionScope.currentUser.fullName}</div>
-                                <div class="user-email">${sessionScope.currentUser.email}</div>
+                                <div class="user-name">Hello, <c:out value="${sessionScope.currentUser.fullName}"/></div>
+                                <div class="user-email"><c:out value="${sessionScope.currentUser.email}"/></div>
                                 <c:if test="${sessionScope.currentUser.admin}">
                                     <div style="font-size: 0.7rem; color: #fbbf24; font-weight: 800; margin-top: 0.2rem;">👑 ADMINISTRATOR</div>
                                 </c:if>
@@ -175,7 +175,7 @@
             </div>
 
             <form action="${pageContext.request.contextPath}/products" method="GET" id="catalogFilterForm">
-                <input type="hidden" name="q" value="${criteria.keyword}">
+                <input type="hidden" name="q" value="<c:out value='${criteria.keyword}'/>">
                 <input type="hidden" name="sort" value="${sortParam}">
 
                 <!-- 1. Deals & Discounts Filter Group -->
@@ -375,7 +375,7 @@
                 <div class="results-count">
                     Showing <strong>${pagination.totalItems}</strong> results
                     <c:if test="${not empty criteria.keyword}">
-                        for "<strong>${criteria.keyword}</strong>"
+                        for "<strong><c:out value='${criteria.keyword}'/></strong>"
                     </c:if>
                     <c:if test="${not empty criteria.categoryId}">
                         <c:forEach var="c" items="${categories}">
@@ -393,7 +393,7 @@
 
                 <div class="toolbar-controls">
                     <form action="${pageContext.request.contextPath}/products" method="GET" style="display: inline-flex; align-items: center; gap: 0.5rem;" id="toolbarSortForm">
-                        <input type="hidden" name="q" value="${criteria.keyword}">
+                        <input type="hidden" name="q" value="<c:out value='${criteria.keyword}'/>">
                         <input type="hidden" name="category" value="${criteria.categoryId}">
                         <input type="hidden" name="minDiscount" value="${criteria.minDiscount}">
                         <input type="hidden" name="deals" value="${criteria.dealsOnly ? 'true' : ''}">
@@ -434,10 +434,10 @@
 
                         <a href="${pageContext.request.contextPath}/product?id=${product.productId}">
                             <div class="product-img-container">
-                                <img src="${not empty product.primaryImageUrl ? product.primaryImageUrl : 'https://placehold.co/300x300?text=TechZone'}" alt="${product.productName}" loading="lazy">
+                                <img src="${not empty product.primaryImageUrl ? product.primaryImageUrl : 'https://placehold.co/300x300?text=TechZone'}" alt="<c:out value='${product.productName}'/>" loading="lazy">
                             </div>
-                            <div class="product-brand">${product.brand}</div>
-                            <div class="product-title">${product.productName}</div>
+                            <div class="product-brand"><c:out value="${product.brand}"/></div>
+                            <div class="product-title"><c:out value="${product.productName}"/></div>
                         </a>
 
                         <div class="rating-row">
@@ -488,7 +488,7 @@
             <c:if test="${pagination.totalPages > 1}">
                 <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem; align-items: center;">
                     <c:if test="${pagination.currentPage > 1}">
-                        <a href="${pageContext.request.contextPath}/products?page=${pagination.currentPage - 1}&category=${criteria.categoryId}&q=${criteria.keyword}&sort=${sortParam}&minPrice=${criteria.minPrice}&maxPrice=${criteria.maxPrice}&minDiscount=${criteria.minDiscount}&deals=${criteria.dealsOnly ? 'true' : ''}" 
+                        <a href="${pageContext.request.contextPath}/products?page=${pagination.currentPage - 1}&category=${criteria.categoryId}&q=<c:out value='${criteria.keyword}'/>&sort=${sortParam}&minPrice=${criteria.minPrice}&maxPrice=${criteria.maxPrice}&minDiscount=${criteria.minDiscount}&deals=${criteria.dealsOnly ? 'true' : ''}" 
                            class="order-btn-secondary" style="padding: 0.5rem 1rem;">&laquo; Prev</a>
                     </c:if>
                     
@@ -497,7 +497,7 @@
                     </span>
 
                     <c:if test="${pagination.currentPage < pagination.totalPages}">
-                        <a href="${pageContext.request.contextPath}/products?page=${pagination.currentPage + 1}&category=${criteria.categoryId}&q=${criteria.keyword}&sort=${sortParam}&minPrice=${criteria.minPrice}&maxPrice=${criteria.maxPrice}&minDiscount=${criteria.minDiscount}&deals=${criteria.dealsOnly ? 'true' : ''}" 
+                        <a href="${pageContext.request.contextPath}/products?page=${pagination.currentPage + 1}&category=${criteria.categoryId}&q=<c:out value='${criteria.keyword}'/>&sort=${sortParam}&minPrice=${criteria.minPrice}&maxPrice=${criteria.maxPrice}&minDiscount=${criteria.minDiscount}&deals=${criteria.dealsOnly ? 'true' : ''}" 
                            class="order-btn-secondary" style="padding: 0.5rem 1rem;">Next &raquo;</a>
                     </c:if>
                 </div>
@@ -533,7 +533,7 @@
     <div id="toastContainer" class="toast-container"></div>
 
     <script nonce="${cspNonce}">
-        // Category to Brands dictionary for instantaneous reactivity
+        <!-- categoryBrandsMap is populated with server-sanitized JSON -->
         const categoryBrandsMap = ${categoryBrandsJson != null ? categoryBrandsJson : '{}'};
         
         function handleCategorySelection(catId) {

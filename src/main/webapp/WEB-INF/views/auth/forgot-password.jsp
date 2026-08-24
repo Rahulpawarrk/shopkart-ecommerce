@@ -197,6 +197,7 @@
                     </div>
 
                     <form action="${pageContext.request.contextPath}/forgot-password" method="POST" id="otpVerifyForm">
+                        <input type="hidden" name="_csrf" value="${csrfToken}">
                         <input type="hidden" name="action" value="verify_otp">
                         <input type="hidden" name="identifier" value="<c:out value='${rawIdentifier != null ? rawIdentifier : identifier}'/>">
                         <input type="hidden" name="destination" value="<c:out value='${destination}'/>">
@@ -216,6 +217,7 @@
                     <div class="resend-row">
                         <!-- Resend OTP Form -->
                         <form action="${pageContext.request.contextPath}/forgot-password" method="POST" style="display:inline;" id="resendForm">
+                            <input type="hidden" name="_csrf" value="${csrfToken}">
                             <input type="hidden" name="action" value="send_otp">
                             <input type="hidden" name="identifier" value="<c:out value='${rawIdentifier != null ? rawIdentifier : identifier}'/>">
                             <button type="submit" class="resend-link" id="resendBtn">
@@ -245,6 +247,7 @@
                     </div>
 
                     <form action="${pageContext.request.contextPath}/forgot-password" method="POST" id="forgotForm">
+                        <input type="hidden" name="_csrf" value="${csrfToken}">
                         <input type="hidden" name="action" value="send_otp">
 
                         <div style="margin-bottom:1.25rem;">

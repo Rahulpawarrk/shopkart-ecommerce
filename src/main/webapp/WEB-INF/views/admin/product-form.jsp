@@ -72,6 +72,7 @@
                     </c:if>
 
                     <form action="${pageContext.request.contextPath}${isEdit ? '/admin/products/edit' : '/admin/products/add'}" method="POST">
+                        <input type="hidden" name="_csrf" value="${csrfToken}">
                         <c:if test="${isEdit}">
                             <input type="hidden" name="productId" value="${product.productId}">
                         </c:if>

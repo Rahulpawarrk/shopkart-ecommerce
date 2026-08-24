@@ -96,8 +96,7 @@ public class CsrfFilter implements Filter {
                     String referer = httpRequest.getHeader("Referer");
                     String serverName = httpRequest.getServerName();
 
-                    boolean isSameOrigin = (origin != null && origin.contains(serverName)) ||
-                                           (referer != null && referer.contains(serverName));
+                    boolean isSameOrigin = isAllowedOrigin(origin, serverName) || isAllowedOrigin(referer, serverName);
 
                     if (!isSameOrigin && (reqCsrfToken == null || !reqCsrfToken.equals(sessionCsrfToken))) {
                         logger.warn("CSRF validation blocked request to [{}] from IP [{}] (Method: {})", path, httpRequest.getRemoteAddr(), method);
@@ -114,5 +113,16 @@ public class CsrfFilter implements Filter {
     @Override
     public void destroy() {
         logger.info("CsrfFilter destroyed.");
+    }
+
+    private boolean isAllowedOrigin(String header, String serverName) {
+        if (header == null || header.isBlank()) return false;
+        try {
+            java.net.URI uri = new java.net.URI(header);
+            String host = uri.getHost();
+            return host != null && host.equalsIgnoreCase(serverName);
+        } catch (java.net.URISyntaxException e) {
+            return false;
+        }
     }
 }

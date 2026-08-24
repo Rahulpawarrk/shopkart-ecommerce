@@ -16,6 +16,7 @@ public class PendingRegistration implements Serializable {
     private String lastName;
     private String phone;
     private String emailOtp;
+    private String otpHash;
     private LocalDateTime otpExpiry;
 
     public PendingRegistration() {
@@ -43,12 +44,29 @@ public class PendingRegistration implements Serializable {
     }
 
     public boolean isEmailOtpValid(String inputEmailOtp) {
-        if (inputEmailOtp == null || emailOtp == null) return false;
-        return !isOtpExpired() && emailOtp.trim().equals(inputEmailOtp.trim().replaceAll("\\s+", ""));
+        if (inputEmailOtp == null || otpHash == null) return false;
+        if (isOtpExpired()) return false;
+        try {
+            return org.mindrot.jbcrypt.BCrypt.checkpw(inputEmailOtp.trim().replaceAll("\\s+", ""), otpHash);
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public boolean isOtpValid(String inputOtp) {
         return isEmailOtpValid(inputOtp);
+    }
+
+    public String getOtpHash() {
+        return otpHash;
+    }
+
+    public void setOtpHash(String otpHash) {
+        this.otpHash = otpHash;
+    }
+
+    public void clearOtp() {
+        this.emailOtp = null;
     }
 
     // Getters and Setters

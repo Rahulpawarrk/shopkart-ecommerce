@@ -240,8 +240,8 @@ public class EmailService {
                     "{\"sender\":{\"name\":\"%s\",\"email\":\"%s\"},\"to\":[{\"email\":\"%s\",\"name\":\"%s\"}],\"subject\":\"%s\",\"htmlContent\":%s}",
                     fromName,
                     (!smtpEmail.isEmpty() ? smtpEmail : "shopkart.support@gmail.com"),
-                    toEmail,
-                    toName != null ? toName.replace("\"", "") : "",
+                    escapeJson(toEmail),
+                    toName != null ? escapeJson(toName.replace("\"", "")) : "\"\"",
                     subject.replace("\"", ""),
                     escapeJson(htmlContent));
 
@@ -271,7 +271,7 @@ public class EmailService {
                     "{\"from\":\"%s <%s>\",\"to\":[\"%s\"],\"subject\":\"%s\",\"html\":%s}",
                     fromName,
                     (!smtpEmail.isEmpty() ? smtpEmail : "onboarding@resend.dev"),
-                    toEmail,
+                    escapeJson(toEmail),
                     subject.replace("\"", ""),
                     escapeJson(htmlContent));
 

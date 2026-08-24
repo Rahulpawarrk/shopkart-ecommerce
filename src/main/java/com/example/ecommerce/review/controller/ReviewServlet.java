@@ -87,6 +87,17 @@ public class ReviewServlet extends HttpServlet {
                 if ("reviewImage".equals(part.getName()) || "reviewImages".equals(part.getName())) {
                     String submittedFileName = part.getSubmittedFileName();
                     if (submittedFileName != null && !submittedFileName.trim().isEmpty() && part.getSize() > 0) {
+                        
+                        byte[] header = new byte[12];
+                        try (java.io.InputStream is = part.getInputStream()) {
+                            is.read(header);
+                        }
+                        if (!isValidImageMagicBytes(header)) {
+                            request.setAttribute("error", "Invalid image file. Only JPEG, PNG, WEBP, and GIF are accepted.");
+                            handleErrorRedirect(request, response, orderIdStr, String.valueOf(productId), "Invalid image file. Only JPEG, PNG, WEBP, and GIF are accepted.");
+                            return;
+                        }
+
                         String imageUrl = saveUploadedReviewImage(request, part, user.getUserId(), productId);
                         if (imageUrl != null) {
                             imageUrls.add(imageUrl);
@@ -164,5 +175,18 @@ public class ReviewServlet extends HttpServlet {
         } else {
             response.sendRedirect(request.getContextPath() + "/product?id=" + (productIdStr != null ? productIdStr : "1") + "&reviewError=" + encoded + "#reviews");
         }
+    }
+
+    private boolean isValidImageMagicBytes(byte[] header) {
+        if (header == null || header.length < 4) return false;
+        // JPEG: FF D8 FF
+        if ((header[0] & 0xFF) == 0xFF && (header[1] & 0xFF) == 0xD8 && (header[2] & 0xFF) == 0xFF) return true;
+        // PNG: 89 50 4E 47
+        if ((header[0] & 0xFF) == 0x89 && (header[1] & 0xFF) == 0x50 && (header[2] & 0xFF) == 0x4E && (header[3] & 0xFF) == 0x47) return true;
+        // GIF: 47 49 46 38
+        if ((header[0] & 0xFF) == 0x47 && (header[1] & 0xFF) == 0x49 && (header[2] & 0xFF) == 0x46 && (header[3] & 0xFF) == 0x38) return true;
+        // WEBP: 52 49 46 46 ... 57 45 42 50
+        if ((header[0] & 0xFF) == 0x52 && (header[1] & 0xFF) == 0x49 && (header[2] & 0xFF) == 0x46 && (header[3] & 0xFF) == 0x46) return true;
+        return false;
     }
 }

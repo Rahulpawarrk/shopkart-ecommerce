@@ -494,17 +494,27 @@ public final class DBConnection {
                         +
                         "END",
 
-                // 20. Reconcile & Synchronize Pending Payments with Paid/Delivered Orders
-                "UPDATE dbo.payments SET payment_status = 'SUCCESS', updated_at = SYSDATETIME() " +
-                        "WHERE payment_status = 'PENDING' AND order_id IN (SELECT order_id FROM dbo.orders WHERE payment_status = 'PAID' OR order_status = 'DELIVERED'); ",
+                // 20. Reconcile & Synchronize Pending Payments — runs ONCE on first startup only
+                // Guarded by a migration flag to prevent re-running on every server restart
+                "IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'migration_flags') " +
+                        "BEGIN CREATE TABLE dbo.migration_flags (flag_name VARCHAR(100) PRIMARY KEY, applied_at DATETIME DEFAULT CURRENT_TIMESTAMP) END",
 
-                "INSERT INTO dbo.payments (order_id, payment_method, transaction_reference, amount, payment_status, gateway_response, created_at, updated_at) "
-                        +
-                        "SELECT o.order_id, o.payment_method, 'PAY-' + UPPER(o.payment_method) + '-ORD' + CAST(o.order_id AS VARCHAR), o.total_amount, 'SUCCESS', 'Settled order payment', o.created_at, SYSDATETIME() "
-                        +
-                        "FROM dbo.orders o " +
-                        "WHERE (o.payment_status = 'PAID' OR o.order_status = 'DELIVERED') " +
-                        "AND NOT EXISTS (SELECT 1 FROM dbo.payments p WHERE p.order_id = o.order_id AND p.payment_status = 'SUCCESS'); ",
+                "IF NOT EXISTS (SELECT 1 FROM dbo.migration_flags WHERE flag_name = 'payment_reconciliation_v1') " +
+                        "BEGIN " +
+                        "  UPDATE dbo.payments SET payment_status = 'SUCCESS', updated_at = CURRENT_TIMESTAMP " +
+                        "  WHERE payment_status = 'PENDING' AND order_id IN (SELECT order_id FROM dbo.orders WHERE payment_status = 'PAID' OR order_status = 'DELIVERED'); " +
+                        "  INSERT INTO dbo.migration_flags (flag_name) VALUES ('payment_reconciliation_v1'); " +
+                        "END",
+
+                "IF NOT EXISTS (SELECT 1 FROM dbo.migration_flags WHERE flag_name = 'payment_backfill_v1') " +
+                        "BEGIN " +
+                        "  INSERT INTO dbo.payments (order_id, payment_method, transaction_reference, amount, payment_status, gateway_response, created_at, updated_at) " +
+                        "  SELECT o.order_id, o.payment_method, 'PAY-BACKFILL-ORD' || CAST(o.order_id AS VARCHAR), o.total_amount, 'SUCCESS', 'Settled order payment', o.created_at, CURRENT_TIMESTAMP " +
+                        "  FROM dbo.orders o " +
+                        "  WHERE (o.payment_status = 'PAID' OR o.order_status = 'DELIVERED') " +
+                        "  AND NOT EXISTS (SELECT 1 FROM dbo.payments p WHERE p.order_id = o.order_id AND p.payment_status = 'SUCCESS'); " +
+                        "  INSERT INTO dbo.migration_flags (flag_name) VALUES ('payment_backfill_v1'); " +
+                        "END",
 
                 // 21. Review Image Support
                 "IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'reviews' AND COLUMN_NAME = 'image_url') "

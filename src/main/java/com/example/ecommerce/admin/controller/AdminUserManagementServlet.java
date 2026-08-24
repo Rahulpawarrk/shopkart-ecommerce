@@ -55,7 +55,11 @@ public class AdminUserManagementServlet extends HttpServlet {
 
         HttpSession session = request.getSession(false);
         UserSession currentAdmin = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
-        int creatorId = (currentAdmin != null) ? currentAdmin.getUserId() : 0;
+        if (currentAdmin == null) {
+            response.sendRedirect(request.getContextPath() + "/admin/login?error=session_expired");
+            return;
+        }
+        int creatorId = currentAdmin.getUserId();
 
         String firstName       = request.getParameter("firstName");
         String lastName        = request.getParameter("lastName");

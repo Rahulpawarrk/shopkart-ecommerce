@@ -79,7 +79,7 @@
         <div class="admin-storefront-bar">
             <div class="admin-bar-left">
                 <span class="admin-crown-badge">👑 ADMIN MODE</span>
-                <span>ShopKart Control Center &bull; Logged in as <strong>${sessionScope.currentUser.fullName}</strong></span>
+                <span>ShopKart Control Center &bull; Logged in as <strong><c:out value="${sessionScope.currentUser.fullName}" /></strong></span>
             </div>
             <div class="admin-bar-actions">
                 <a href="${pageContext.request.contextPath}/admin/dashboard" class="admin-bar-btn admin-bar-btn-primary">⚙️ Admin Console</a>
@@ -134,13 +134,13 @@
             <div class="user-account-menu" id="userAccountMenu">
                 <div class="user-nav-btn" tabindex="0" role="button">
                     <span class="user-avatar-icon">👤</span>
-                    <span class="user-nav-name">${sessionScope.currentUser.fullName}</span>
+                    <span class="user-nav-name"><c:out value="${sessionScope.currentUser.fullName}" /></span>
                     <span class="arrow-down">▾</span>
                 </div>
                 <div class="account-dropdown">
                     <div class="dropdown-header">
-                        <div class="user-name">Hello, ${sessionScope.currentUser.fullName}</div>
-                        <div class="user-email">${sessionScope.currentUser.email}</div>
+                        <div class="user-name">Hello, <c:out value="${sessionScope.currentUser.fullName}" /></div>
+                        <div class="user-email"><c:out value="${sessionScope.currentUser.email}" /></div>
                         <c:if test="${sessionScope.currentUser.admin}">
                             <div style="font-size: 0.7rem; color: #fbbf24; font-weight: 800; margin-top: 0.2rem;">👑 ADMINISTRATOR</div>
                         </c:if>
@@ -343,6 +343,7 @@
                 <!-- 2. EDIT PROFILE FORM (Toggled State) -->
                 <div id="profileEditMode" style="${not empty error ? 'display: block;' : 'display: none;'}">
                     <form action="${pageContext.request.contextPath}/profile" method="POST">
+                        <input type="hidden" name="_csrf" value="${csrfToken}">
                         <div class="form-grid-2">
                             <div>
                                 <label class="form-label" for="firstName">First Name *</label>

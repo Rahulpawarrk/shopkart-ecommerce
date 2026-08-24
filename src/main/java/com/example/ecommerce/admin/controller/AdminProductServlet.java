@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import com.example.ecommerce.util.ServletUtils;
 
 /**
  * Controller for Administrative Product Management.
@@ -105,7 +106,11 @@ public class AdminProductServlet extends HttpServlet {
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        int id = Integer.parseInt(request.getParameter("id"));
+        int id = ServletUtils.parseIntParam(request, "id", -1);
+        if (id <= 0) {
+            response.sendRedirect(request.getContextPath() + "/admin/products?error=invalid_id");
+            return;
+        }
         Product product = productService.getProductById(id);
         List<Category> categories = categoryService.getAllCategories(true);
 
@@ -120,16 +125,35 @@ public class AdminProductServlet extends HttpServlet {
         
         Product product = new Product();
         if (isEdit) {
-            product.setProductId(Integer.parseInt(request.getParameter("productId")));
+            int pid = ServletUtils.parseIntParam(request, "productId", -1);
+            if (pid <= 0) {
+                response.sendRedirect(request.getContextPath() + "/admin/products?error=invalid_id");
+                return;
+            }
+            product.setProductId(pid);
         }
 
-        product.setCategoryId(Integer.parseInt(request.getParameter("categoryId")));
+        int catId = ServletUtils.parseIntParam(request, "categoryId", -1);
+        if (catId <= 0) {
+            response.sendRedirect(request.getContextPath() + "/admin/products?error=invalid_category");
+            return;
+        }
+        product.setCategoryId(catId);
         product.setSku(request.getParameter("sku"));
         product.setProductName(request.getParameter("productName"));
         product.setSlug(request.getParameter("slug"));
         product.setDescription(request.getParameter("description"));
         product.setBrand(request.getParameter("brand"));
-        product.setPrice(new BigDecimal(request.getParameter("price")));
+        BigDecimal price = ServletUtils.parseBigDecimalParam(request, "price", BigDecimal.ZERO);
+        if (price.compareTo(BigDecimal.ZERO) <= 0) {
+            request.setAttribute("error", "Price must be greater than zero");
+            request.setAttribute("product", product);
+            request.setAttribute("categories", categoryService.getAllCategories(true));
+            request.setAttribute("isEdit", isEdit);
+            request.getRequestDispatcher("/WEB-INF/views/admin/product-form.jsp").forward(request, response);
+            return;
+        }
+        product.setPrice(price);
         
         String discount = request.getParameter("discountPercentage");
         product.setDiscountPercentage(discount != null && !discount.trim().isEmpty() ? new BigDecimal(discount) : BigDecimal.ZERO);
@@ -145,6 +169,14 @@ public class AdminProductServlet extends HttpServlet {
         // Parse Primary & Secondary Image URLs
         List<ProductImage> images = new ArrayList<>();
         String primaryImgUrl = request.getParameter("primaryImageUrl");
+        if (!isValidImageUrl(primaryImgUrl)) {
+            request.setAttribute("error", "Image URL must start with http:// or https://");
+            request.setAttribute("product", product);
+            request.setAttribute("categories", categoryService.getAllCategories(true));
+            request.setAttribute("isEdit", isEdit);
+            request.getRequestDispatcher("/WEB-INF/views/admin/product-form.jsp").forward(request, response);
+            return;
+        }
         if (primaryImgUrl != null && !primaryImgUrl.trim().isEmpty()) {
             images.add(new ProductImage(primaryImgUrl.trim(), product.getProductName(), 1, true));
         }
@@ -158,8 +190,8 @@ public class AdminProductServlet extends HttpServlet {
             if (isEdit) {
                 productService.updateProduct(product, images);
             } else {
-                int initialStock = Integer.parseInt(request.getParameter("initialStock"));
-                int lowStock = Integer.parseInt(request.getParameter("lowStockThreshold"));
+                int initialStock = ServletUtils.parseIntParam(request, "initialStock", 0);
+                int lowStock = ServletUtils.parseIntParam(request, "lowStockThreshold", 0);
                 productService.createProduct(product, images, initialStock, lowStock);
             }
             response.sendRedirect(request.getContextPath() + "/admin/products?saved=true");
@@ -174,7 +206,11 @@ public class AdminProductServlet extends HttpServlet {
 
     private void toggleStatus(HttpServletRequest request, HttpServletResponse response) 
             throws IOException {
-        int id = Integer.parseInt(request.getParameter("id"));
+        int id = ServletUtils.parseIntParam(request, "id", -1);
+        if (id <= 0) {
+            response.sendRedirect(request.getContextPath() + "/admin/products?error=invalid_id");
+            return;
+        }
         String status = request.getParameter("status");
         if ("ACTIVE".equalsIgnoreCase(status)) {
             productService.activateProduct(id);
@@ -182,5 +218,11 @@ public class AdminProductServlet extends HttpServlet {
             productService.deactivateProduct(id);
         }
         response.sendRedirect(request.getContextPath() + "/admin/products?statusUpdated=true");
+    }
+
+    private boolean isValidImageUrl(String url) {
+        if (url == null || url.isBlank()) return true; // optional fields OK to be empty
+        String lower = url.trim().toLowerCase();
+        return lower.startsWith("https://") || lower.startsWith("http://");
     }
 }

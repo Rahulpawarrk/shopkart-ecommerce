@@ -78,6 +78,7 @@
                     </c:if>
 
                     <form action="${pageContext.request.contextPath}/admin/coupons/${isEdit ? 'edit' : 'add'}" method="POST">
+                        <input type="hidden" name="_csrf" value="${csrfToken}">
                         <c:if test="${isEdit}">
                             <input type="hidden" name="couponId" value="${coupon.couponId}">
                         </c:if>

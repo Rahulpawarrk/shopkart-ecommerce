@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
+import com.example.ecommerce.util.ServletUtils;
 
 /**
  * Controller managing customer Wishlist operations.
@@ -102,7 +103,11 @@ public class WishlistServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         UserSession user = (UserSession) session.getAttribute("currentUser");
 
-        int productId = Integer.parseInt(request.getParameter("productId"));
+        int productId = ServletUtils.parseIntParam(request, "productId", -1);
+        if (productId <= 0) {
+            response.sendRedirect(request.getContextPath() + "/wishlist");
+            return;
+        }
         String returnUrl = request.getParameter("returnUrl");
         boolean isAjax = "XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With")) 
                       || "true".equalsIgnoreCase(request.getParameter("ajax"));
@@ -116,8 +121,9 @@ public class WishlistServlet extends HttpServlet {
                 return;
             }
 
-            if (returnUrl != null && !returnUrl.trim().isEmpty() && !returnUrl.contains("\n") && !returnUrl.contains("\r")) {
-                response.sendRedirect(returnUrl + (returnUrl.contains("?") ? "&" : "?") + "wishlisted=true");
+            if (ServletUtils.isSafeRedirect(returnUrl)) {
+                response.sendRedirect(request.getContextPath() + returnUrl.trim()
+                        + (returnUrl.contains("?") ? "&" : "?") + "wishlisted=true");
             } else {
                 response.sendRedirect(request.getContextPath() + "/wishlist?added=true");
             }
@@ -139,7 +145,11 @@ public class WishlistServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         UserSession user = (UserSession) session.getAttribute("currentUser");
 
-        int productId = Integer.parseInt(request.getParameter("productId"));
+        int productId = ServletUtils.parseIntParam(request, "productId", -1);
+        if (productId <= 0) {
+            response.sendRedirect(request.getContextPath() + "/wishlist");
+            return;
+        }
         wishlistService.removeFromWishlist(user.getUserId(), productId);
 
         response.sendRedirect(request.getContextPath() + "/wishlist?removed=true");
@@ -151,7 +161,11 @@ public class WishlistServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         UserSession user = (UserSession) session.getAttribute("currentUser");
 
-        int productId = Integer.parseInt(request.getParameter("productId"));
+        int productId = ServletUtils.parseIntParam(request, "productId", -1);
+        if (productId <= 0) {
+            response.sendRedirect(request.getContextPath() + "/wishlist");
+            return;
+        }
         int qty = 1;
         String qtyParam = request.getParameter("quantity");
         if (qtyParam != null && !qtyParam.trim().isEmpty()) {

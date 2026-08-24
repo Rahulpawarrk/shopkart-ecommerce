@@ -24,7 +24,7 @@
         <div class="admin-storefront-bar">
             <div class="admin-bar-left">
                 <span class="admin-crown-badge">👑 ADMIN MODE</span>
-                <span>ShopKart Control Center &bull; Logged in as <strong>${sessionScope.currentUser.fullName}</strong></span>
+                <span>ShopKart Control Center &bull; Logged in as <strong><c:out value="${sessionScope.currentUser.fullName}" /></strong></span>
             </div>
             <div class="admin-bar-actions">
                 <a href="${pageContext.request.contextPath}/admin/dashboard" class="admin-bar-btn admin-bar-btn-primary">⚙️ Admin Console</a>
@@ -78,13 +78,13 @@
                     <c:when test="${not empty sessionScope.currentUser}">
                         <div class="user-nav-btn" tabindex="0" role="button">
                             <span class="user-avatar-icon">👤</span>
-                            <span class="user-nav-name">${sessionScope.currentUser.fullName}</span>
+                            <span class="user-nav-name"><c:out value="${sessionScope.currentUser.fullName}" /></span>
                             <span class="arrow-down">▾</span>
                         </div>
                         <div class="account-dropdown">
                             <div class="dropdown-header">
-                                <div class="user-name">Hello, ${sessionScope.currentUser.fullName}</div>
-                                <div class="user-email">${sessionScope.currentUser.email}</div>
+                                <div class="user-name">Hello, <c:out value="${sessionScope.currentUser.fullName}" /></div>
+                                <div class="user-email"><c:out value="${sessionScope.currentUser.email}" /></div>
                                 <c:if test="${sessionScope.currentUser.admin}">
                                     <div style="font-size: 0.7rem; color: #fbbf24; font-weight: 800; margin-top: 0.2rem;">👑 ADMINISTRATOR</div>
                                 </c:if>
@@ -185,16 +185,16 @@
                         <c:forEach var="item" items="${cart.items}">
                             <div class="cart-item-row">
                                 <div class="cart-item-img">
-                                    <img src="${not empty item.primaryImageUrl ? item.primaryImageUrl : 'https://placehold.co/120x120?text=ShopKart'}" alt="${item.productName}">
+                                    <img src="${not empty item.primaryImageUrl ? item.primaryImageUrl : 'https://placehold.co/120x120?text=ShopKart'}" alt="<c:out value='${item.productName}'/>">
                                 </div>
 
                                 <div class="cart-item-info">
                                     <h3 class="cart-item-title">
-                                        <a href="${pageContext.request.contextPath}/product?id=${item.productId}">${item.productName}</a>
+                                        <a href="${pageContext.request.contextPath}/product?id=${item.productId}"><c:out value="${item.productName}"/></a>
                                     </h3>
                                     <div class="cart-item-meta">
                                         <c:if test="${not empty item.sku}">
-                                            <span>SKU: ${item.sku}</span>
+                                            <span>SKU: <c:out value="${item.sku}"/></span>
                                         </c:if>
                                         <span class="stock-status in-stock">✓ In Stock</span>
                                         <span>Eligible for FREE Shipping</span>
@@ -204,12 +204,14 @@
                                     <div class="cart-item-controls">
                                         <div class="qty-stepper">
                                             <form action="${pageContext.request.contextPath}/cart/update" method="POST" style="display:inline;">
+                                                <input type="hidden" name="_csrf" value="${csrfToken}">
                                                 <input type="hidden" name="productId" value="${item.productId}">
                                                 <input type="hidden" name="quantity" value="${item.quantity - 1}">
                                                 <button type="submit" class="qty-btn" ${item.quantity <= 1 ? 'disabled' : ''}>-</button>
                                             </form>
                                             <input type="number" class="qty-input" value="${item.quantity}" readonly>
                                             <form action="${pageContext.request.contextPath}/cart/update" method="POST" style="display:inline;">
+                                                <input type="hidden" name="_csrf" value="${csrfToken}">
                                                 <input type="hidden" name="productId" value="${item.productId}">
                                                 <input type="hidden" name="quantity" value="${item.quantity + 1}">
                                                 <button type="submit" class="qty-btn">+</button>
@@ -221,6 +223,7 @@
                                         </button>
 
                                         <form action="${pageContext.request.contextPath}/cart/remove" method="POST" style="display:inline;">
+                                            <input type="hidden" name="_csrf" value="${csrfToken}">
                                             <input type="hidden" name="productId" value="${item.productId}">
                                             <button type="submit" style="background:none; border:none; color:var(--danger); font-size:0.8rem; font-weight:600; cursor:pointer;">
                                                 🗑️ Delete
@@ -260,11 +263,11 @@
                                 <c:forEach var="sug" items="${suggestedProducts}" begin="0" end="3">
                                     <div style="border: 1px solid var(--border-light); border-radius: 10px; padding: 0.85rem; display: flex; flex-direction: column; justify-content: space-between; background: #fafafa;">
                                         <div style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 0.5rem;">
-                                            <img src="${not empty sug.primaryImageUrl ? sug.primaryImageUrl : 'https://placehold.co/60x60?text=Tech'}" alt="${sug.productName}" style="width: 52px; height: 52px; object-fit: contain; border-radius: 6px; background: #fff; border: 1px solid #f1f5f9;">
+                                            <img src="${not empty sug.primaryImageUrl ? sug.primaryImageUrl : 'https://placehold.co/60x60?text=Tech'}" alt="<c:out value='${sug.productName}'/>" style="width: 52px; height: 52px; object-fit: contain; border-radius: 6px; background: #fff; border: 1px solid #f1f5f9;">
                                             <div style="min-width: 0;">
-                                                <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">${sug.brand}</div>
+                                                <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;"><c:out value="${sug.brand}"/></div>
                                                 <a href="${pageContext.request.contextPath}/product?id=${sug.productId}" style="font-size: 0.82rem; font-weight: 700; color: #1e293b; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.25;">
-                                                    ${sug.productName}
+                                                    <c:out value="${sug.productName}"/>
                                                 </a>
                                             </div>
                                         </div>
@@ -301,7 +304,7 @@
 
                         <c:if test="${cart.couponDiscount > 0}">
                             <div class="summary-row" style="color: var(--success); font-weight: 700;">
-                                <span>🏷️ Coupon Discount (${cart.appliedCouponCode}):</span>
+                                <span>🏷️ Coupon Discount (<c:out value="${cart.appliedCouponCode}"/>):</span>
                                 <span>-₹<fmt:formatNumber value="${cart.couponDiscount}" pattern="#,##0"/></span>
                             </div>
                         </c:if>

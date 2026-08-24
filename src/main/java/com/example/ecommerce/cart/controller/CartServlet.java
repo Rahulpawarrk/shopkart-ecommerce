@@ -21,6 +21,7 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import com.example.ecommerce.util.ServletUtils;
 
 /**
  * Controller managing customer Shopping Cart operations and Promotional
@@ -226,9 +227,9 @@ public class CartServlet extends HttpServlet {
         }
 
         String returnUrl = request.getParameter("returnUrl");
-        if (returnUrl != null && !returnUrl.trim().isEmpty() && !returnUrl.contains("\n")
-                && !returnUrl.contains("\r")) {
-            response.sendRedirect(returnUrl + (returnUrl.contains("?") ? "&" : "?") + "added=true");
+        if (ServletUtils.isSafeRedirect(returnUrl)) {
+            response.sendRedirect(request.getContextPath() + returnUrl.trim()
+                    + (returnUrl.contains("?") ? "&" : "?") + "added=true");
         } else {
             response.sendRedirect(request.getContextPath() + "/cart?added=true");
         }
@@ -245,8 +246,12 @@ public class CartServlet extends HttpServlet {
             return;
         }
 
-        int productId = Integer.parseInt(request.getParameter("productId"));
-        int quantity = Integer.parseInt(request.getParameter("quantity"));
+        int productId = ServletUtils.parseIntParam(request, "productId", -1);
+        int quantity = ServletUtils.parseIntParam(request, "quantity", -1);
+        if (productId <= 0 || quantity < 0) {
+            response.sendRedirect(request.getContextPath() + "/cart?error=invalid_input");
+            return;
+        }
 
         try {
             cartService.updateQuantity(user.getUserId(), productId, quantity);
@@ -277,7 +282,11 @@ public class CartServlet extends HttpServlet {
             return;
         }
 
-        int productId = Integer.parseInt(request.getParameter("productId"));
+        int productId = ServletUtils.parseIntParam(request, "productId", -1);
+        if (productId <= 0) {
+            response.sendRedirect(request.getContextPath() + "/cart");
+            return;
+        }
         cartService.removeFromCart(user.getUserId(), productId);
         Cart cart = cartService.getCart(user.getUserId());
         if (session != null) {

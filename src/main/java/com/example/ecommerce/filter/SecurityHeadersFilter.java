@@ -82,10 +82,11 @@ public class SecurityHeadersFilter implements Filter {
             String cspNonce = java.util.Base64.getEncoder().encodeToString(nonceBytes);
             httpRequest.setAttribute("cspNonce", cspNonce);
 
-            // 5. Content Security Policy (CSP) - Production Security Policy allowing application inline handlers & integrations
+            // 5. Content Security Policy (CSP) — nonce-based to prevent XSS
+            // The nonce is set as request attribute 'cspNonce' for JSPs to use in <script nonce="${cspNonce}">
             httpResponse.setHeader("Content-Security-Policy",
                     "default-src 'self'; " +
-                    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com https://*.razorpay.com https://cdn.jsdelivr.net; " +
+                    "script-src 'self' 'nonce-" + cspNonce + "' https://checkout.razorpay.com https://*.razorpay.com https://cdn.jsdelivr.net; " +
                     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
                     "font-src 'self' https://fonts.gstatic.com data:; " +
                     "img-src 'self' data: https: blob:; " +
@@ -96,6 +97,7 @@ public class SecurityHeadersFilter implements Filter {
                     "form-action 'self'; " +
                     "frame-ancestors 'self'; " +
                     "upgrade-insecure-requests;");
+
 
             // 6. Permissions Policy (restricting sensitive browser features & APIs)
             httpResponse.setHeader("Permissions-Policy",
@@ -110,7 +112,7 @@ public class SecurityHeadersFilter implements Filter {
                     "magnetometer=(), " +
                     "microphone=(), " +
                     "midi=(), " +
-                    "payment=*, " +
+                    "payment=(self), " +
                     "usb=()");
 
             // 7. Cross-Origin Opener Policy (allows Razorpay checkout popup/iframe communication)

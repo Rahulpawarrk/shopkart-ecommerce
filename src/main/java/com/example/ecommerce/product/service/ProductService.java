@@ -77,6 +77,9 @@ public class ProductService {
      */
     public Product createProduct(Product product, List<ProductImage> images, int initialStock, int lowStockThreshold) {
         validateProduct(product, null);
+        
+        if (initialStock < 0) throw new ValidationException("Initial stock cannot be negative.");
+        if (lowStockThreshold < 0) throw new ValidationException("Low stock threshold cannot be negative.");
 
         // SKU Uniqueness
         if (productDAO.existsBySku(product.getSku(), null)) {
@@ -202,6 +205,12 @@ public class ProductService {
         if (product.getDiscountPercentage() != null && 
             (product.getDiscountPercentage().compareTo(BigDecimal.ZERO) < 0 || product.getDiscountPercentage().compareTo(BigDecimal.valueOf(100)) > 0)) {
             throw new ValidationException("Discount percentage must be between 0% and 100%.");
+        }
+        if (product.getTaxPercentage() != null && product.getTaxPercentage().compareTo(BigDecimal.ZERO) < 0) {
+            throw new ValidationException("Tax percentage cannot be negative.");
+        }
+        if (product.getWeightKg() != null && product.getWeightKg().compareTo(BigDecimal.ZERO) < 0) {
+            throw new ValidationException("Product weight cannot be negative.");
         }
     }
 

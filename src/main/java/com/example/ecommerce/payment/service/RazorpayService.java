@@ -35,10 +35,10 @@ public class RazorpayService {
             logger.info("Razorpay Payment Gateway initialized in LIVE/CONFIGURED mode with Key ID: {}", maskKey(this.keyId));
         } else {
             // Default Sandbox Test Mode Key for instant plug-and-play local development
-            this.keyId = "rzp_test_ShopKartSandbox";
-            this.keySecret = "ShopKartTestSecretKey123";
+            this.keyId = "";
+            this.keySecret = "";
             this.isConfigured = false;
-            logger.info("Razorpay credentials not found in environment. Running in Enhanced Sandbox Simulation mode with full UPI & QR support.");
+            logger.error("Razorpay Payment Gateway is disabled (credentials not found in environment). Running in Simulation mode.");
         }
     }
 

@@ -137,6 +137,15 @@ public class CouponService {
         if (coupon.getStartDate() != null && coupon.getEndDate() != null && coupon.getStartDate().isAfter(coupon.getEndDate())) {
             errors.add("Start date cannot be after end date.");
         }
+        if (coupon.getMinSpend() != null && coupon.getMinSpend().compareTo(BigDecimal.ZERO) < 0) {
+            throw new ValidationException("Minimum spend cannot be negative.");
+        }
+        if (coupon.getMaxDiscount() != null && coupon.getMaxDiscount().compareTo(BigDecimal.ZERO) < 0) {
+            throw new ValidationException("Maximum discount cannot be negative.");
+        }
+        if (coupon.getUsageLimit() != null && coupon.getUsageLimit() < 0) {
+            throw new ValidationException("Usage limit cannot be negative.");
+        }
         if (!errors.isEmpty()) {
             throw new ValidationException(errors);
         }

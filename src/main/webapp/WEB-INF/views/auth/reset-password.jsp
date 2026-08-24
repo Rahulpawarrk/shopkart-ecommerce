@@ -160,6 +160,7 @@
             </c:if>
 
             <form action="${pageContext.request.contextPath}/reset-password" method="POST" id="resetForm" novalidate>
+                <input type="hidden" name="_csrf" value="${csrfToken}">
                 <!-- Hidden Token / Session Identifiers -->
                 <c:if test="${not empty token}">
                     <input type="hidden" name="token" value="<c:out value='${token}'/>">

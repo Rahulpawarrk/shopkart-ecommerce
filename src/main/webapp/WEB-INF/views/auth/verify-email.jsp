@@ -221,6 +221,7 @@
             </c:if>
 
             <form action="${pageContext.request.contextPath}/verify-email" method="POST" id="verifyEmailForm">
+                <input type="hidden" name="_csrf" value="${csrfToken}">
                 <div>
                     <label for="otp"
                         style="display: block; font-size: 0.85rem; font-weight: 700; color: #111827; margin-bottom: 0.5rem;">

@@ -64,13 +64,13 @@
                     <c:when test="${not empty sessionScope.currentUser}">
                         <div class="user-nav-btn" tabindex="0" role="button">
                             <span class="user-avatar-icon">👤</span>
-                            <span class="user-nav-name">${sessionScope.currentUser.fullName}</span>
+                            <span class="user-nav-name"><c:out value="${sessionScope.currentUser.fullName}" /></span>
                             <span class="arrow-down">▾</span>
                         </div>
                         <div class="account-dropdown">
                             <div class="dropdown-header">
-                                <div class="user-name">Hello, ${sessionScope.currentUser.fullName}</div>
-                                <div class="user-email">${sessionScope.currentUser.email}</div>
+                                <div class="user-name">Hello, <c:out value="${sessionScope.currentUser.fullName}" /></div>
+                                <div class="user-email"><c:out value="${sessionScope.currentUser.email}" /></div>
                                 <c:if test="${sessionScope.currentUser.admin}">
                                     <div style="font-size: 0.7rem; color: #fbbf24; font-weight: 800; margin-top: 0.2rem;">👑 ADMINISTRATOR</div>
                                 </c:if>
@@ -186,10 +186,10 @@
 
                                     <a href="${pageContext.request.contextPath}/product?id=${item.productId}">
                                         <div class="product-img-container">
-                                            <img src="${item.primaryImageUrl}" alt="${item.productName}">
+                                            <img src="${item.primaryImageUrl}" alt="<c:out value='${item.productName}'/>">
                                         </div>
-                                        <div class="product-brand">${item.brand}</div>
-                                        <div class="product-title">${item.productName}</div>
+                                        <div class="product-brand"><c:out value="${item.brand}"/></div>
+                                        <div class="product-title"><c:out value="${item.productName}"/></div>
                                     </a>
 
                                     <div class="price-row">
@@ -202,6 +202,7 @@
                                     <div style="display: flex; gap: 0.4rem; margin-top: auto;">
                                         <!-- Move to Cart -->
                                         <form action="${pageContext.request.contextPath}/wishlist/move-to-cart" method="POST" style="flex:1; margin:0;">
+                                            <input type="hidden" name="_csrf" value="${csrfToken}">
                                             <input type="hidden" name="productId" value="${item.productId}">
                                             <button type="submit" class="card-add-cart-btn" style="width:100%;" title="Move to Cart">
                                                 🛒 Add Cart
@@ -215,6 +216,7 @@
 
                                         <!-- Remove Item -->
                                         <form action="${pageContext.request.contextPath}/wishlist/remove" method="POST" style="margin:0;">
+                                            <input type="hidden" name="_csrf" value="${csrfToken}">
                                             <input type="hidden" name="productId" value="${item.productId}">
                                             <button type="submit" style="background:#fee2e2; border:1px solid #fca5a5; color:var(--danger); border-radius:var(--radius-sm); padding:0.55rem 0.65rem; cursor:pointer; font-weight:700;" title="Remove from Wishlist">
                                                 🗑️

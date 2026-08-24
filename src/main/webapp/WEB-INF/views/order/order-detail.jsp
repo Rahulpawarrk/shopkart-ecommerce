@@ -709,13 +709,13 @@
                                 <c:when test="${not empty sessionScope.currentUser}">
                                     <div class="user-nav-btn" tabindex="0" role="button">
                                         <span class="user-avatar-icon">👤</span>
-                                        <span class="user-nav-name">${sessionScope.currentUser.fullName}</span>
+                                        <span class="user-nav-name"><c:out value="${sessionScope.currentUser.fullName}" /></span>
                                         <span class="arrow-down">▾</span>
                                     </div>
                                     <div class="account-dropdown">
                                         <div class="dropdown-header">
-                                            <div class="user-name">Hello, ${sessionScope.currentUser.fullName}</div>
-                                            <div class="user-email">${sessionScope.currentUser.email}</div>
+                                            <div class="user-name">Hello, <c:out value="${sessionScope.currentUser.fullName}" /></div>
+                                            <div class="user-email"><c:out value="${sessionScope.currentUser.email}" /></div>
                                             <c:if test="${sessionScope.currentUser.admin}">
                                                 <div
                                                     style="font-size: 0.7rem; color: #fbbf24; font-weight: 800; margin-top: 0.2rem;">
@@ -1538,6 +1538,7 @@
                                                         <c:if test="${order.paymentStatus != 'PAID'}">
                                                             <div style="margin-top: 0.45rem; margin-bottom: 0.45rem;">
                                                                 <form action="${pageContext.request.contextPath}/payment/gateway" method="POST" style="margin: 0; display: inline;">
+                                                                    <input type="hidden" name="_csrf" value="${csrfToken}">
                                                                     <input type="hidden" name="orderId" value="${order.orderId}">
                                                                     <button type="submit" class="btn-cod-paynow" style="border: none; cursor: pointer;" title="Complete online payment now via UPI, Cards, Net Banking">
                                                                         ⚡ Pay Now ➔
@@ -1786,6 +1787,7 @@
                         <c:if test="${order.orderStatus == 'PENDING' || order.orderStatus == 'CONFIRMED'}">
                             <form action="${pageContext.request.contextPath}/order/cancel" method="POST"
                                 onsubmit="return confirm('Are you sure you want to cancel Order #${order.orderNumber}? This cannot be undone.');">
+                                <input type="hidden" name="_csrf" value="${csrfToken}">
                                 <input type="hidden" name="orderId" value="${order.orderNumber}">
                                 <button type="submit"
                                     style="background: #fee2e2; color: #b91c1c; border: 1px solid #f87171; padding: 0.6rem 1.25rem; border-radius: var(--radius-md); font-weight: 700; cursor: pointer; transition: var(--transition-fast);">

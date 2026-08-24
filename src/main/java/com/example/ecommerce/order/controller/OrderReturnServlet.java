@@ -120,6 +120,18 @@ public class OrderReturnServlet extends HttpServlet {
         try {
             Part part = request.getPart("returnImage");
             if (part != null && part.getSize() > 0 && part.getSubmittedFileName() != null && !part.getSubmittedFileName().trim().isEmpty()) {
+                
+                // Magic byte validation — verify actual file content matches expected image type
+                byte[] header = new byte[12];
+                try (java.io.InputStream is = part.getInputStream()) {
+                    is.read(header);
+                }
+                if (!isValidImageMagicBytes(header)) {
+                    request.setAttribute("error", "Invalid image file. Only JPEG, PNG, WEBP, and GIF are accepted.");
+                    response.sendRedirect(request.getContextPath() + "/order?id=" + order.getOrderNumber() + "&returnError=" + URLEncoder.encode("Invalid image file.", StandardCharsets.UTF_8));
+                    return;
+                }
+
                 imageUrl = saveUploadedReturnImage(request, part, user.getUserId(), orderId);
             }
         } catch (Exception ex) {
@@ -175,5 +187,18 @@ public class OrderReturnServlet extends HttpServlet {
             logger.error("Failed to save return image upload", e);
             return null;
         }
+    }
+
+    private boolean isValidImageMagicBytes(byte[] header) {
+        if (header == null || header.length < 4) return false;
+        // JPEG: FF D8 FF
+        if ((header[0] & 0xFF) == 0xFF && (header[1] & 0xFF) == 0xD8 && (header[2] & 0xFF) == 0xFF) return true;
+        // PNG: 89 50 4E 47
+        if ((header[0] & 0xFF) == 0x89 && (header[1] & 0xFF) == 0x50 && (header[2] & 0xFF) == 0x4E && (header[3] & 0xFF) == 0x47) return true;
+        // GIF: 47 49 46 38
+        if ((header[0] & 0xFF) == 0x47 && (header[1] & 0xFF) == 0x49 && (header[2] & 0xFF) == 0x46 && (header[3] & 0xFF) == 0x38) return true;
+        // WEBP: 52 49 46 46 ... 57 45 42 50
+        if ((header[0] & 0xFF) == 0x52 && (header[1] & 0xFF) == 0x49 && (header[2] & 0xFF) == 0x46 && (header[3] & 0xFF) == 0x46) return true;
+        return false;
     }
 }

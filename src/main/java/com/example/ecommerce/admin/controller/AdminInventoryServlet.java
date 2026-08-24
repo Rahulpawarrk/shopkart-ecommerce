@@ -15,6 +15,9 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.util.Map;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import com.example.ecommerce.util.ServletUtils;
 
 /**
  * Controller for Administrative Inventory Management and Stock Audit History.
@@ -92,7 +95,13 @@ public class AdminInventoryServlet extends HttpServlet {
     private void showTransactionHistory(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
-        int productId = Integer.parseInt(request.getParameter("productId"));
+        int productId;
+        try {
+            productId = Integer.parseInt(request.getParameter("productId"));
+        } catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/admin/inventory?error=invalid_input");
+            return;
+        }
         int page = 1;
         String pageParam = request.getParameter("page");
         if (pageParam != null && !pageParam.trim().isEmpty()) {
@@ -116,8 +125,12 @@ public class AdminInventoryServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         UserSession user = (UserSession) session.getAttribute("currentUser");
 
-        int productId = Integer.parseInt(request.getParameter("productId"));
-        int qty = Integer.parseInt(request.getParameter("quantity"));
+        int productId = ServletUtils.parseIntParam(request, "productId", -1);
+        int qty = ServletUtils.parseIntParam(request, "quantity", -1);
+        if (productId <= 0 || qty < 0) {
+            response.sendRedirect(request.getContextPath() + "/admin/inventory?error=Invalid+input");
+            return;
+        }
         String supplierRef = request.getParameter("reference");
         String remarks = request.getParameter("remarks");
 
@@ -128,7 +141,7 @@ public class AdminInventoryServlet extends HttpServlet {
             
             response.sendRedirect(request.getContextPath() + "/admin/inventory?restocked=true");
         } catch (ValidationException ve) {
-            response.sendRedirect(request.getContextPath() + "/admin/inventory?error=" + ve.getMessage());
+            response.sendRedirect(request.getContextPath() + "/admin/inventory?error=" + URLEncoder.encode(ve.getMessage(), StandardCharsets.UTF_8));
         }
     }
 
@@ -138,22 +151,30 @@ public class AdminInventoryServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         UserSession user = (UserSession) session.getAttribute("currentUser");
 
-        int productId = Integer.parseInt(request.getParameter("productId"));
-        int newQty = Integer.parseInt(request.getParameter("newQuantity"));
+        int productId = ServletUtils.parseIntParam(request, "productId", -1);
+        int newQty = ServletUtils.parseIntParam(request, "newQuantity", -1);
+        if (productId <= 0 || newQty < 0) {
+            response.sendRedirect(request.getContextPath() + "/admin/inventory?error=Invalid+input");
+            return;
+        }
         String reason = request.getParameter("remarks");
 
         try {
             inventoryService.adjustStock(productId, newQty, reason, user.getUserId());
             response.sendRedirect(request.getContextPath() + "/admin/inventory?adjusted=true");
         } catch (ValidationException ve) {
-            response.sendRedirect(request.getContextPath() + "/admin/inventory?error=" + ve.getMessage());
+            response.sendRedirect(request.getContextPath() + "/admin/inventory?error=" + URLEncoder.encode(ve.getMessage(), StandardCharsets.UTF_8));
         }
     }
 
     private void handleThresholdUpdate(HttpServletRequest request, HttpServletResponse response) 
             throws IOException {
-        int productId = Integer.parseInt(request.getParameter("productId"));
-        int threshold = Integer.parseInt(request.getParameter("lowStockThreshold"));
+        int productId = ServletUtils.parseIntParam(request, "productId", -1);
+        int threshold = ServletUtils.parseIntParam(request, "lowStockThreshold", -1);
+        if (productId <= 0 || threshold < 0) {
+            response.sendRedirect(request.getContextPath() + "/admin/inventory?error=Invalid+input");
+            return;
+        }
 
         inventoryService.updateLowStockThreshold(productId, threshold);
         response.sendRedirect(request.getContextPath() + "/admin/inventory?thresholdUpdated=true");

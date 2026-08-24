@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import com.example.ecommerce.util.ServletUtils;
 
 /**
  * Controller for Admin Order Return and Replacement Moderation.
@@ -52,7 +53,11 @@ public class AdminReturnServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
-        int returnId = Integer.parseInt(request.getParameter("returnId"));
+        int returnId = ServletUtils.parseIntParam(request, "returnId", -1);
+        if (returnId <= 0) {
+            response.sendRedirect(request.getContextPath() + "/admin/returns?error=invalid_id");
+            return;
+        }
         String newStatus = request.getParameter("returnStatus");
         String adminNotes = request.getParameter("adminNotes");
         String refundAmountStr = request.getParameter("refundAmount");

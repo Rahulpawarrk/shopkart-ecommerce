@@ -510,8 +510,8 @@
                     <a href="${pageContext.request.contextPath}/" style="color: var(--primary);">Home</a> &gt;
                     <a href="${pageContext.request.contextPath}/category/${product.categoryId}"
                         style="color: var(--primary);">${not empty product.category ? product.category.categoryName : 'Catalog'}</a> &gt;
-                    <span>${product.brand}</span> &gt;
-                    <span>${product.productName}</span>
+                    <span><c:out value="${product.brand}"/></span> &gt;
+                    <span><c:out value="${product.productName}"/></span>
                 </div>
 
                 <!-- MAIN PRODUCT DETAIL CONTAINER (Amazon 3-Column Layout) -->
@@ -533,7 +533,7 @@
                         <div class="pdp-main-image-wrapper" id="pdpMainImgWrapper">
                             <img id="pdpMainImg"
                                 src="${not empty product.primaryImageUrl ? product.primaryImageUrl : 'https://placehold.co/500x500?text=TechZone'}"
-                                alt="${product.productName}">
+                                alt="<c:out value='${product.productName}'/>">
                         </div>
                     </div>
 
@@ -541,8 +541,8 @@
                     <div class="pdp-details-column">
                         <div>
                             <a href="${pageContext.request.contextPath}/products?brand=${product.brand}"
-                                class="pdp-brand-tag">Visit the ${product.brand} Store</a>
-                            <h1 class="pdp-title">${product.productName}</h1>
+                                class="pdp-brand-tag">Visit the <c:out value="${product.brand}"/> Store</a>
+                            <h1 class="pdp-title"><c:out value="${product.productName}"/></h1>
                         </div>
 
                         <div class="pdp-rating-row">
@@ -623,7 +623,7 @@
                         <div class="pdp-highlights">
                             <h4>About this item</h4>
                             <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 1rem;">
-                                ${product.description}
+                                <c:out value="${product.description}" />
                             </p>
                             <ul>
                                 <li>100% Original Brand Product with Manufacturer Warranty</li>
@@ -918,14 +918,14 @@
                                                         <c:choose>
                                                             <c:when test="${not empty rev.imageUrls}">
                                                                 <c:forEach var="img" items="${rev.imageUrls}">
-                                                                    <div class="review-photo-thumb" onclick="openReviewLightbox('${img}', '<c:out value="${rev.title}" />')">
-                                                                        <img src="${img}" alt="Customer photo for ${product.productName}">
+                                                                    <div class="review-photo-thumb" data-img="<c:out value='${img}'/>" data-title="<c:out value='${rev.title}'/>" onclick="openReviewLightbox(this.dataset.img, this.dataset.title)">
+                                                                        <img src="${img}" alt="Customer photo for <c:out value='${product.productName}'/>">
                                                                     </div>
                                                                 </c:forEach>
                                                             </c:when>
                                                             <c:when test="${not empty rev.imageUrl}">
-                                                                <div class="review-photo-thumb" onclick="openReviewLightbox('${rev.imageUrl}', '<c:out value="${rev.title}" />')">
-                                                                    <img src="${rev.imageUrl}" alt="Customer photo for ${product.productName}">
+                                                                <div class="review-photo-thumb" data-img="<c:out value='${rev.imageUrl}'/>" data-title="<c:out value='${rev.title}'/>" onclick="openReviewLightbox(this.dataset.img, this.dataset.title)">
+                                                                    <img src="${rev.imageUrl}" alt="Customer photo for <c:out value='${product.productName}'/>">
                                                                 </div>
                                                             </c:when>
                                                         </c:choose>
@@ -939,7 +939,7 @@
                                             <div style="font-size: 3rem; margin-bottom: 0.75rem;">💬</div>
                                             <h3 style="font-size: 1.25rem; font-weight: 800; color: #0f172a; margin: 0 0 0.4rem;">No Customer Reviews Yet</h3>
                                             <p style="color: #64748b; font-size: 0.92rem; max-width: 460px; margin: 0 auto 1.25rem;">
-                                                Be the first verified customer to share your thoughts and photos about the ${product.productName}!
+                                                Be the first verified customer to share your thoughts and photos about the <c:out value="${product.productName}"/>!
                                             </p>
                                         </div>
                                     </c:otherwise>
@@ -963,6 +963,7 @@
                                         </div>
 
                                         <form action="${pageContext.request.contextPath}/review" method="POST" enctype="multipart/form-data">
+                                            <input type="hidden" name="_csrf" value="${csrfToken}">
                                             <input type="hidden" name="productId" value="${product.productId}">
                                             <c:if test="${not empty deliveredOrderId}">
                                                 <input type="hidden" name="orderId" value="${deliveredOrderId}">

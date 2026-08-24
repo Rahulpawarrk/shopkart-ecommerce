@@ -153,6 +153,7 @@
                 
                 <!-- Option 1: 1-Click Retry Payment -->
                 <form action="${pageContext.request.contextPath}/payment/failure/action" method="POST" style="margin: 0;">
+                    <input type="hidden" name="_csrf" value="${csrfToken}">
                     <input type="hidden" name="action" value="retry">
                     <input type="hidden" name="orderId" value="${order.orderId}">
                     <button type="submit" class="btn-retry" style="width: 100%; justify-content: center;">
@@ -162,6 +163,7 @@
 
                 <!-- Option 2: 1-Click Switch to Cash on Delivery -->
                 <form action="${pageContext.request.contextPath}/payment/failure/action" method="POST" style="margin: 0;">
+                    <input type="hidden" name="_csrf" value="${csrfToken}">
                     <input type="hidden" name="action" value="switch_cod">
                     <input type="hidden" name="orderId" value="${order.orderId}">
                     <button type="submit" class="btn-cod" style="width: 100%; justify-content: center;">

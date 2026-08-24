@@ -56,6 +56,9 @@ public class CartService {
         if (quantity <= 0) {
             throw new ValidationException("Quantity must be at least 1.");
         }
+        if (quantity > 100) {
+            throw new ValidationException("Cannot add more than 100 units of a single product at once.");
+        }
 
         // 1. Verify Product is Active
         Product product = productDAO.findById(productId)
@@ -107,6 +110,9 @@ public class CartService {
         if (newQuantity <= 0) {
             removeFromCart(userId, productId);
             return;
+        }
+        if (newQuantity > 100) {
+            throw new ValidationException("Cannot add more than 100 units of a single product at once.");
         }
 
         Inventory inventory = inventoryDAO.findByProductId(productId)

@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import com.example.ecommerce.util.ServletUtils;
 
 /**
  * Controller for Administrative Review Moderation.
@@ -67,12 +68,14 @@ public class AdminReviewServlet extends HttpServlet {
         String path = request.getServletPath();
 
         if ("/admin/reviews/approve".equals(path)) {
-            int reviewId = Integer.parseInt(request.getParameter("reviewId"));
+            int reviewId = ServletUtils.parseIntParam(request, "reviewId", -1);
+            if (reviewId <= 0) return;
             boolean approved = Boolean.parseBoolean(request.getParameter("approved"));
             reviewService.setReviewApproval(reviewId, approved);
             response.sendRedirect(request.getContextPath() + "/admin/reviews?updated=true");
         } else if ("/admin/reviews/delete".equals(path)) {
-            int reviewId = Integer.parseInt(request.getParameter("reviewId"));
+            int reviewId = ServletUtils.parseIntParam(request, "reviewId", -1);
+            if (reviewId <= 0) return;
             reviewService.deleteReview(reviewId);
             response.sendRedirect(request.getContextPath() + "/admin/reviews?deleted=true");
         } else {

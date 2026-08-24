@@ -139,8 +139,23 @@ public class CouponDAO {
         }
     }
 
-    public void incrementUsedCount(int couponId, Connection conn) throws SQLException {
-        String sql = "UPDATE dbo.coupons SET current_usage = current_usage + 1, updated_at = CURRENT_TIMESTAMP WHERE coupon_id = ?";
+    public boolean incrementUsedCountAtomic(int couponId, Connection conn) throws SQLException {
+        String sql = "UPDATE dbo.coupons SET current_usage = current_usage + 1, "
+                   + "updated_at = CURRENT_TIMESTAMP "
+                   + "WHERE coupon_id = ? AND (usage_limit IS NULL OR current_usage < usage_limit)";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, couponId);
+            return stmt.executeUpdate() > 0; // returns false if limit was already reached
+        }
+    }
+
+    /**
+     * Atomically decrements the usage count of a coupon when an order is cancelled.
+     * Will not decrement below 0.
+     */
+    public void decrementUsedCount(int couponId, Connection conn) throws SQLException {
+        String sql = "UPDATE dbo.coupons SET current_usage = GREATEST(current_usage - 1, 0), "
+                   + "updated_at = CURRENT_TIMESTAMP WHERE coupon_id = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, couponId);
             stmt.executeUpdate();

@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.util.Map;
+import com.example.ecommerce.util.ServletUtils;
 
 /**
  * Controller for Administrative Order Management and Status Transitions.
@@ -94,7 +95,11 @@ public class AdminOrderServlet extends HttpServlet {
     private void showOrderDetail(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
-        int orderId = Integer.parseInt(request.getParameter("id"));
+        int orderId = ServletUtils.parseIntParam(request, "id", -1);
+        if (orderId <= 0) {
+            response.sendRedirect(request.getContextPath() + "/admin/orders?error=invalid_id");
+            return;
+        }
         Order order = orderService.getAdminOrderById(orderId);
         request.setAttribute("order", order);
 
@@ -107,8 +112,19 @@ public class AdminOrderServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         UserSession adminUser = (UserSession) session.getAttribute("currentUser");
 
-        int orderId = Integer.parseInt(request.getParameter("orderId"));
-        OrderStatus newStatus = OrderStatus.valueOf(request.getParameter("newStatus"));
+        int orderId = ServletUtils.parseIntParam(request, "orderId", -1);
+        if (orderId <= 0) {
+            response.sendRedirect(request.getContextPath() + "/admin/orders?error=invalid_id");
+            return;
+        }
+        
+        OrderStatus newStatus;
+        try {
+            newStatus = OrderStatus.valueOf(request.getParameter("newStatus"));
+        } catch (IllegalArgumentException e) {
+            response.sendRedirect(request.getContextPath() + "/admin/orders/detail?id=" + orderId + "&error=invalid_status");
+            return;
+        }
         String remarks = request.getParameter("remarks");
         String courierPartner = request.getParameter("courierPartner");
         String trackingNumber = request.getParameter("trackingNumber");

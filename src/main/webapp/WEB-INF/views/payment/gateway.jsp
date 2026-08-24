@@ -339,7 +339,7 @@
 
         <%-- Order summary --%>
         <div class="gw-summary">
-            <span>Order Reference<b>#${order.orderNumber}</b></span>
+            <span>Order Reference<b>#<c:out value="${order.orderNumber}"/></b></span>
             <span>Customer<b><c:out value="${sessionScope.currentUser.fullName}"/></b></span>
             <span>Items<b><c:out value="${order.totalItems}" default="1"/> Items</b></span>
         </div>
@@ -372,6 +372,7 @@
         <!-- Secondary Actions (Switch to COD or return to cart) -->
         <div class="secondary-actions">
             <form action="${pageContext.request.contextPath}/payment/failure/action" method="POST" style="margin:0; display:inline;">
+                <input type="hidden" name="_csrf" value="${csrfToken}">
                 <input type="hidden" name="action" value="switch_cod">
                 <input type="hidden" name="orderId" value="${order.orderId}">
                 <button type="submit" style="background:none; border:none; color:#059669; font-weight:800; font-size:0.85rem; cursor:pointer; text-decoration:underline;">
@@ -421,32 +422,48 @@
     </div>
 </div>
 
+<div id="razorpayConfig" style="display:none;" 
+     data-key-id="<c:out value='${razorpayKeyId}'/>"
+     data-amount="<c:out value='${razorpayAmountInPaise}'/>"
+     data-order-id="<c:out value='${razorpayOrderId}'/>"
+     data-order-number="<c:out value='${order.orderNumber}'/>"
+     data-db-order-id="<c:out value='${order.orderId}'/>"
+     data-customer-name="<c:out value='${sessionScope.currentUser.fullName}' default='Customer'/>"
+     data-customer-email="<c:out value='${sessionScope.currentUser.email}' default='customer@example.com'/>"
+     data-customer-phone="<c:out value='${not empty order.shippingPhone ? order.shippingPhone : sessionScope.currentUser.phone}' default='9876543210'/>">
+</div>
 <script nonce="${cspNonce}">
     let paymentAttempts = 1;
     const MAX_PAYMENT_ATTEMPTS = 3;
 
     // Real-Time Razorpay Standard Checkout Modal
     function launchRazorpayCheckout() {
-        const keyId = "${razorpayKeyId}";
-        const amountPaise = ${razorpayAmountInPaise};
-        const rzpOrderId = "${razorpayOrderId}";
+        const configDiv = document.getElementById('razorpayConfig');
+        const keyId = configDiv.dataset.keyId;
+        const amountPaise = parseInt(configDiv.dataset.amount, 10);
+        const rzpOrderId = configDiv.dataset.orderId;
+        const orderNumber = configDiv.dataset.orderNumber;
+        const dbOrderId = configDiv.dataset.dbOrderId;
+        const customerName = configDiv.dataset.customerName;
+        const customerEmail = configDiv.dataset.customerEmail;
+        const customerPhone = configDiv.dataset.customerPhone;
 
         const options = {
             "key": keyId,
             "amount": amountPaise,
             "currency": "INR",
             "name": "ShopKart India",
-            "description": "Order #${order.orderNumber}",
+            "description": "Order #" + orderNumber,
             "image": "${pageContext.request.contextPath}/assets/images/logo-dark.svg",
             "order_id": rzpOrderId,
             "prefill": {
-                "name": "<c:out value='${sessionScope.currentUser.fullName}' default='Customer'/>",
-                "email": "<c:out value='${sessionScope.currentUser.email}' default='customer@example.com'/>",
-                "contact": "<c:out value='${not empty order.shippingPhone ? order.shippingPhone : sessionScope.currentUser.phone}' default='9876543210'/>"
+                "name": customerName,
+                "email": customerEmail,
+                "contact": customerPhone
             },
             "notes": {
-                "ecommerce_order_id": "${order.orderId}",
-                "order_number": "${order.orderNumber}",
+                "ecommerce_order_id": dbOrderId,
+                "order_number": orderNumber,
                 "attempt_number": String(paymentAttempts)
             },
             "theme": {
@@ -485,8 +502,9 @@
     // Handles user cancelling or bank decline: logs to server for admin audit & updates attempt limits
     function handlePaymentDismissed(reason) {
         // Asynchronously log to server for Admin Reconciliation Log without navigating away
+        const dbOrderId = document.getElementById('razorpayConfig').dataset.dbOrderId;
         const formData = new URLSearchParams();
-        formData.append('orderId', '${order.orderId}');
+        formData.append('orderId', dbOrderId);
         formData.append('status', 'FAILED');
         formData.append('reason', (reason || 'Customer cancelled transaction window') + ' (Attempt ' + paymentAttempts + ' of ' + MAX_PAYMENT_ATTEMPTS + ')');
 

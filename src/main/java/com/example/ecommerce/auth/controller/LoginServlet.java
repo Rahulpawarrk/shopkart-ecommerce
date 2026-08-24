@@ -2,6 +2,7 @@ package com.example.ecommerce.auth.controller;
 
 import com.example.ecommerce.auth.model.UserSession;
 import com.example.ecommerce.auth.service.AuthService;
+import com.example.ecommerce.auth.service.LoginRateLimiter;
 import com.example.ecommerce.exception.ValidationException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -55,6 +56,15 @@ public class LoginServlet extends HttpServlet {
         
         String email = request.getParameter("email");
         String password = request.getParameter("password");
+        
+        // Rate limit check — block after 5 failed attempts in 15 minutes
+        String remoteIp = request.getRemoteAddr();
+        if (LoginRateLimiter.isBlocked(remoteIp, email)) {
+            long remaining = LoginRateLimiter.getRemainingLockoutMinutes(remoteIp, email);
+            request.setAttribute("error", "Too many failed login attempts. Please try again in " + remaining + " minute(s).");
+            request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
+            return;
+        }
 
         try {
             UserSession userSession = authService.login(email, password);
@@ -81,6 +91,7 @@ public class LoginServlet extends HttpServlet {
             }
 
             logger.info("User {} logged in successfully. Roles: {}", userSession.getEmail(), userSession.getRoles());
+            LoginRateLimiter.clearFailures(remoteIp, email);
 
             // Redirect logic with Open Redirect prevention
             if (userSession.isAdmin()) {
@@ -92,12 +103,14 @@ public class LoginServlet extends HttpServlet {
             }
 
         } catch (ValidationException ve) {
+            LoginRateLimiter.recordFailure(remoteIp, email);
             logger.warn("Authentication failed for {}: {}", email, ve.getMessage());
             request.setAttribute("error", ve.getMessage());
             request.setAttribute("email", email);
             request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
 
         } catch (Exception e) {
+            LoginRateLimiter.recordFailure(remoteIp, email);
             logger.error("Unexpected error during login", e);
             request.setAttribute("error", "An internal error occurred during login. Please try again.");
             request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);

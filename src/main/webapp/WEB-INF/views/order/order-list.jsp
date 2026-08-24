@@ -68,13 +68,13 @@
                     <c:when test="${not empty sessionScope.currentUser}">
                         <div class="user-nav-btn" tabindex="0" role="button">
                             <span class="user-avatar-icon">👤</span>
-                            <span class="user-nav-name">${sessionScope.currentUser.fullName}</span>
+                            <span class="user-nav-name"><c:out value="${sessionScope.currentUser.fullName}" /></span>
                             <span class="arrow-down">▾</span>
                         </div>
                         <div class="account-dropdown">
                             <div class="dropdown-header">
-                                <div class="user-name">Hello, ${sessionScope.currentUser.fullName}</div>
-                                <div class="user-email">${sessionScope.currentUser.email}</div>
+                                <div class="user-name">Hello, <c:out value="${sessionScope.currentUser.fullName}" /></div>
+                                <div class="user-email"><c:out value="${sessionScope.currentUser.email}" /></div>
                                 <c:if test="${sessionScope.currentUser.admin}">
                                     <div style="font-size: 0.7rem; color: #fbbf24; font-weight: 800; margin-top: 0.2rem;">👑 ADMINISTRATOR</div>
                                 </c:if>
@@ -222,11 +222,11 @@
                     <div id="ordersCardsContainer">
                         <c:forEach var="order" items="${pagination.items}">
                             <div class="order-card-wrapper order-record-card" 
-                                 data-status="${order.orderStatus}"
+                                 data-status="<c:out value='${order.orderStatus}'/>"
                                  data-timestamp="${order.createdAtEpochMillis}"
                                  data-amount="${order.totalAmount}"
-                                 data-order-number="${order.orderNumber}"
-                                 data-search="${order.orderNumber} ${order.shippingFullName} ${order.shippingCity} ${order.shippingPostalCode}">
+                                 data-order-number="<c:out value='${order.orderNumber}'/>"
+                                 data-search="<c:out value='${order.orderNumber}'/> <c:out value='${order.shippingFullName}'/> <c:out value='${order.shippingCity}'/> <c:out value='${order.shippingPostalCode}'/>">
                                 <!-- Card Header -->
                                 <div class="order-card-top">
                                     <div class="order-meta-col">
@@ -378,9 +378,11 @@
                 </c:otherwise>
             </c:choose>
 
+            <div id="orderListPageConfig" data-filter="<c:out value='${selectedStatus}'/>" data-sort="<c:out value='${selectedSort}'/>" style="display:none;"></div>
             <script nonce="${cspNonce}">
-                let currentFilter = '${selectedStatus}';
-                let currentSort = '${selectedSort}';
+                const orderPageConfig = document.getElementById('orderListPageConfig')?.dataset || {};
+                let currentFilter = orderPageConfig.filter || 'ALL';
+                let currentSort = orderPageConfig.sort || 'newest';
                 let currentSearch = '';
 
                 function filterOrders(status, btn) {

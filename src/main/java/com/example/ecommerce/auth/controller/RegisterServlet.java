@@ -79,9 +79,13 @@ public class RegisterServlet extends HttpServlet {
                     phone.trim(),
                     emailOtp,
                     otpExpiry);
+            
+            pendingRegistration.setOtpHash(org.mindrot.jbcrypt.BCrypt.hashpw(emailOtp, org.mindrot.jbcrypt.BCrypt.gensalt()));
 
             // Send verification code via Email
             emailService.sendSignupVerificationOtp(email.trim().toLowerCase(), firstName.trim(), emailOtp);
+            
+            pendingRegistration.clearOtp();
 
             // Store pending registration in session
             HttpSession session = request.getSession(true);

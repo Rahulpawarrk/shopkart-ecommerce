@@ -63,17 +63,27 @@ public class LogisticsWebhookServlet extends HttpServlet {
         }
 
         // Webhook Authentication Check
-        if (webhookSecret != null && !webhookSecret.trim().isEmpty()) {
-            boolean authorized = (signature != null && signature.trim().equals(webhookSecret.trim()))
-                    || (webhookToken != null && webhookToken.trim().equals(webhookSecret.trim()));
-            if (!authorized) {
-                logger.warn("Unauthorized carrier webhook attempt from IP: {}", request.getRemoteAddr());
-                response.setContentType("application/json");
-                response.setCharacterEncoding("UTF-8");
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Unauthorized: Missing or invalid carrier signature/token.\"}");
-                return;
+        if (webhookSecret == null || webhookSecret.trim().isEmpty()) {
+            logger.error("SECURITY: LOGISTICS_WEBHOOK_SECRET is not configured. Blocking all webhook requests.");
+            response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+            response.getWriter().write("{\"error\":\"Webhook endpoint not configured\"}");
+            return;
+        }
+        
+        byte[] expected = webhookSecret.trim().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        byte[] actual = (signature != null ? signature.trim() : "").getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        boolean authorized = java.security.MessageDigest.isEqual(expected, actual);
+        if (!authorized) {
+            if (webhookToken != null && !webhookToken.trim().isEmpty()) {
+                byte[] tokenActual = webhookToken.trim().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                authorized = java.security.MessageDigest.isEqual(expected, tokenActual);
             }
+        }
+        if (!authorized) {
+            logger.warn("SECURITY: Unauthorized webhook request — signature mismatch.");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("{\"error\":\"Unauthorized\"}");
+            return;
         }
 
         String pathInfo = request.getPathInfo();

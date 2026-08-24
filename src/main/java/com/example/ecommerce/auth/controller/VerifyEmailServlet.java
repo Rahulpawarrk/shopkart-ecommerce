@@ -61,10 +61,13 @@ public class VerifyEmailServlet extends HttpServlet {
 
                 String newOtp = String.format("%06d", secureRandom.nextInt(1000000));
                 pending.setEmailOtp(newOtp);
+                pending.setOtpHash(org.mindrot.jbcrypt.BCrypt.hashpw(newOtp, org.mindrot.jbcrypt.BCrypt.gensalt()));
                 pending.setOtpExpiry(LocalDateTime.now().plusMinutes(10));
+                
+                emailService.sendSignupVerificationOtp(pending.getEmail(), pending.getFirstName(), newOtp);
+                pending.clearOtp();
                 session.setAttribute("pendingRegistration", pending);
 
-                emailService.sendSignupVerificationOtp(pending.getEmail(), pending.getFirstName(), newOtp);
                 request.setAttribute("successMessage",
                         "A fresh 6-digit verification code has been sent to " + pending.getEmail());
                 logger.info("Resent signup email verification OTP to: {}", pending.getEmail());

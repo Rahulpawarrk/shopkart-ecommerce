@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Map;
+import com.example.ecommerce.util.ServletUtils;
 
 /**
  * Controller for Administrative Coupon & Promotions Management.
@@ -98,7 +99,11 @@ public class AdminCouponServlet extends HttpServlet {
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        int couponId = Integer.parseInt(request.getParameter("id"));
+        int couponId = ServletUtils.parseIntParam(request, "id", -1);
+        if (couponId <= 0) {
+            response.sendRedirect(request.getContextPath() + "/admin/coupons?error=invalid_id");
+            return;
+        }
         Coupon coupon = couponService.getCouponById(couponId);
         request.setAttribute("isEdit", true);
         request.setAttribute("coupon", coupon);
@@ -110,7 +115,12 @@ public class AdminCouponServlet extends HttpServlet {
         
         Coupon coupon = new Coupon();
         if (isEdit) {
-            coupon.setCouponId(Integer.parseInt(request.getParameter("couponId")));
+            int cid = ServletUtils.parseIntParam(request, "couponId", -1);
+            if (cid <= 0) {
+                response.sendRedirect(request.getContextPath() + "/admin/coupons?error=invalid_id");
+                return;
+            }
+            coupon.setCouponId(cid);
         }
 
         coupon.setCode(request.getParameter("code"));
@@ -157,12 +167,21 @@ public class AdminCouponServlet extends HttpServlet {
             request.setAttribute("coupon", coupon);
             request.setAttribute("errors", ve.getErrorMessages());
             request.getRequestDispatcher("/WEB-INF/views/admin/coupon-form.jsp").forward(request, response);
+        } catch (IllegalArgumentException | java.time.format.DateTimeParseException e) {
+            request.setAttribute("isEdit", isEdit);
+            request.setAttribute("coupon", coupon);
+            request.setAttribute("errors", java.util.List.of("Invalid input format: " + e.getMessage()));
+            request.getRequestDispatcher("/WEB-INF/views/admin/coupon-form.jsp").forward(request, response);
         }
     }
 
     private void handleToggleCoupon(HttpServletRequest request, HttpServletResponse response) 
             throws IOException {
-        int couponId = Integer.parseInt(request.getParameter("couponId"));
+        int couponId = ServletUtils.parseIntParam(request, "couponId", -1);
+        if (couponId <= 0) {
+            response.sendRedirect(request.getContextPath() + "/admin/coupons?error=invalid_id");
+            return;
+        }
         boolean active = Boolean.parseBoolean(request.getParameter("active"));
         couponService.toggleCouponStatus(couponId, active);
         response.sendRedirect(request.getContextPath() + "/admin/coupons?updated=true");

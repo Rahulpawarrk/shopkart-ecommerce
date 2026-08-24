@@ -62,13 +62,13 @@
             <div class="user-account-menu" id="userAccountMenu">
                 <div class="user-nav-btn" tabindex="0" role="button">
                     <span class="user-avatar-icon">👤</span>
-                    <span class="user-nav-name">${sessionScope.currentUser.fullName}</span>
+                    <span class="user-nav-name"><c:out value="${sessionScope.currentUser.fullName}" /></span>
                     <span class="arrow-down">▾</span>
                 </div>
                 <div class="account-dropdown">
                     <div class="dropdown-header">
-                        <div class="user-name">Hello, ${sessionScope.currentUser.fullName}</div>
-                        <div class="user-email">${sessionScope.currentUser.email}</div>
+                        <div class="user-name">Hello, <c:out value="${sessionScope.currentUser.fullName}" /></div>
+                        <div class="user-email"><c:out value="${sessionScope.currentUser.email}" /></div>
                         <c:if test="${sessionScope.currentUser.admin}">
                             <div style="font-size: 0.7rem; color: #fbbf24; font-weight: 800; margin-top: 0.2rem;">👑 ADMINISTRATOR</div>
                         </c:if>
@@ -178,6 +178,7 @@
                 </c:if>
 
                 <form action="${pageContext.request.contextPath}${isEdit ? '/addresses/edit' : '/addresses/add'}" method="POST">
+                    <input type="hidden" name="_csrf" value="${csrfToken}">
                     <input type="hidden" name="returnUrl" value="<c:out value='${not empty returnUrl ? returnUrl : param.returnUrl}' />">
                     <c:if test="${isEdit}">
                         <input type="hidden" name="addressId" value="${address.addressId}">

@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.util.List;
+import com.example.ecommerce.util.ServletUtils;
 
 /**
  * Controller for managing Customer Addresses.
@@ -114,7 +115,11 @@ public class AddressServlet extends HttpServlet {
         }
 
         try {
-            int addressId = Integer.parseInt(request.getParameter("id"));
+            int addressId = ServletUtils.parseIntParam(request, "id", -1);
+            if (addressId <= 0) {
+                response.sendRedirect(request.getContextPath() + "/addresses?error=invalid_id");
+                return;
+            }
             Address address = addressService.getAddressById(addressId, user.getUserId());
             request.setAttribute("address", address);
             request.setAttribute("isEdit", true);
@@ -142,7 +147,12 @@ public class AddressServlet extends HttpServlet {
 
         Address address = new Address();
         if (isEdit) {
-            address.setAddressId(Integer.parseInt(request.getParameter("addressId")));
+            int addressId = ServletUtils.parseIntParam(request, "addressId", -1);
+            if (addressId <= 0) {
+                response.sendRedirect(request.getContextPath() + "/addresses?error=invalid_id");
+                return;
+            }
+            address.setAddressId(addressId);
         }
         address.setUserId(user.getUserId());
         address.setFullName(request.getParameter("fullName"));
@@ -193,7 +203,11 @@ public class AddressServlet extends HttpServlet {
         }
 
         try {
-            int addressId = Integer.parseInt(request.getParameter("addressId"));
+            int addressId = ServletUtils.parseIntParam(request, "addressId", -1);
+            if (addressId <= 0) {
+                response.sendRedirect(request.getContextPath() + "/addresses?error=invalid_id");
+                return;
+            }
             addressService.deleteAddress(addressId, user.getUserId());
             response.sendRedirect(request.getContextPath() + "/addresses?deleted=true");
         } catch (Exception e) {
@@ -212,7 +226,11 @@ public class AddressServlet extends HttpServlet {
         }
 
         try {
-            int addressId = Integer.parseInt(request.getParameter("addressId"));
+            int addressId = ServletUtils.parseIntParam(request, "addressId", -1);
+            if (addressId <= 0) {
+                response.sendRedirect(request.getContextPath() + "/addresses?error=invalid_id");
+                return;
+            }
             addressService.setDefaultAddress(addressId, user.getUserId());
             response.sendRedirect(request.getContextPath() + "/addresses?defaultUpdated=true");
         } catch (Exception e) {
