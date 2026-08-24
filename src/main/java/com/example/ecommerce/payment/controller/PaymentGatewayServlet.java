@@ -20,7 +20,8 @@ import java.io.IOException;
 /**
  * Controller for Payment Gateway page.
  * Route: /payment/gateway
- * Supports clean address bar URLs via session-bound order context.
+ * Supports 100% clean address bar URLs via session-bound order context.
+ * Automatically cleans query parameters on arrival via immediate redirect.
  * Protected by AuthFilter.
  */
 @WebServlet(name = "PaymentGatewayServlet", urlPatterns = {"/payment/gateway"})
@@ -52,21 +53,22 @@ public class PaymentGatewayServlet extends HttpServlet {
             return;
         }
 
-        // 1. Check for session-bound pending order ID (clean URL approach)
-        Integer pendingOrderId = (session != null) ? (Integer) session.getAttribute("pendingPaymentOrderId") : null;
-
-        int orderId = 0;
-        if (pendingOrderId != null) {
-            orderId = pendingOrderId;
-        } else {
-            // Fallback for query param (with strict user authorization)
-            String orderIdParam = request.getParameter("orderId");
-            if (orderIdParam != null && !orderIdParam.trim().isEmpty()) {
-                try {
-                    orderId = Integer.parseInt(orderIdParam.trim());
-                } catch (NumberFormatException ignored) {}
-            }
+        // 1. If orderId is received in query parameter (e.g. ?orderId=17), store in session and REDIRECT immediately to clean URL!
+        String orderIdParam = request.getParameter("orderId");
+        if (orderIdParam != null && !orderIdParam.trim().isEmpty()) {
+            try {
+                int oid = Integer.parseInt(orderIdParam.trim());
+                if (session != null) {
+                    session.setAttribute("pendingPaymentOrderId", oid);
+                }
+                response.sendRedirect(request.getContextPath() + "/payment/gateway");
+                return;
+            } catch (NumberFormatException ignored) {}
         }
+
+        // 2. Resolve pending order ID from session
+        Integer pendingOrderId = (session != null) ? (Integer) session.getAttribute("pendingPaymentOrderId") : null;
+        int orderId = (pendingOrderId != null) ? pendingOrderId : 0;
 
         if (orderId <= 0) {
             logger.warn("Payment Gateway accessed without valid order context by user {}", user.getUserId());
@@ -97,5 +99,30 @@ public class PaymentGatewayServlet extends HttpServlet {
             logger.error("Payment Gateway initialization failed for orderId: {}", orderId, e);
             response.sendRedirect(request.getContextPath() + "/orders");
         }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        HttpSession session = request.getSession(false);
+        UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/login");
+            return;
+        }
+
+        String orderIdParam = request.getParameter("orderId");
+        if (orderIdParam != null && !orderIdParam.trim().isEmpty()) {
+            try {
+                int oid = Integer.parseInt(orderIdParam.trim());
+                if (session != null) {
+                    session.setAttribute("pendingPaymentOrderId", oid);
+                }
+            } catch (NumberFormatException ignored) {}
+        }
+
+        response.sendRedirect(request.getContextPath() + "/payment/gateway");
     }
 }

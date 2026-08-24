@@ -404,21 +404,27 @@
         <h2 style="font-size: 1.5rem; font-weight: 900; color: #0f172a; margin-bottom: 0.5rem;">
             Payment Cancelled
         </h2>
-        <p style="color: #64748b; font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.25rem;">
+        <p id="modalDescText" style="color: #64748b; font-size: 0.95rem; line-height: 1.5; margin-bottom: 1rem;">
             Your payment was not completed and no money was deducted. Your order has not been placed.
         </p>
+
+        <!-- Attempt Counter Status Badge -->
+        <div id="retryAttemptBadge" style="margin-bottom: 1.25rem;"></div>
 
         <a href="${pageContext.request.contextPath}/home" class="btn-go-home">
             <span>🏠 Click to Go Home</span>
         </a>
 
-        <button type="button" class="btn-reopen" onclick="reopenRazorpay()">
+        <button type="button" id="btnReopenRazorpay" class="btn-reopen" onclick="reopenRazorpay()">
             <span>🔄 Try Payment Again</span>
         </button>
     </div>
 </div>
 
 <script nonce="${cspNonce}">
+    let paymentAttempts = 1;
+    const MAX_PAYMENT_ATTEMPTS = 3;
+
     // Real-Time Razorpay Standard Checkout Modal
     function launchRazorpayCheckout() {
         const keyId = "${razorpayKeyId}";
@@ -440,7 +446,8 @@
             },
             "notes": {
                 "ecommerce_order_id": "${order.orderId}",
-                "order_number": "${order.orderNumber}"
+                "order_number": "${order.orderNumber}",
+                "attempt_number": String(paymentAttempts)
             },
             "theme": {
                 "color": "#0284c7"
@@ -475,13 +482,13 @@
         }
     }
 
-    // Handles user cancelling or bank decline: logs to server for admin audit & opens failure popup with Go Home button
+    // Handles user cancelling or bank decline: logs to server for admin audit & updates attempt limits
     function handlePaymentDismissed(reason) {
         // Asynchronously log to server for Admin Reconciliation Log without navigating away
         const formData = new URLSearchParams();
         formData.append('orderId', '${order.orderId}');
         formData.append('status', 'FAILED');
-        formData.append('reason', reason || 'Customer cancelled transaction window');
+        formData.append('reason', (reason || 'Customer cancelled transaction window') + ' (Attempt ' + paymentAttempts + ' of ' + MAX_PAYMENT_ATTEMPTS + ')');
 
         fetch('${pageContext.request.contextPath}/payment/callback', {
             method: 'POST',
@@ -489,11 +496,29 @@
             body: formData.toString()
         }).catch(err => console.log('Log recorded:', err));
 
+        // Update retry attempt badges and lock retry if 3 attempts reached
+        const badgeEl = document.getElementById('retryAttemptBadge');
+        const retryBtn = document.getElementById('btnReopenRazorpay');
+
+        if (paymentAttempts >= MAX_PAYMENT_ATTEMPTS) {
+            badgeEl.innerHTML = '<div style="background:#fee2e2; border:1px solid #fca5a5; color:#991b1b; padding:0.6rem 0.85rem; border-radius:8px; font-size:0.85rem; font-weight:800;">⚠️ Maximum payment retry limit (3/3 attempts) reached. For security, further retry attempts for this session are locked.</div>';
+            if (retryBtn) retryBtn.style.display = 'none';
+        } else {
+            const remaining = MAX_PAYMENT_ATTEMPTS - paymentAttempts;
+            badgeEl.innerHTML = '<div style="background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; padding:0.4rem 0.75rem; border-radius:8px; font-size:0.82rem; font-weight:700;">⚡ Attempt ' + paymentAttempts + ' of ' + MAX_PAYMENT_ATTEMPTS + ' (' + remaining + ' retry remaining)</div>';
+            if (retryBtn) retryBtn.style.display = 'flex';
+        }
+
         // Show Payment Cancelled Modal Popup with Go Home button
         document.getElementById('paymentCancelledModal').style.display = 'flex';
     }
 
     function reopenRazorpay() {
+        if (paymentAttempts >= MAX_PAYMENT_ATTEMPTS) {
+            alert('You have reached the maximum retry limit of 3 attempts for this order.');
+            return;
+        }
+        paymentAttempts++;
         document.getElementById('paymentCancelledModal').style.display = 'none';
         launchRazorpayCheckout();
     }

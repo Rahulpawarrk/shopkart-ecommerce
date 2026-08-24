@@ -1537,11 +1537,12 @@
                                                         </div>
                                                         <c:if test="${order.paymentStatus != 'PAID'}">
                                                             <div style="margin-top: 0.45rem; margin-bottom: 0.45rem;">
-                                                                <a href="${pageContext.request.contextPath}/payment/gateway?orderId=${order.orderId}"
-                                                                    class="btn-cod-paynow"
-                                                                    title="Complete online payment now via UPI, Cards, Net Banking">
-                                                                    ⚡ Pay Now ➔
-                                                                </a>
+                                                                <form action="${pageContext.request.contextPath}/payment/gateway" method="POST" style="margin: 0; display: inline;">
+                                                                    <input type="hidden" name="orderId" value="${order.orderId}">
+                                                                    <button type="submit" class="btn-cod-paynow" style="border: none; cursor: pointer;" title="Complete online payment now via UPI, Cards, Net Banking">
+                                                                        ⚡ Pay Now ➔
+                                                                    </button>
+                                                                </form>
                                                             </div>
                                                         </c:if>
                                                     </div>

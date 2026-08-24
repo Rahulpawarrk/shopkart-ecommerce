@@ -302,7 +302,7 @@ public class OrderDAO {
      * Admin: Searches and paginates all store orders.
      */
     public Pagination<Order> findAll(String keyword, OrderStatus status, int page, int pageSize) {
-        StringBuilder where = new StringBuilder(" WHERE 1=1 ");
+        StringBuilder where = new StringBuilder(" WHERE 1=1 AND (o.payment_method = 'COD' OR o.payment_status IN ('PAID', 'COMPLETED') OR o.order_status NOT IN ('PENDING', 'CANCELLED')) ");
         List<Object> params = new ArrayList<>();
 
         if (keyword != null && !keyword.trim().isEmpty()) {
