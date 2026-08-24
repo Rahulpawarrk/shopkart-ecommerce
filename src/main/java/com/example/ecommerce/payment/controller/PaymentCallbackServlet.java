@@ -144,7 +144,7 @@ public class PaymentCallbackServlet extends HttpServlet {
 
         // Check required fields
         if (isBlank(razorpayPaymentId) || isBlank(razorpayOrderId) || isBlank(razorpaySignature)) {
-            logger.warn("Incomplete Razorpay response for order #{}. userId={}", order.getOrderNumber(), user.getUserId());
+            logger.info("Payment attempt aborted or incomplete for order #{}. userId={}", order.getOrderNumber(), user.getUserId());
             redirectPaymentFailure(request, response, order, "Incomplete payment response received from Razorpay.");
             return;
         }
