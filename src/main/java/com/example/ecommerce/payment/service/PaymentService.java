@@ -26,7 +26,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Service Layer orchestrating Payment Gateway simulations, COD verifications, and audit logging.
+ * Service Layer orchestrating Payment Gateway integrations, COD verifications, idempotency, and audit logging.
  */
 public class PaymentService {
 
@@ -58,44 +58,40 @@ public class PaymentService {
      * Initializes a payment record for an order.
      */
     public Payment initiatePayment(Order order, String paymentMethod) {
-        String txnRef = "PAY-" + paymentMethod.toUpperCase() + "-" + UUID.randomUUID().toString().substring(0, 10).toUpperCase();
-        
-        PaymentTransactionStatus initialStatus = "COD".equalsIgnoreCase(paymentMethod) ? 
-                PaymentTransactionStatus.PENDING : PaymentTransactionStatus.PENDING;
+        String method = (paymentMethod != null && !paymentMethod.trim().isEmpty()) ? paymentMethod.trim().toUpperCase() : "ONLINE";
+        String txnRef = "PAY-" + method + "-" + UUID.randomUUID().toString().substring(0, 10).toUpperCase();
 
         Payment payment = new Payment(
                 order.getOrderId(),
-                paymentMethod,
+                method,
                 txnRef,
                 order.getTotalAmount(),
-                initialStatus,
-                "Initialized payment intent via " + paymentMethod
+                PaymentTransactionStatus.PENDING,
+                "Initialized payment intent via " + method
         );
 
         int paymentId = paymentDAO.createPayment(payment);
         payment.setPaymentId(paymentId);
-        logger.info("Initiated payment [{}] for Order ID: {} with amount: {}", txnRef, order.getOrderId(), order.getTotalAmount());
+        logger.info("Initiated payment [{}] for Order ID: {} with amount: ₹{}", txnRef, order.getOrderId(), order.getTotalAmount());
         return payment;
     }
 
     /**
-     * Processes simulated gateway callback (Success or Failure).
+     * Processes gateway callback (Success or Failure) with idempotency and database transaction safety.
      */
-    public boolean processSimulatedGatewayCallback(int orderId, int userId, String transactionReference, 
-                                                   boolean isSuccess, String gatewayResponse) {
-        return processSimulatedGatewayCallback(orderId, userId, transactionReference, null, isSuccess, gatewayResponse);
-    }
-
-    /**
-     * Processes simulated gateway callback with Gateway Order ID (e.g. Razorpay order_id).
-     */
-    public boolean processSimulatedGatewayCallback(int orderId, int userId, String transactionReference, 
-                                                   String gatewayOrderId, boolean isSuccess, String gatewayResponse) {
+    public boolean processGatewayCallback(int orderId, int userId, String transactionReference, 
+                                          String gatewayOrderId, boolean isSuccess, String gatewayResponse) {
         Order order = orderDAO.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with ID: " + orderId));
 
         if (order.getUserId() != userId) {
             throw new ValidationException("You are not authorized to process payment for this order.");
+        }
+
+        // Idempotency check: If order is already paid, do not re-process
+        if (order.getPaymentStatus() == PaymentStatus.PAID) {
+            logger.info("Order ID #{} is already in PAID status. Idempotent callback accepted.", orderId);
+            return true;
         }
 
         try (Connection conn = DBConnection.getConnection()) {
@@ -105,7 +101,7 @@ public class PaymentService {
                     paymentDAO.updatePaymentStatusByOrderId(orderId, PaymentTransactionStatus.SUCCESS, gatewayResponse, conn);
                     orderDAO.updatePaymentStatus(orderId, PaymentStatus.PAID, conn);
 
-                    // Preserve existing fulfillment status if order is already placed/in-transit (e.g. COD orders being paid online)
+                    // Transition to CONFIRMED if in PENDING state
                     OrderStatus currentStatus = order.getOrderStatus();
                     OrderStatus targetStatus = currentStatus;
 
@@ -122,34 +118,22 @@ public class PaymentService {
                             "Payment successfully confirmed via Gateway (Txn Ref: " + transactionReference + ")"
                     );
                     orderDAO.createStatusHistory(history, conn);
-                    logger.info("Payment SUCCESS confirmed for order [{}] (Txn: {}, Fulfillment Status preserved: {})", orderId, transactionReference, targetStatus);
+                    logger.info("Payment SUCCESS recorded for order [{}] (Txn: {}, Target Status: {})", orderId, transactionReference, targetStatus);
                 } else {
                     paymentDAO.updatePaymentStatusByOrderId(orderId, PaymentTransactionStatus.FAILED, gatewayResponse, conn);
 
                     OrderStatus currentStatus = order.getOrderStatus();
                     if (currentStatus == OrderStatus.PENDING) {
-                        // Initial checkout payment failure: do not place order, mark cancelled
                         orderDAO.updatePaymentStatus(orderId, PaymentStatus.FAILED, conn);
-                        orderDAO.updateOrderStatus(orderId, OrderStatus.CANCELLED, conn);
-
-                        OrderStatusHistory history = new OrderStatusHistory(
-                                orderId,
-                                currentStatus,
-                                OrderStatus.CANCELLED,
-                                userId,
-                                "Payment failed via Gateway (Reason: " + gatewayResponse + ") - Order not placed"
-                        );
-                        orderDAO.createStatusHistory(history, conn);
-                    } else {
-                        // Placed COD order online payment attempt failed: keep order active with PENDING payment
-                        orderDAO.updatePaymentStatus(orderId, PaymentStatus.PENDING, conn);
+                        // Do not immediately cancel if retry is allowed; or mark CANCELLED with ability to retry
+                        orderDAO.updateOrderStatus(orderId, OrderStatus.PENDING, conn);
 
                         OrderStatusHistory history = new OrderStatusHistory(
                                 orderId,
                                 currentStatus,
                                 currentStatus,
                                 userId,
-                                "Online payment attempt failed (Reason: " + gatewayResponse + ") - Order remains active for COD / retry"
+                                "Payment failed via Gateway (Reason: " + gatewayResponse + ") - Awaiting customer retry or COD switch"
                         );
                         orderDAO.createStatusHistory(history, conn);
                     }
@@ -180,6 +164,63 @@ public class PaymentService {
             }
         } catch (SQLException e) {
             logger.error("Database connection error during payment callback", e);
+            throw new DatabaseException("Database connection error", e);
+        }
+    }
+
+    /**
+     * Backward-compatible alias for processGatewayCallback.
+     */
+    public boolean processSimulatedGatewayCallback(int orderId, int userId, String transactionReference, 
+                                                   String gatewayOrderId, boolean isSuccess, String gatewayResponse) {
+        return processGatewayCallback(orderId, userId, transactionReference, gatewayOrderId, isSuccess, gatewayResponse);
+    }
+
+    public boolean processSimulatedGatewayCallback(int orderId, int userId, String transactionReference, 
+                                                   boolean isSuccess, String gatewayResponse) {
+        return processGatewayCallback(orderId, userId, transactionReference, null, isSuccess, gatewayResponse);
+    }
+
+    /**
+     * Switches an order's payment method to Cash on Delivery (COD) following an online payment failure.
+     */
+    public boolean switchPaymentMethodToCod(int orderId, int userId) {
+        Order order = orderDAO.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with ID: " + orderId));
+
+        if (order.getUserId() != userId) {
+            throw new ValidationException("Unauthorized access to order.");
+        }
+
+        if (order.getPaymentStatus() == PaymentStatus.PAID) {
+            throw new ValidationException("Order is already paid.");
+        }
+
+        try (Connection conn = DBConnection.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                orderDAO.updateOrderStatus(orderId, OrderStatus.CONFIRMED, conn);
+                orderDAO.updatePaymentStatus(orderId, PaymentStatus.PENDING, conn);
+
+                OrderStatusHistory history = new OrderStatusHistory(
+                        orderId,
+                        order.getOrderStatus(),
+                        OrderStatus.CONFIRMED,
+                        userId,
+                        "Customer switched payment method to Cash on Delivery (COD)"
+                );
+                orderDAO.createStatusHistory(history, conn);
+
+                conn.commit();
+                logger.info("Order [{}] payment method successfully switched to COD for user {}", orderId, userId);
+                return true;
+            } catch (SQLException e) {
+                conn.rollback();
+                logger.error("Error switching order [{}] to COD", orderId, e);
+                throw new DatabaseException("Failed to switch order to COD", e);
+            }
+        } catch (SQLException e) {
+            logger.error("Database connection error while switching to COD", e);
             throw new DatabaseException("Database connection error", e);
         }
     }

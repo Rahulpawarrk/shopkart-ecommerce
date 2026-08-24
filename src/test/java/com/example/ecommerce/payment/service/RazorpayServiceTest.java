@@ -12,9 +12,25 @@ import static org.junit.jupiter.api.Assertions.*;
 class RazorpayServiceTest {
 
     @Test
+    @DisplayName("Should initialize in sandbox mode when no env credentials provided")
+    void testDefaultSandboxInitialization() {
+        RazorpayService razorpayService = new RazorpayService(null, null);
+        assertFalse(razorpayService.isConfigured());
+        assertEquals("rzp_test_ShopKartSandbox", razorpayService.getKeyId());
+    }
+
+    @Test
+    @DisplayName("Should initialize in configured mode when valid keys provided")
+    void testConfiguredInitialization() {
+        RazorpayService razorpayService = new RazorpayService("rzp_live_testKey123", "secretVal456");
+        assertTrue(razorpayService.isConfigured());
+        assertEquals("rzp_live_testKey123", razorpayService.getKeyId());
+    }
+
+    @Test
     @DisplayName("Should create simulated Razorpay order ID in sandbox mode")
     void testCreateSimulatedRazorpayOrder() {
-        RazorpayService razorpayService = new RazorpayService("rzp_test_mockKey123", "mockSecret456");
+        RazorpayService razorpayService = new RazorpayService();
 
         Order order = new Order();
         order.setOrderId(101);

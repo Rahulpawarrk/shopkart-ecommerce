@@ -1241,7 +1241,7 @@
                             </div>
 
                             <div class="order-modal-actions">
-                                <a href="${pageContext.request.contextPath}/order/confirmation?orderNumber=${justPlacedOrder.orderNumber}"
+                                <a href="${pageContext.request.contextPath}/order/confirmation"
                                     class="btn-primary-action" style="flex: 1.2;">
                                     <span>🧾</span>
                                     <span>View Full Receipt</span>

@@ -12,15 +12,15 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 /**
- * Controller for Interactive Simulated Payment Gateway page.
- * Route: /payment/gateway?orderId=...
+ * Controller for Payment Gateway page.
+ * Route: /payment/gateway
+ * Supports clean address bar URLs via session-bound order context.
  * Protected by AuthFilter.
  */
 @WebServlet(name = "PaymentGatewayServlet", urlPatterns = {"/payment/gateway"})
@@ -45,17 +45,43 @@ public class PaymentGatewayServlet extends HttpServlet {
             throws ServletException, IOException {
         
         HttpSession session = request.getSession(false);
-        UserSession user = (UserSession) session.getAttribute("currentUser");
+        UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
 
-        String orderIdParam = request.getParameter("orderId");
-        if (orderIdParam == null || orderIdParam.trim().isEmpty()) {
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/login");
+            return;
+        }
+
+        // 1. Check for session-bound pending order ID (clean URL approach)
+        Integer pendingOrderId = (session != null) ? (Integer) session.getAttribute("pendingPaymentOrderId") : null;
+
+        int orderId = 0;
+        if (pendingOrderId != null) {
+            orderId = pendingOrderId;
+        } else {
+            // Fallback for query param (with strict user authorization)
+            String orderIdParam = request.getParameter("orderId");
+            if (orderIdParam != null && !orderIdParam.trim().isEmpty()) {
+                try {
+                    orderId = Integer.parseInt(orderIdParam.trim());
+                } catch (NumberFormatException ignored) {}
+            }
+        }
+
+        if (orderId <= 0) {
+            logger.warn("Payment Gateway accessed without valid order context by user {}", user.getUserId());
             response.sendRedirect(request.getContextPath() + "/orders");
             return;
         }
 
         try {
-            int orderId = Integer.parseInt(orderIdParam.trim());
             Order order = orderService.getOrderById(orderId, user.getUserId());
+            if (order == null) {
+                logger.warn("Order #{} not found or does not belong to user {}", orderId, user.getUserId());
+                response.sendRedirect(request.getContextPath() + "/orders");
+                return;
+            }
+
             Payment payment = paymentService.initiatePayment(order, order.getPaymentMethod());
             String razorpayOrderId = razorpayService.createRazorpayOrder(order);
 
@@ -68,7 +94,7 @@ public class PaymentGatewayServlet extends HttpServlet {
 
             request.getRequestDispatcher("/WEB-INF/views/payment/gateway.jsp").forward(request, response);
         } catch (Exception e) {
-            logger.error("Payment Gateway initialization failed for orderId: {}", orderIdParam, e);
+            logger.error("Payment Gateway initialization failed for orderId: {}", orderId, e);
             response.sendRedirect(request.getContextPath() + "/orders");
         }
     }

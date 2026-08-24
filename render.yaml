@@ -21,3 +21,24 @@ services:
         sync: false
       - key: DB_PASSWORD
         sync: false
+      - key: FAST2SMS_API_KEY
+        sync: false
+      - key: LOGISTICS_WEBHOOK_SECRET
+        sync: false
+      # Shiprocket (Multi-Carrier Aggregator)
+      - key: SHIPROCKET_AUTH_TOKEN
+        sync: false
+      - key: SHIPROCKET_EMAIL
+        sync: false
+      - key: SHIPROCKET_PASSWORD
+        sync: false
+      # Delhivery
+      - key: DELHIVERY_API_KEY
+        sync: false
+      # BlueDart NetConnect
+      - key: BLUEDART_LOGIN_ID
+        sync: false
+      - key: BLUEDART_LICENSE_KEY
+        sync: false
+      - key: BLUEDART_CUSTOMER_CODE
+        sync: false

@@ -64,13 +64,28 @@ class PaymentServiceTest {
 
         // User 2 attempts to process payment callback
         assertThrows(ValidationException.class, () ->
-            paymentService.processSimulatedGatewayCallback(5, 2, "TXN-REF", true, "OK")
+            paymentService.processGatewayCallback(5, 2, "TXN-REF", null, true, "OK")
         );
     }
 
     @Test
+    @DisplayName("Should return true immediately if order is already PAID (Idempotency)")
+    void testIdempotentPaymentCallback() throws Exception {
+        Order order = new Order();
+        order.setOrderId(8);
+        order.setUserId(1);
+        order.setPaymentStatus(com.example.ecommerce.order.model.PaymentStatus.PAID);
+
+        when(orderDAO.findById(8)).thenReturn(Optional.of(order));
+
+        boolean result = paymentService.processGatewayCallback(8, 1, "TXN-REF", null, true, "OK");
+        assertTrue(result);
+        verify(paymentDAO, never()).updatePaymentStatusByOrderId(anyInt(), any(), any(), any());
+    }
+
+    @Test
     @DisplayName("Should successfully update reconciliation resolution notes and status")
-    void testUpdateReconciliationResolution() {
+    void testUpdateReconciliationResolution() throws Exception {
         when(paymentReconciliationDAO.updateResolution(1, "VERIFIED_DEBITED", "Amount deducted from customer bank UTR: 12345", 99))
                 .thenReturn(true);
 

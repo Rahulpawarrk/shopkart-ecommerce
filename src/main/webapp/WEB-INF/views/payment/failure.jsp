@@ -10,22 +10,78 @@
     <link rel="apple-touch-icon" href="${pageContext.request.contextPath}/assets/images/favicon.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Failed | ShopKart India</title>
+    <title>Payment Status | ShopKart India</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .failure-box {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #fee2e2;
+            border-top: 6px solid #ef4444;
+            box-shadow: 0 16px 36px -8px rgba(239, 68, 68, 0.12);
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+        .action-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin: 1.5rem 0;
+            text-align: left;
+        }
+        .btn-retry {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            color: #ffffff;
+            font-weight: 800;
+            padding: 0.85rem 1.75rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+        .btn-retry:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(2, 132, 199, 0.35);
+        }
+        .btn-cod {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: #ffffff;
+            font-weight: 800;
+            padding: 0.85rem 1.75rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+        .btn-cod:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(5, 150, 105, 0.35);
+        }
+    </style>
 </head>
 <body style="background: #f8fafc;">
 
     <!-- 1. TOP ANNOUNCEMENT TICKER -->
     <header class="top-ticker">
         <div class="ticker-text">
-            <span class="ticker-badge">⚠️ Payment Notice</span>
-            <span>Online payment was not completed. Your order has not been placed.</span>
+            <span class="ticker-badge">⚠️ Transaction Notice</span>
+            <span>Online payment was not completed. Your items are safe and you can retry or switch payment mode.</span>
         </div>
         <div class="ticker-links">
-            <a href="${pageContext.request.contextPath}/products?brand=Apple">Brand Store</a>
             <a href="${pageContext.request.contextPath}/cart">Back to Cart</a>
         </div>
     </header>
@@ -40,7 +96,7 @@
 
         <div class="header-search-wrapper">
             <form action="${pageContext.request.contextPath}/products" method="GET" class="header-search-form">
-                <input type="text" name="keyword" class="search-input" placeholder="Search for products..." autocomplete="off">
+                <input type="text" name="keyword" class="search-input" placeholder="Search products, brands..." autocomplete="off">
                 <button type="submit" class="search-button">🔍</button>
             </form>
         </div>
@@ -59,41 +115,73 @@
         </div>
     </nav>
 
-    <main class="container" style="max-width: 620px; margin: 3rem auto 4rem; padding: 0 1rem;">
+    <main class="container" style="max-width: 680px; margin: 3rem auto 5rem; padding: 0 1.25rem;">
         
-        <div class="order-card-wrapper" style="text-align: center; border-top: 5px solid #dc2626; padding: 3rem 2rem; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.06); background: #ffffff;">
-            <div style="font-size: 3.5rem; margin-bottom: 1rem; color: #ef4444;">❌</div>
-            <h1 style="font-size: 1.75rem; font-weight: 900; color: #0f172a; margin-bottom: 0.5rem;">
-                Payment Failed &mdash; Order Not Placed
+        <div class="failure-box">
+            <div style="width: 72px; height: 72px; border-radius: 50%; background: #fee2e2; color: #dc2626; font-size: 2.25rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; box-shadow: 0 8px 16px rgba(220, 38, 38, 0.15);">
+                ✕
+            </div>
+            <h1 style="font-size: 1.85rem; font-weight: 900; color: #0f172a; margin-bottom: 0.5rem; letter-spacing: -0.02em;">
+                Payment Incomplete
             </h1>
-            <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.95rem; line-height: 1.5;">
-                We were unable to process your payment for Order Reference <strong><c:out value="${order.orderNumber}" /></strong>. Your order has not been placed.
+            <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 1rem; line-height: 1.5; max-width: 520px; margin-left: auto; margin-right: auto;">
+                We were unable to verify your payment with the gateway. No funds were captured for this attempt.
             </p>
 
             <c:if test="${not empty error}">
-                <div style="background-color: #fee2e2; color: #991b1b; padding: 0.85rem 1.25rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #fca5a5; font-size: 0.9rem; font-weight: 600; text-align: left;">
-                    ⚠️ Reason: <c:out value="${error}" />
+                <div style="background-color: #fef2f2; color: #991b1b; padding: 1rem 1.25rem; border-radius: 10px; margin-bottom: 1.5rem; border: 1px solid #fca5a5; font-size: 0.92rem; font-weight: 600; text-align: left; display: flex; gap: 0.6rem; align-items: flex-start;">
+                    <span>⚠️</span>
+                    <div>
+                        <strong>Reason:</strong> <c:out value="${error}" />
+                    </div>
                 </div>
             </c:if>
 
-            <div style="background: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem; margin-bottom: 2rem; text-align: left; font-size: 0.95rem;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                    <span style="color: var(--text-muted);">Order Reference:</span>
-                    <strong><c:out value="${order.orderNumber}" /></strong>
+            <div class="action-card">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.6rem; font-size: 0.92rem;">
+                    <span style="color: var(--text-muted);">Payment Channel:</span>
+                    <strong style="color: #0f172a;"><c:out value="${not empty failureContext.paymentMethod ? failureContext.paymentMethod : order.paymentMethod}" default="ONLINE" /></strong>
                 </div>
-                <div style="display: flex; justify-content: space-between; border-top: 1px dashed #e2e8f0; padding-top: 0.5rem;">
-                    <span style="color: var(--text-muted);">Amount Due:</span>
-                    <strong style="color: #0f172a; font-size: 1.15rem; font-weight: 900;">₹<fmt:formatNumber value="${order.totalAmount}" minFractionDigits="2" /></strong>
+                <div style="display: flex; justify-content: space-between; border-top: 1px dashed #cbd5e1; padding-top: 0.6rem; font-size: 1.05rem;">
+                    <span style="color: var(--text-muted); font-weight: 600;">Total Payable:</span>
+                    <strong style="color: #2563eb; font-size: 1.3rem; font-weight: 900;">₹<fmt:formatNumber value="${order.totalAmount}" minFractionDigits="2" /></strong>
                 </div>
             </div>
 
-            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                <a href="${pageContext.request.contextPath}/payment/gateway?orderId=${order.orderId}&paymentFailed=true" class="hero-cta-btn" style="padding: 0.85rem 1.75rem; text-decoration: none; border-radius: 10px; font-weight: 800;">
-                    🔄 Retry Payment Now
-                </a>
-                <a href="${pageContext.request.contextPath}/orders" class="order-btn-outline" style="padding: 0.85rem 1.5rem; text-decoration: none; border-radius: 10px; font-weight: 700;">
-                    View Orders
-                </a>
+            <!-- Action Options Form (Clean POST actions, zero address bar leakage) -->
+            <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem;">
+                
+                <!-- Option 1: 1-Click Retry Payment -->
+                <form action="${pageContext.request.contextPath}/payment/failure/action" method="POST" style="margin: 0;">
+                    <input type="hidden" name="action" value="retry">
+                    <input type="hidden" name="orderId" value="${order.orderId}">
+                    <button type="submit" class="btn-retry" style="width: 100%; justify-content: center;">
+                        🔄 Retry Payment with Razorpay (UPI / Card / NetBanking)
+                    </button>
+                </form>
+
+                <!-- Option 2: 1-Click Switch to Cash on Delivery -->
+                <form action="${pageContext.request.contextPath}/payment/failure/action" method="POST" style="margin: 0;">
+                    <input type="hidden" name="action" value="switch_cod">
+                    <input type="hidden" name="orderId" value="${order.orderId}">
+                    <button type="submit" class="btn-cod" style="width: 100%; justify-content: center;">
+                        💵 Switch to Cash on Delivery (COD) &amp; Confirm Order
+                    </button>
+                </form>
+
+                <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 0.5rem; flex-wrap: wrap;">
+                    <a href="${pageContext.request.contextPath}/cart" class="order-btn-secondary" style="padding: 0.65rem 1.5rem; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 0.9rem;">
+                        🛒 Return to Cart
+                    </a>
+                    <a href="${pageContext.request.contextPath}/orders" class="order-btn-secondary" style="padding: 0.65rem 1.5rem; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 0.9rem;">
+                        📦 My Orders
+                    </a>
+                </div>
+            </div>
+
+            <!-- Support note -->
+            <div style="margin-top: 2rem; padding-top: 1.25rem; border-top: 1px solid #f1f5f9; font-size: 0.82rem; color: #94a3b8; line-height: 1.5;">
+                Need help with your payment? If your account was debited, your bank will automatically reverse the transaction within 24-48 business hours. For immediate assistance, contact <b>ShopKart 24x7 Priority Support</b>.
             </div>
         </div>
 

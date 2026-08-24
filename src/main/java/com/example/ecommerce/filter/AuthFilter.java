@@ -28,6 +28,8 @@ import java.io.IOException;
         "/order", "/order/*",
         "/returns", "/returns/*",
         "/order/return",
+        "/order/confirmation", "/order/confirmed",
+        "/payment", "/payment/*",
         "/product/review", "/order/review",
         "/checkout", "/checkout/*",
         "/cart", "/cart/*",

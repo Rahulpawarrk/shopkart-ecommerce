@@ -9,6 +9,7 @@ import com.example.ecommerce.customer.model.Address;
 import com.example.ecommerce.customer.service.AddressService;
 import com.example.ecommerce.exception.ValidationException;
 import com.example.ecommerce.order.model.Order;
+import com.example.ecommerce.order.model.OrderConfirmationContext;
 import com.example.ecommerce.order.service.OrderService;
 import com.example.ecommerce.product.model.Product;
 import com.example.ecommerce.product.service.ProductService;
@@ -28,10 +29,8 @@ import java.util.List;
 /**
  * Controller managing 3-Step Guided Checkout workflow:
  * 1. /checkout or /checkout/address -> Step 1: Select or Add Delivery Address
- * 2. /checkout/summary -> Step 2: Order Items Summary, Delivery Notes & Apply
- * Coupon
- * 3. /checkout/payment -> Step 3: Select Payment Channel (COD, UPI, Card,
- * NetBanking) & Confirm
+ * 2. /checkout/summary -> Step 2: Order Items Summary, Delivery Notes & Apply Coupon
+ * 3. /checkout/payment -> Step 3: Select Payment Channel (COD, UPI, Card, NetBanking) & Confirm
  * 
  * Supports both Standard Persistent Cart and Instant Direct "Buy Now".
  * Administrators are strictly blocked from placing customer orders.
@@ -304,12 +303,24 @@ public class CheckoutServlet extends HttpServlet {
             }
 
             if ("COD".equalsIgnoreCase(confirmedOrder.getPaymentMethod())) {
+                OrderConfirmationContext confirmationContext = new OrderConfirmationContext(
+                        confirmedOrder.getOrderId(),
+                        confirmedOrder.getOrderNumber(),
+                        user.getUserId(),
+                        confirmedOrder.getTotalAmount(),
+                        "Cash on Delivery (COD)",
+                        "PENDING",
+                        "COD-" + System.currentTimeMillis()
+                );
+                session.setAttribute("orderConfirmationContext", confirmationContext);
                 session.setAttribute("justPlacedOrder", confirmedOrder);
-                response.sendRedirect(request.getContextPath() + "/home?orderPlaced=true&orderNumber="
-                        + confirmedOrder.getOrderNumber());
+
+                // Clean redirect to Order Confirmation (no URL parameters)
+                response.sendRedirect(request.getContextPath() + "/order/confirmation");
             } else {
-                response.sendRedirect(
-                        request.getContextPath() + "/payment/gateway?orderId=" + confirmedOrder.getOrderId());
+                // Online Payment: store order ID in session and redirect to /payment/gateway
+                session.setAttribute("pendingPaymentOrderId", confirmedOrder.getOrderId());
+                response.sendRedirect(request.getContextPath() + "/payment/gateway");
             }
 
         } catch (ValidationException ve) {

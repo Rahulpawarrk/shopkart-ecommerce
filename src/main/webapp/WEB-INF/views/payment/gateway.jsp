@@ -434,7 +434,16 @@
     <div class="gw-header">
         <div class="gw-brand">
             🛒 Razorpay Gateway
-            <small>UPI &bull; VPA &bull; QR &bull; Cards <span class="sandbox-badge">Sandbox</span></small>
+            <small>UPI &bull; VPA &bull; QR &bull; Cards 
+                <c:choose>
+                    <c:when test="${isRazorpayLive}">
+                        <span class="sandbox-badge" style="background: #10b981; color: white;">LIVE GATEWAY</span>
+                    </c:when>
+                    <c:otherwise>
+                        <span class="sandbox-badge">Sandbox</span>
+                    </c:otherwise>
+                </c:choose>
+            </small>
         </div>
         <div class="gw-amount">
             <span>Amount Due</span>
@@ -474,15 +483,32 @@
         <%-- 1. REAL-TIME RAZORPAY STANDARD CHECKOUT MODAL LAUNCHER --%>
         <div class="rzp-quick-launch-box">
             <button type="button" class="rzp-launch-btn" id="launchRazorpayBtn" onclick="launchRazorpayCheckout()">
-                <span>⚡ Open Razorpay Test Popup</span>
-                <span style="font-size: 0.8rem; opacity: 0.9;">(UPI Intent, QR &amp; Cards) →</span>
+                <c:choose>
+                    <c:when test="${isRazorpayLive}">
+                        <span>🔒 Pay ₹<fmt:formatNumber value="${order.totalAmount}" minFractionDigits="2"/> with Razorpay Secure</span>
+                        <span style="font-size: 0.8rem; opacity: 0.9;">(UPI, QR, Cards, NetBanking) →</span>
+                    </c:when>
+                    <c:otherwise>
+                        <span>⚡ Open Razorpay Test Popup</span>
+                        <span style="font-size: 0.8rem; opacity: 0.9;">(UPI Intent, QR &amp; Cards) →</span>
+                    </c:otherwise>
+                </c:choose>
             </button>
-            <div style="margin-top: 0.75rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 0.65rem 0.85rem; font-size: 0.75rem; color: #166534; line-height: 1.45;">
-                ✨ <b>Test Popup Credentials:</b><br>
-                • <b>UPI / QR:</b> Enter <code>success@razorpay</code> or scan the test QR code.<br>
-                • <b>Cards:</b> Number <code>4111 2222 3333 4444</code>, Expiry <code>12/28</code>, CVV <code>123</code>, OTP <code>123456</code>.<br>
-                • <b>Server Verification:</b> Automatically verified with cryptographic <b>HMAC-SHA256</b> signature upon success.
-            </div>
+            <c:choose>
+                <c:when test="${isRazorpayLive}">
+                    <div style="margin-top: 0.75rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 0.65rem 0.85rem; font-size: 0.75rem; color: #166534; line-height: 1.45;">
+                        🛡️ <b>Bank-Grade 256-Bit SSL Protection:</b> Securely process your payment using UPI (GPay, PhonePe, Paytm, BHIM, CRED), Credit/Debit Cards, NetBanking, and Wallets.
+                    </div>
+                </c:when>
+                <c:otherwise>
+                    <div style="margin-top: 0.75rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 0.65rem 0.85rem; font-size: 0.75rem; color: #166534; line-height: 1.45;">
+                        ✨ <b>Test Popup Credentials:</b><br>
+                        • <b>UPI / QR:</b> Enter <code>success@razorpay</code> or scan the test QR code.<br>
+                        • <b>Cards:</b> Number <code>4111 2222 3333 4444</code>, Expiry <code>12/28</code>, CVV <code>123</code>, OTP <code>123456</code>.<br>
+                        • <b>Server Verification:</b> Automatically verified with cryptographic <b>HMAC-SHA256</b> signature upon success.
+                    </div>
+                </c:otherwise>
+            </c:choose>
         </div>
 
         <div class="rzp-divider-or">

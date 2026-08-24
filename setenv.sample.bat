@@ -15,8 +15,29 @@ REM If left empty, system automatically runs in SMS Simulation Mode (logs OTP to
 set "FAST2SMS_API_KEY=YOUR_FAST2SMS_API_KEY_HERE"
 
 REM 3. Carrier Logistics Webhook Secret
-REM Set any random secure string here and in your Carrier Dashboard (e.g. Delhivery, Shiprocket)
+REM Set any random secure string here and configure the SAME value in your Carrier Dashboards
+REM (Shiprocket: Settings > Webhooks, Delhivery: Contact support, BlueDart: NetConnect portal)
 set "LOGISTICS_WEBHOOK_SECRET=sec_wh_shopkart_prod_2026_x89a"
+
+REM 6. Shiprocket API Credentials (Multi-Carrier Aggregator)
+REM Get from: https://app.shiprocket.in -> Settings -> API -> Generate Token
+REM Option A: Pre-generated JWT Bearer Token (recommended for production)
+set "SHIPROCKET_AUTH_TOKEN=YOUR_SHIPROCKET_JWT_TOKEN_HERE"
+REM Option B: Email/Password for auto-login (used if AUTH_TOKEN is not set)
+set "SHIPROCKET_EMAIL=your_shiprocket_registered@email.com"
+set "SHIPROCKET_PASSWORD=your_shiprocket_password_here"
+
+REM 7. Delhivery API Credentials
+REM Get from: https://app.delhivery.com -> Tools & APIs -> API Integration
+REM Contact your Delhivery account manager for API key provisioning.
+set "DELHIVERY_API_KEY=YOUR_DELHIVERY_API_KEY_HERE"
+
+REM 8. BlueDart NetConnect API Credentials
+REM Get from: https://netconnect.bluedart.com -> Account -> API Integration
+REM Requires a BlueDart corporate account. Contact BlueDart sales for onboarding.
+set "BLUEDART_LOGIN_ID=YOUR_BLUEDART_LOGIN_ID"
+set "BLUEDART_LICENSE_KEY=YOUR_BLUEDART_LICENSE_KEY"
+set "BLUEDART_CUSTOMER_CODE=YOUR_BLUEDART_CUSTOMER_CODE"
 
 REM 4. Payment Gateway (Razorpay)
 set "RAZORPAY_KEY_ID=rzp_live_your_actual_key_id"
