@@ -97,11 +97,30 @@ public class PaymentCallbackServlet extends HttpServlet {
         String rzpPaymentId = trimToNull(request.getParameter("razorpay_payment_id"));
         String rzpOrderId = trimToNull(request.getParameter("razorpay_order_id"));
         String rzpSignature = trimToNull(request.getParameter("razorpay_signature"));
-        String transactionReference = trimToNull(request.getParameter("transactionReference"));
         String clientStatus = trimToNull(request.getParameter("status"));
         String clientReason = trimToNull(request.getParameter("reason"));
 
-        // 4. Branch: Real Razorpay vs Development Simulator
+        // 4. Handle client-initiated cancellation or window dismissal
+        if ("FAILED".equalsIgnoreCase(clientStatus) || "CANCELLED".equalsIgnoreCase(clientStatus)) {
+            String failureReason = isBlank(clientReason) ? "Customer cancelled or dismissed payment window" : clientReason;
+            try {
+                paymentService.handlePaymentFailure(order.getOrderId(), failureReason);
+            } catch (Exception e) {
+                logger.warn("Error recording payment cancellation for order {}", order.getOrderId(), e);
+            }
+
+            String requestedWith = request.getHeader("X-Requested-With");
+            if ("XMLHttpRequest".equalsIgnoreCase(requestedWith) || "true".equalsIgnoreCase(request.getParameter("ajax"))) {
+                response.setContentType("application/json");
+                response.getWriter().write("{\"success\":true,\"message\":\"Payment cancellation recorded\"}");
+                return;
+            }
+
+            redirectPaymentFailure(request, response, order, failureReason);
+            return;
+        }
+
+        // 5. Branch: Real Razorpay vs Development Simulator
         if (razorpayService.isConfigured()) {
             handleRealRazorpayPayment(request, response, user, order, rzpPaymentId, rzpOrderId, rzpSignature, transactionReference);
         } else {
@@ -260,6 +279,12 @@ public class PaymentCallbackServlet extends HttpServlet {
 
     private void redirectPaymentFailure(HttpServletRequest request, HttpServletResponse response, Order order, String message)
             throws IOException {
+        try {
+            paymentService.handlePaymentFailure(order.getOrderId(), message);
+        } catch (Exception e) {
+            logger.warn("Failed to record payment failure state for order {}", order.getOrderId(), e);
+        }
+
         HttpSession session = sessionFrom(request);
         if (session != null) {
             PaymentFailureContext failureContext = new PaymentFailureContext(
