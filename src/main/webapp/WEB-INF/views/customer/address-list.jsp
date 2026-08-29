@@ -194,6 +194,7 @@
                             <form action="${pageContext.request.contextPath}/addresses/delete" method="POST"
                                   style="display:inline; margin:0; padding:0;"
                                   onsubmit="return confirm('Remove this address?');">
+                                <input type="hidden" name="_csrf" value="${csrfToken}">
                                 <input type="hidden" name="addressId" value="${addr.addressId}">
                                 <button type="submit" style="background:none; border:none; padding:0; color: var(--danger); font-weight: 700; font-size: 0.8rem; cursor:pointer;">Remove</button>
                             </form>
@@ -202,6 +203,7 @@
                                 <form action="${pageContext.request.contextPath}/addresses/default" method="POST"
                                       style="display:inline; margin:0; padding:0;"
                                       onsubmit="return confirm('Set as default delivery address?');">
+                                    <input type="hidden" name="_csrf" value="${csrfToken}">
                                     <input type="hidden" name="addressId" value="${addr.addressId}">
                                     <button type="submit" style="background:none; border:none; padding:0; color: var(--text-muted); font-size: 0.8rem; cursor:pointer;">Set as Default</button>
                                 </form>

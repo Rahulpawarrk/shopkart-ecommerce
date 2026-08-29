@@ -203,6 +203,7 @@
                 <button type="button" onclick="closeAdminReturnModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b;">✕</button>
             </div>
             <form action="${pageContext.request.contextPath}/admin/returns" method="POST" style="padding: 1.5rem;">
+                <input type="hidden" name="_csrf" value="${csrfToken}">
                 <input type="hidden" name="returnId" id="adminModalReturnId" value="">
                 
                 <div style="margin-bottom: 1.25rem;">

@@ -305,6 +305,7 @@
     <%-- Hidden Form for Processing Secure Razorpay Callback & Cryptographic Verification --%>
     <form action="${pageContext.request.contextPath}/payment/callback"
           method="POST" id="paymentForm" style="display:none;">
+        <input type="hidden" name="_csrf" value="${csrfToken}">
         <input type="hidden" name="orderId"              value="${order.orderId}">
         <input type="hidden" name="transactionReference" id="txnRefField" value="${payment.transactionReference}">
         <input type="hidden" name="status"               id="statusField" value="SUCCESS">

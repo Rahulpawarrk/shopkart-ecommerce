@@ -209,6 +209,7 @@
 
         <!-- Coupon Apply & Remove Forms -->
         <form id="couponApplyForm" action="${pageContext.request.contextPath}/coupon/apply" method="POST">
+            <input type="hidden" name="_csrf" value="${csrfToken}">
             <input type="hidden" name="returnUrl" value="${summaryReturnUrl}">
             <c:if test="${isDirectBuy}">
                 <input type="hidden" name="buyNowProductId" value="${directBuyProductId}">
@@ -217,6 +218,7 @@
         </form>
 
         <form id="couponRemoveForm" action="${pageContext.request.contextPath}/coupon/remove" method="POST">
+            <input type="hidden" name="_csrf" value="${csrfToken}">
             <input type="hidden" name="returnUrl" value="${summaryReturnUrl}">
         </form>
 
@@ -410,6 +412,7 @@
 
                     <!-- Proceed to Step 3: Payment Button -->
                     <form id="proceedToPaymentForm" action="${pageContext.request.contextPath}/checkout/summary" method="POST" onsubmit="copyNotesBeforeSubmit()">
+                        <input type="hidden" name="_csrf" value="${csrfToken}">
                         <input type="hidden" name="notes" id="hiddenNotesInput" value="">
 
                         <button type="submit" class="hero-cta-btn" style="width: 100%; margin-top: 1.5rem; padding: 1rem; font-size: 1.05rem; font-weight: 900; border-radius: 10px; cursor: pointer; border: none; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.35); display: flex; align-items: center; justify-content: center; gap: 0.5rem;">

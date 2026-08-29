@@ -117,6 +117,7 @@
                                                 ✏️ Edit
                                             </a>
                                             <form action="${pageContext.request.contextPath}/admin/categories/status" method="POST" style="display: inline-block; margin-left: 0.25rem;">
+                                                <input type="hidden" name="_csrf" value="${csrfToken}">
                                                 <input type="hidden" name="id" value="${c.categoryId}">
                                                 <input type="hidden" name="active" value="${!c.active}">
                                                 <button type="submit" class="btn btn-secondary btn-sm" style="cursor: pointer;">

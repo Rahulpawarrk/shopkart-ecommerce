@@ -215,6 +215,7 @@
         <div class="modal-content">
             <h2 id="restockTitle" style="font-size: 1.25rem; font-weight: 800; color: #0f172a; margin-bottom: 1.25rem;">Restock Product Inventory</h2>
             <form action="${pageContext.request.contextPath}/admin/inventory/restock" method="POST">
+                <input type="hidden" name="_csrf" value="${csrfToken}">
                 <input type="hidden" id="restockProductId" name="productId">
                 
                 <div class="form-group">
@@ -245,6 +246,7 @@
         <div class="modal-content">
             <h2 id="adjustTitle" style="font-size: 1.25rem; font-weight: 800; color: #0f172a; margin-bottom: 1.25rem;">Adjust Stock Count</h2>
             <form action="${pageContext.request.contextPath}/admin/inventory/adjust" method="POST">
+                <input type="hidden" name="_csrf" value="${csrfToken}">
                 <input type="hidden" id="adjustProductId" name="productId">
                 
                 <div class="form-group">

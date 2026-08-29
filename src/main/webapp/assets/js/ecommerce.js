@@ -768,10 +768,12 @@ function initCouponChips() {
    9. 1-CLICK AJAX ADD TO CART & WISHLIST WITH TOAST NOTIFICATIONS
    ============================================================================== */
 function getCsrfToken() {
-    const csrfInput = document.querySelector('input[name="_csrf"]');
+    const csrfInput = document.querySelector('input[name="_csrf"], input[name="csrfToken"], input[name="csrf_token"]');
     if (csrfInput && csrfInput.value) return csrfInput.value;
-    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    const csrfMeta = document.querySelector('meta[name="csrf-token"], meta[name="_csrf"]');
     if (csrfMeta && csrfMeta.content) return csrfMeta.content;
+    const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
+    if (match) return decodeURIComponent(match[1]);
     return '';
 }
 

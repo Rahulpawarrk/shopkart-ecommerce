@@ -134,6 +134,7 @@
                                                 <td style="text-align: right;">
                                                     <div style="display: inline-flex; gap: 0.35rem;">
                                                         <form action="${pageContext.request.contextPath}/admin/reviews/approve" method="POST">
+                                                            <input type="hidden" name="_csrf" value="${csrfToken}">
                                                             <input type="hidden" name="reviewId" value="${rev.reviewId}">
                                                             <input type="hidden" name="approved" value="${!rev.approved}">
                                                             <button type="submit" class="btn btn-secondary btn-sm">
@@ -141,6 +142,7 @@
                                                             </button>
                                                         </form>
                                                         <form action="${pageContext.request.contextPath}/admin/reviews/delete" method="POST" onsubmit="return confirm('Delete review permanently?');">
+                                                            <input type="hidden" name="_csrf" value="${csrfToken}">
                                                             <input type="hidden" name="reviewId" value="${rev.reviewId}">
                                                             <button type="submit" class="btn btn-danger btn-sm">
                                                                 Delete

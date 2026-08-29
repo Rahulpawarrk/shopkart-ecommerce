@@ -166,6 +166,7 @@
                                                     <div style="display: inline-flex; gap: 0.35rem;">
                                                         <a href="${pageContext.request.contextPath}/admin/coupons/edit?id=${c.couponId}" class="btn btn-secondary btn-sm">✏️ Edit</a>
                                                         <form action="${pageContext.request.contextPath}/admin/coupons/toggle" method="POST">
+                                                            <input type="hidden" name="_csrf" value="${csrfToken}">
                                                             <input type="hidden" name="couponId" value="${c.couponId}">
                                                             <input type="hidden" name="active" value="${!c.active}">
                                                             <button type="submit" class="btn btn-secondary btn-sm" style="cursor: pointer;">

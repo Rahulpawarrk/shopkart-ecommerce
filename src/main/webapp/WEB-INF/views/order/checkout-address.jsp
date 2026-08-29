@@ -238,6 +238,7 @@
             </div>
 
             <form id="addressSelectionForm" action="${pageContext.request.contextPath}/checkout/address" method="POST">
+                <input type="hidden" name="_csrf" value="${csrfToken}">
                 <c:if test="${isDirectBuy}">
                     <input type="hidden" name="buyNowProductId" value="${directBuyProductId}">
                     <input type="hidden" name="quantity" value="${directBuyQuantity}">

@@ -8,6 +8,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -61,7 +62,17 @@ public class CsrfFilter implements Filter {
             session.setAttribute(CSRF_SESSION_ATTR, sessionCsrfToken);
         }
 
+        // Expose token across session and request attributes for JSPs
+        session.setAttribute("csrfToken", sessionCsrfToken);
         httpRequest.setAttribute(CSRF_REQ_ATTR, sessionCsrfToken);
+        httpRequest.setAttribute("_csrf", sessionCsrfToken);
+
+        // Expose non-HttpOnly XSRF-TOKEN cookie so frontend JavaScript can read it
+        Cookie xsrfCookie = new Cookie("XSRF-TOKEN", sessionCsrfToken);
+        xsrfCookie.setPath(httpRequest.getContextPath().isEmpty() ? "/" : httpRequest.getContextPath());
+        xsrfCookie.setHttpOnly(false);
+        xsrfCookie.setSecure(httpRequest.isSecure());
+        httpResponse.addCookie(xsrfCookie);
 
         String method = httpRequest.getMethod();
         String path = httpRequest.getRequestURI().substring(httpRequest.getContextPath().length());
@@ -84,10 +95,16 @@ public class CsrfFilter implements Filter {
                     reqCsrfToken = httpRequest.getParameter("csrfToken");
                 }
                 if (reqCsrfToken == null || reqCsrfToken.isEmpty()) {
+                    reqCsrfToken = httpRequest.getParameter("csrf_token");
+                }
+                if (reqCsrfToken == null || reqCsrfToken.isEmpty()) {
                     reqCsrfToken = httpRequest.getHeader("X-CSRF-Token");
                 }
                 if (reqCsrfToken == null || reqCsrfToken.isEmpty()) {
                     reqCsrfToken = httpRequest.getHeader("X-XSRF-TOKEN");
+                }
+                if (reqCsrfToken == null || reqCsrfToken.isEmpty()) {
+                    reqCsrfToken = httpRequest.getHeader("X-CSRF-TOKEN");
                 }
 
                 boolean valid = false;

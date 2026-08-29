@@ -251,6 +251,7 @@
                     </div>
 
                     <form action="${pageContext.request.contextPath}/admin/admins" method="POST">
+                        <input type="hidden" name="_csrf" value="${csrfToken}">
                         <div class="form-grid-3">
                             <div class="form-group-sm">
                                 <label for="firstName">First Name *</label>

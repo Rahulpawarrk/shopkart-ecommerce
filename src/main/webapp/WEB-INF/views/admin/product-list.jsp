@@ -153,6 +153,7 @@
                                                         ✏️ Edit
                                                     </a>
                                                     <form action="${pageContext.request.contextPath}/admin/products/status" method="POST" style="display: inline-block; margin-left: 0.25rem;">
+                                                        <input type="hidden" name="_csrf" value="${csrfToken}">
                                                         <input type="hidden" name="id" value="${p.productId}">
                                                         <input type="hidden" name="status" value="${p.active ? 'INACTIVE' : 'ACTIVE'}">
                                                         <button type="submit" class="btn btn-secondary btn-sm" style="cursor: pointer;">
