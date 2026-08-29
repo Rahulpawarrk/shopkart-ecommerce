@@ -30,7 +30,7 @@ public class ReviewDAO {
     public boolean isVerifiedPurchase(int userId, int productId) {
         String sql = "SELECT 1 FROM dbo.orders o " +
                      "INNER JOIN dbo.order_items oi ON o.order_id = oi.order_id " +
-                     "WHERE o.user_id = ? AND oi.product_id = ? AND o.order_status = 'DELIVERED' LIMIT 1";
+                     "WHERE o.user_id = ? AND oi.product_id = ? AND o.order_status = 'DELIVERED'";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, userId);
@@ -48,7 +48,7 @@ public class ReviewDAO {
         String sql = "SELECT o.order_number FROM dbo.orders o " +
                      "INNER JOIN dbo.order_items oi ON o.order_id = oi.order_id " +
                      "WHERE o.user_id = ? AND oi.product_id = ? AND o.order_status = 'DELIVERED' " +
-                     "ORDER BY o.delivered_at DESC, o.created_at DESC LIMIT 1";
+                     "ORDER BY o.delivered_at DESC, o.created_at DESC";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, userId);

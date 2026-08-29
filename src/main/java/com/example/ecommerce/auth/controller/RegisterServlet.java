@@ -71,9 +71,12 @@ public class RegisterServlet extends HttpServlet {
             String emailOtp = String.format("%06d", secureRandom.nextInt(1000000));
             LocalDateTime otpExpiry = LocalDateTime.now().plusMinutes(10);
 
+            // Hash password with BCrypt immediately so raw passwords are never kept in session
+            String passwordHash = org.mindrot.jbcrypt.BCrypt.hashpw(password, org.mindrot.jbcrypt.BCrypt.gensalt());
+
             PendingRegistration pendingRegistration = new PendingRegistration(
                     email.trim().toLowerCase(),
-                    password,
+                    passwordHash,
                     firstName.trim(),
                     lastName.trim(),
                     phone.trim(),

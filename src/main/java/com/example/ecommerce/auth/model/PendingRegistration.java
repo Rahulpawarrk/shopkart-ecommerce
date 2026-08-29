@@ -11,7 +11,7 @@ public class PendingRegistration implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String email;
-    private String password;
+    private String passwordHash;
     private String firstName;
     private String lastName;
     private String phone;
@@ -22,10 +22,10 @@ public class PendingRegistration implements Serializable {
     public PendingRegistration() {
     }
 
-    public PendingRegistration(String email, String password, String firstName, String lastName, 
+    public PendingRegistration(String email, String passwordHash, String firstName, String lastName, 
                                String phone, String emailOtp, LocalDateTime otpExpiry) {
         this.email = email;
-        this.password = password;
+        this.passwordHash = passwordHash;
         this.firstName = firstName;
         this.lastName = lastName;
         this.phone = phone;
@@ -34,9 +34,9 @@ public class PendingRegistration implements Serializable {
     }
 
     // Backward-compatible constructor
-    public PendingRegistration(String email, String password, String firstName, String lastName, 
+    public PendingRegistration(String email, String passwordHash, String firstName, String lastName, 
                                String phone, String emailOtp, String mobileOtp, LocalDateTime otpExpiry) {
-        this(email, password, firstName, lastName, phone, emailOtp, otpExpiry);
+        this(email, passwordHash, firstName, lastName, phone, emailOtp, otpExpiry);
     }
 
     public boolean isOtpExpired() {
@@ -78,12 +78,12 @@ public class PendingRegistration implements Serializable {
         this.email = email;
     }
 
-    public String getPassword() {
-        return password;
+    public String getPasswordHash() {
+        return passwordHash;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 
     public String getFirstName() {

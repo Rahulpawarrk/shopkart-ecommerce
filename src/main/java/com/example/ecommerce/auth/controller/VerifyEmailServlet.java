@@ -127,10 +127,9 @@ public class VerifyEmailServlet extends HttpServlet {
 
         // OTP is verified! Complete final registration in Database
         try {
-            UserSession userSession = authService.registerCustomer(
+            UserSession userSession = authService.registerCustomerWithPasswordHash(
                     pending.getEmail(),
-                    pending.getPassword(),
-                    pending.getPassword(),
+                    pending.getPasswordHash(),
                     pending.getFirstName(),
                     pending.getLastName(),
                     pending.getPhone());
@@ -150,18 +149,6 @@ public class VerifyEmailServlet extends HttpServlet {
             request.getRequestDispatcher("/WEB-INF/views/auth/verify-email.jsp").forward(request, response);
 
         } catch (Exception e) {
-            // Graceful Fallback: If user was already created during a rapid double-submission
-            try {
-                UserSession existingSession = authService.login(pending.getEmail(), pending.getPassword());
-                session.removeAttribute("pendingRegistration");
-                session.setAttribute("currentUser", existingSession);
-                session.setAttribute("cart", new Cart());
-                logger.info("Customer account already created, authenticated directly: {}", pending.getEmail());
-                response.sendRedirect(request.getContextPath() + "/?registered=true&welcome=true");
-                return;
-            } catch (Exception ignored) {
-            }
-
             logger.error("Unexpected error finalizing customer registration for: {}", pending.getEmail(), e);
             request.setAttribute("error", "An unexpected system error occurred while creating your account. Please try again.");
             request.getRequestDispatcher("/WEB-INF/views/auth/verify-email.jsp").forward(request, response);

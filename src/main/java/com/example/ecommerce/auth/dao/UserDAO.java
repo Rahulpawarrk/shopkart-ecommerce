@@ -258,7 +258,7 @@ public class UserDAO {
     public int createAdminUser(User adminUser) {
         String insertUserSql = "INSERT INTO dbo.users (email, password_hash, first_name, last_name, phone, status, created_at, updated_at) " +
                                "VALUES (?, ?, ?, ?, ?, 'ACTIVE', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)";
-        String findRoleSql = "SELECT role_id FROM dbo.roles WHERE UPPER(role_name) IN ('ADMIN', 'ROLE_ADMIN') LIMIT 1";
+        String findRoleSql = "SELECT role_id FROM dbo.roles WHERE UPPER(role_name) = 'ADMIN' OR UPPER(role_name) = 'ROLE_ADMIN'";
 
         try (Connection conn = DBConnection.getConnection()) {
             conn.setAutoCommit(false);

@@ -222,7 +222,7 @@ class AuthServiceTest {
         );
 
         verify(userDAO).updatePassword(eq(25), anyString());
-        verify(passwordResetDAO).invalidateToken("123456");
+        verify(passwordResetDAO).invalidateToken(25, "123456");
     }
 
     @Test
@@ -241,7 +241,7 @@ class AuthServiceTest {
         );
 
         verify(userDAO).updatePassword(eq(25), anyString());
-        verify(passwordResetDAO).invalidateToken("123456");
+        verify(passwordResetDAO).invalidateToken(25, "123456");
     }
 
     @Test
@@ -300,7 +300,7 @@ class AuthServiceTest {
 
         assertNotNull(resetToken);
         assertFalse(resetToken.isEmpty());
-        verify(passwordResetDAO).invalidateToken("123456");
+        verify(passwordResetDAO).invalidateToken(25, "123456");
         verify(passwordResetDAO).createToken(eq(25), eq(resetToken));
     }
 
@@ -319,7 +319,7 @@ class AuthServiceTest {
 
         assertNotNull(resetToken);
         assertFalse(resetToken.isEmpty());
-        verify(passwordResetDAO).invalidateToken("654321");
+        verify(passwordResetDAO).invalidateToken(30, "654321");
         verify(passwordResetDAO).createToken(eq(30), eq(resetToken));
     }
 

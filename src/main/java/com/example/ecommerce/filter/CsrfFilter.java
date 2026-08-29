@@ -81,26 +81,26 @@ public class CsrfFilter implements Filter {
             if (!isExempt) {
                 String reqCsrfToken = httpRequest.getParameter("_csrf");
                 if (reqCsrfToken == null || reqCsrfToken.isEmpty()) {
+                    reqCsrfToken = httpRequest.getParameter("csrfToken");
+                }
+                if (reqCsrfToken == null || reqCsrfToken.isEmpty()) {
                     reqCsrfToken = httpRequest.getHeader("X-CSRF-Token");
                 }
                 if (reqCsrfToken == null || reqCsrfToken.isEmpty()) {
                     reqCsrfToken = httpRequest.getHeader("X-XSRF-TOKEN");
                 }
 
-                UserSession currentUser = (UserSession) session.getAttribute("currentUser");
+                boolean valid = false;
+                if (reqCsrfToken != null && !reqCsrfToken.trim().isEmpty()) {
+                    byte[] reqBytes = reqCsrfToken.trim().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                    byte[] sessionBytes = sessionCsrfToken.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                    valid = java.security.MessageDigest.isEqual(reqBytes, sessionBytes);
+                }
 
-                // Enforce strictly for authenticated users or state-changing operations
-                if (currentUser != null && (reqCsrfToken == null || !reqCsrfToken.equals(sessionCsrfToken))) {
-                    // Check Origin / Referer header validation as secondary defense
-                    String origin = httpRequest.getHeader("Origin");
-                    String referer = httpRequest.getHeader("Referer");
-                    boolean isSameOrigin = isAllowedOrigin(httpRequest, origin) || isAllowedOrigin(httpRequest, referer);
-
-                    if (!isSameOrigin && (reqCsrfToken == null || !reqCsrfToken.equals(sessionCsrfToken))) {
-                        logger.warn("CSRF validation blocked request to [{}] from IP [{}] (Method: {})", path, httpRequest.getRemoteAddr(), method);
-                        httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid or missing CSRF token.");
-                        return;
-                    }
+                if (!valid) {
+                    logger.warn("CSRF validation blocked request to [{}] from IP [{}] (Method: {})", path, httpRequest.getRemoteAddr(), method);
+                    httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid or missing CSRF token.");
+                    return;
                 }
             }
         }

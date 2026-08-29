@@ -41,8 +41,14 @@ sed -i "s/<Connector port=\"8080\"/<Connector port=\"$PORT_TO_USE\" address=\"0.
 exec catalina.sh run\n' > /usr/local/tomcat/bin/docker-entrypoint.sh && \
 chmod +x /usr/local/tomcat/bin/docker-entrypoint.sh
 
+# Security Hardening: Run as dedicated non-root tomcat user
+RUN groupadd -r tomcat && useradd -r -g tomcat -d /usr/local/tomcat -s /sbin/nologin tomcat && \
+    chown -R tomcat:tomcat /usr/local/tomcat
+
 # Expose default HTTP port
 EXPOSE 8080
+
+USER tomcat
 
 # Start Tomcat via dynamic entrypoint
 CMD ["/usr/local/tomcat/bin/docker-entrypoint.sh"]

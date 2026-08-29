@@ -179,6 +179,10 @@ function initSearchAutocomplete() {
             });
     }
 
+    function escapeRegex(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
     function renderSuggestions(products, query) {
         if (!products || products.length === 0) {
             dropdown.classList.remove('show');
@@ -187,17 +191,19 @@ function initSearchAutocomplete() {
         }
 
         const contextPath = getContextPath();
+        const cleanQuery = escapeRegex((query || '').trim());
+        const regex = cleanQuery ? new RegExp(`(${cleanQuery})`, 'gi') : null;
         let html = '';
 
         products.forEach(p => {
-            const regex = new RegExp(`(${query})`, 'gi');
-            const highlightedName = p.name.replace(regex, '<strong style="color:var(--primary);">$1</strong>');
-            const formattedPrice = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(p.effectivePrice);
-            const imageSrc = p.image || `${contextPath}/assets/img/placeholder.png`;
+            const safeName = escapeHtml(p.name || '');
+            const highlightedName = regex ? safeName.replace(regex, '<strong style="color:var(--primary);">$1</strong>') : safeName;
+            const formattedPrice = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(p.effectivePrice || 0);
+            const imageSrc = p.image ? escapeHtml(p.image) : `${contextPath}/assets/img/placeholder.png`;
 
             html += `
-                <a href="${contextPath}/product?id=${p.id}" class="autocomplete-item">
-                    <img src="${imageSrc}" alt="${escapeHtml(p.name)}" onerror="this.src='https://placehold.co/80x80?text=Product'">
+                <a href="${contextPath}/product?id=${encodeURIComponent(p.id)}" class="autocomplete-item">
+                    <img src="${imageSrc}" alt="${safeName}">
                     <div class="item-info">
                         <div class="item-title">${highlightedName}</div>
                         <div class="item-meta">

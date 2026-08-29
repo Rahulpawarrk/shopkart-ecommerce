@@ -140,6 +140,18 @@ public class AuthService {
 
         // 3. Hash Password with BCrypt
         String passwordHash = PasswordUtil.hashPassword(password);
+        return registerCustomerWithPasswordHash(normalizedEmail, passwordHash, firstName, lastName, normalizedPhone);
+    }
+
+    /**
+     * Registers a new customer using a pre-computed BCrypt password hash.
+     * Used after OTP verification to avoid retaining raw plaintext passwords in session.
+     */
+    public UserSession registerCustomerWithPasswordHash(String email, String passwordHash,
+            String firstName, String lastName, String phone) {
+
+        String normalizedEmail = email.trim().toLowerCase();
+        String normalizedPhone = phone.trim().replaceAll("[^0-9]", "");
 
         User newUser = new User();
         newUser.setEmail(normalizedEmail);
@@ -149,12 +161,11 @@ public class AuthService {
         newUser.setPhone(normalizedPhone);
         newUser.setStatus("ACTIVE");
 
-        // 4. Resolve CUSTOMER Role
+        // Resolve CUSTOMER Role
         Role customerRole = roleDAO.findByName("CUSTOMER")
                 .orElseThrow(() -> new AppException("System role 'CUSTOMER' not configured in database."));
 
-        // 5. Transactional Execution: Create User -> Assign Role -> Provision Cart &
-        // Wishlist
+        // Transactional Execution: Create User -> Assign Role -> Provision Cart & Wishlist
         try (Connection conn = DBConnection.getConnection()) {
             conn.setAutoCommit(false); // Begin Transaction
             try {
@@ -422,7 +433,7 @@ public class AuthService {
 
         String newHash = PasswordUtil.hashPassword(newPassword);
         userDAO.updatePassword(userId, newHash);
-        passwordResetDAO.invalidateToken(token.trim());
+        passwordResetDAO.invalidateAllUserTokens(userId);
 
         logger.info("Password successfully reset via token for userId: {}", userId);
     }
@@ -478,7 +489,7 @@ public class AuthService {
 
         String newHash = PasswordUtil.hashPassword(newPassword);
         userDAO.updatePassword(user.getUserId(), newHash);
-        passwordResetDAO.invalidateToken(otpCode.trim());
+        passwordResetDAO.invalidateToken(user.getUserId(), otpCode.trim());
         OtpRateLimiter.reset(input, "PASSWORD_RESET");
 
         logger.info("Password successfully reset via OTP for userId: {}", user.getUserId());
@@ -528,7 +539,7 @@ public class AuthService {
         }
 
         // OTP is valid: invalidate OTP and create a secure one-time reset token (UUID)
-        passwordResetDAO.invalidateToken(otpCode.trim());
+        passwordResetDAO.invalidateToken(user.getUserId(), otpCode.trim());
         OtpRateLimiter.reset(input, "PASSWORD_RESET");
 
         String resetToken = java.util.UUID.randomUUID().toString().replace("-", "");

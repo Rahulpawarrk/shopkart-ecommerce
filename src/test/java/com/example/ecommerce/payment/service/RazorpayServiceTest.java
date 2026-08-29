@@ -44,9 +44,9 @@ class RazorpayServiceTest {
     }
 
     @Test
-    @DisplayName("Should verify simulation payment signatures correctly")
+    @DisplayName("Should verify simulation payment signatures in sandbox unconfigured mode")
     void testVerifySimulatedSignature() {
-        RazorpayService razorpayService = new RazorpayService();
+        RazorpayService razorpayService = new RazorpayService(null, null);
 
         boolean isValid = razorpayService.verifyPaymentSignature(
                 "order_sim_1234567890", 
@@ -58,11 +58,36 @@ class RazorpayServiceTest {
     }
 
     @Test
+    @DisplayName("Should cryptographically verify valid HMAC-SHA256 signatures in configured mode")
+    void testVerifyCryptographicSignatureInConfiguredMode() throws Exception {
+        String testSecret = "TestSecretKey12345";
+        RazorpayService razorpayService = new RazorpayService("rzp_test_key", testSecret);
+
+        String orderId = "order_live_987654";
+        String paymentId = "pay_live_123456";
+        String payload = orderId + "|" + paymentId;
+
+        javax.crypto.Mac mac = javax.crypto.Mac.getInstance("HmacSHA256");
+        mac.init(new javax.crypto.spec.SecretKeySpec(testSecret.getBytes(java.nio.charset.StandardCharsets.UTF_8), "HmacSHA256"));
+        String validSignature = java.util.HexFormat.of().formatHex(mac.doFinal(payload.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+
+        // Valid signature must pass
+        assertTrue(razorpayService.verifyPaymentSignature(orderId, paymentId, validSignature));
+
+        // Tampered signature must be rejected
+        assertFalse(razorpayService.verifyPaymentSignature(orderId, paymentId, "invalid_tampered_signature"));
+
+        // Simulated IDs must NOT bypass configured mode with invalid signature
+        assertFalse(razorpayService.verifyPaymentSignature("order_sim_123", "pay_sim_456", "sig_sim_sample"));
+    }
+
+    @Test
     @DisplayName("Should reject null or empty order and payment IDs")
     void testRejectInvalidSignatureParameters() {
-        RazorpayService razorpayService = new RazorpayService();
+        RazorpayService razorpayService = new RazorpayService(null, null);
 
         assertFalse(razorpayService.verifyPaymentSignature(null, "pay_123", "sig_123"));
         assertFalse(razorpayService.verifyPaymentSignature("order_123", null, "sig_123"));
+        assertFalse(razorpayService.verifyPaymentSignature("", "pay_123", "sig_123"));
     }
 }

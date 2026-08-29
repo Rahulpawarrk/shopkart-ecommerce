@@ -154,7 +154,7 @@ public class CouponDAO {
      * Will not decrement below 0.
      */
     public void decrementUsedCount(int couponId, Connection conn) throws SQLException {
-        String sql = "UPDATE dbo.coupons SET current_usage = GREATEST(current_usage - 1, 0), "
+        String sql = "UPDATE dbo.coupons SET current_usage = CASE WHEN current_usage > 0 THEN current_usage - 1 ELSE 0 END, "
                    + "updated_at = CURRENT_TIMESTAMP WHERE coupon_id = ?";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, couponId);
@@ -245,7 +245,7 @@ public class CouponDAO {
         Map<String, Object> stats = new HashMap<>();
         String sql = "SELECT " +
                      "COUNT(*) AS total_coupons, " +
-                     "SUM(CASE WHEN is_active = true THEN 1 ELSE 0 END) AS active_coupons, " +
+                     "SUM(CASE WHEN CAST(is_active AS VARCHAR(5)) IN ('true', '1', 't') THEN 1 ELSE 0 END) AS active_coupons, " +
                      "COALESCE(SUM(current_usage), 0) AS total_redemptions " +
                      "FROM dbo.coupons";
         try (Connection conn = DBConnection.getConnection();

@@ -108,13 +108,9 @@ public class RazorpayService {
      * @return true if authentic; false otherwise
      */
     public boolean verifyPaymentSignature(String razorpayOrderId, String razorpayPaymentId, String razorpaySignature) {
-        if (razorpayOrderId == null || razorpayPaymentId == null) {
+        if (razorpayOrderId == null || razorpayOrderId.trim().isEmpty() ||
+            razorpayPaymentId == null || razorpayPaymentId.trim().isEmpty()) {
             return false;
-        }
-
-        // If running in development simulation mode or simulated IDs, accept valid format
-        if (!isConfigured || razorpayOrderId.startsWith("order_sim_") || razorpayPaymentId.startsWith("pay_sim_")) {
-            return !razorpayOrderId.trim().isEmpty() && !razorpayPaymentId.trim().isEmpty();
         }
 
         if (razorpaySignature == null || razorpaySignature.trim().isEmpty()) {
@@ -122,23 +118,35 @@ public class RazorpayService {
             return false;
         }
 
-        try {
-            JSONObject options = new JSONObject();
-            options.put("razorpay_order_id", razorpayOrderId.trim());
-            options.put("razorpay_payment_id", razorpayPaymentId.trim());
-            options.put("razorpay_signature", razorpaySignature.trim());
+        if (isConfigured) {
+            // Live or test key configured: enforce strict HMAC-SHA256 cryptographic verification
+            try {
+                JSONObject options = new JSONObject();
+                options.put("razorpay_order_id", razorpayOrderId.trim());
+                options.put("razorpay_payment_id", razorpayPaymentId.trim());
+                options.put("razorpay_signature", razorpaySignature.trim());
 
-            boolean isValid = Utils.verifyPaymentSignature(options, keySecret);
-            if (isValid) {
-                logger.info("Razorpay signature verified successfully for Order: {}, Payment: {}", razorpayOrderId, razorpayPaymentId);
-            } else {
-                logger.error("Razorpay signature verification returned FALSE for Order: {}, Payment: {}", razorpayOrderId, razorpayPaymentId);
+                boolean isValid = Utils.verifyPaymentSignature(options, keySecret);
+                if (isValid) {
+                    logger.info("Razorpay signature verified successfully for Order: {}, Payment: {}", razorpayOrderId, razorpayPaymentId);
+                } else {
+                    logger.error("Razorpay signature verification returned FALSE for Order: {}, Payment: {}", razorpayOrderId, razorpayPaymentId);
+                }
+                return isValid;
+            } catch (Exception e) {
+                logger.error("Razorpay signature verification failed with exception for Order: {}, Payment: {}", razorpayOrderId, razorpayPaymentId, e);
+                return false;
             }
-            return isValid;
-        } catch (Exception e) {
-            logger.error("Razorpay signature verification failed with exception for Order: {}, Payment: {}", razorpayOrderId, razorpayPaymentId, e);
-            return false;
         }
+
+        // Only allow fallback simulation in local sandbox when keys are not configured
+        if (razorpayOrderId.startsWith("order_sim_") && razorpayPaymentId.startsWith("pay_sim_")) {
+            logger.warn("Development Sandbox: Accepted simulated signature for Order [{}]", razorpayOrderId);
+            return true;
+        }
+
+        logger.error("Razorpay signature verification failed: Gateway not configured and invalid simulation parameters.");
+        return false;
     }
 
     /**
@@ -151,8 +159,17 @@ public class RazorpayService {
      * @return true if server-side validation and capture pass; false otherwise
      */
     public boolean verifyAndFetchPayment(String razorpayPaymentId, String expectedRazorpayOrderId, BigDecimal expectedAmount) {
-        if (!isConfigured || razorpayPaymentId == null || razorpayPaymentId.startsWith("pay_sim_")) {
-            return true; // Simulation mode bypass
+        if (razorpayPaymentId == null || razorpayPaymentId.trim().isEmpty()) {
+            return false;
+        }
+
+        if (!isConfigured) {
+            if (razorpayPaymentId.startsWith("pay_sim_")) {
+                logger.warn("Development Sandbox: Accepted simulated payment fetch for ID [{}]", razorpayPaymentId);
+                return true;
+            }
+            logger.error("Server-side payment verification failed: Razorpay credentials not configured.");
+            return false;
         }
 
         try {
