@@ -297,6 +297,7 @@ public class CheckoutServlet extends HttpServlet {
 
         HttpSession session = request.getSession(false);
         UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+        String path = request.getServletPath();
 
         String initialBuyNowPid = request.getParameter("buyNowProductId");
         if (initialBuyNowPid != null && !initialBuyNowPid.trim().isEmpty()) {
@@ -323,8 +324,11 @@ public class CheckoutServlet extends HttpServlet {
                     return;
                 }
 
-                response.sendRedirect(request.getContextPath() + "/checkout/address");
-                return;
+                // If on initial checkout entry, redirect to /checkout/address to begin step 1
+                if (path == null || "/checkout".equals(path) || "/checkout/".equals(path)) {
+                    response.sendRedirect(request.getContextPath() + "/checkout/address");
+                    return;
+                }
             } catch (NumberFormatException ignored) {}
         }
 
@@ -344,8 +348,6 @@ public class CheckoutServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/admin/dashboard?error=admin_cannot_shop");
             return;
         }
-
-        String path = request.getServletPath();
 
         // 1. Step 2 (Summary -> Payment): If POST to /checkout/summary -> save delivery notes and go to /checkout/payment
         if ("/checkout/summary".equals(path)) {

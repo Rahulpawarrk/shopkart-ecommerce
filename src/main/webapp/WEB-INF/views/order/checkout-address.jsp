@@ -239,10 +239,6 @@
 
             <form id="addressSelectionForm" action="${pageContext.request.contextPath}/checkout/address" method="POST">
                 <input type="hidden" name="_csrf" value="${csrfToken}">
-                <c:if test="${isDirectBuy}">
-                    <input type="hidden" name="buyNowProductId" value="${directBuyProductId}">
-                    <input type="hidden" name="quantity" value="${directBuyQuantity}">
-                </c:if>
 
                 <c:choose>
                     <c:when test="${empty addresses}">
@@ -293,7 +289,7 @@
 
                         <!-- Action Submit Button -->
                         <div style="display: flex; justify-content: flex-end; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 1.5rem;">
-                            <button type="submit" class="hero-cta-btn" style="padding: 0.85rem 2.25rem; font-size: 1rem; font-weight: 800; border-radius: 10px; cursor: pointer; border: none; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35); display: inline-flex; align-items: center; gap: 0.5rem;">
+                            <button type="submit" id="saveProceedBtn" form="addressSelectionForm" class="hero-cta-btn" style="padding: 0.85rem 2.25rem; font-size: 1rem; font-weight: 800; border-radius: 10px; cursor: pointer; border: none; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35); display: inline-flex; align-items: center; gap: 0.5rem;">
                                 <span>Save &amp; Proceed &rarr;</span>
                             </button>
                         </div>
@@ -323,11 +319,36 @@
 
     <script nonce="${cspNonce}">
         function selectAddressCard(card) {
+            if (!card) return;
             document.querySelectorAll('.address-card-option').forEach(c => c.classList.remove('selected'));
             card.classList.add('selected');
             const radio = card.querySelector('input[type="radio"]');
             if (radio) radio.checked = true;
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.address-card-option').forEach(function(card) {
+                card.addEventListener('click', function(e) {
+                    if (e.target.closest('a')) return;
+                    selectAddressCard(card);
+                });
+            });
+
+            const form = document.getElementById('addressSelectionForm');
+            const submitBtn = document.getElementById('saveProceedBtn');
+            if (submitBtn && form) {
+                submitBtn.addEventListener('click', function(e) {
+                    const checkedRadio = form.querySelector('input[name="addressId"]:checked');
+                    if (!checkedRadio) {
+                        const firstRadio = form.querySelector('input[name="addressId"]');
+                        if (firstRadio) {
+                            firstRadio.checked = true;
+                            selectAddressCard(firstRadio.closest('.address-card-option'));
+                        }
+                    }
+                });
+            }
+        });
     </script>
     <script src="${pageContext.request.contextPath}/assets/js/ecommerce.js"></script>
 </body>

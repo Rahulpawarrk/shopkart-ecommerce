@@ -89,4 +89,48 @@ class CheckoutAuthRedirectTest {
         verify(session).setAttribute(eq("redirectAfterLogin"), eq("/checkout?buyNowProductId=77&quantity=3"));
         verify(response).sendRedirect("/auth/login");
     }
+
+    @Test
+    @DisplayName("CheckoutServlet doPost on /checkout/address saves addressId and redirects to /checkout/summary even in direct buy")
+    void testCheckoutServletDoPostAddressStepDirectBuySavesAddressAndRedirectsToSummary() throws ServletException, IOException {
+        com.example.ecommerce.auth.model.UserSession user = new com.example.ecommerce.auth.model.UserSession(
+                1, "test@example.com", "Rahul", "Pawar", java.util.Set.of("CUSTOMER"));
+
+        when(request.getSession(false)).thenReturn(session);
+        when(session.getAttribute("currentUser")).thenReturn(user);
+        when(request.getServletPath()).thenReturn("/checkout/address");
+        when(request.getParameter("addressId")).thenReturn("5");
+        when(request.getParameter("buyNowProductId")).thenReturn("15");
+        when(request.getParameter("quantity")).thenReturn("2");
+        when(request.getContextPath()).thenReturn("");
+
+        CheckoutServlet servlet = new CheckoutServlet();
+        servlet.doPost(request, response);
+
+        verify(session).setAttribute(eq("directBuyProductId"), eq(15));
+        verify(session).setAttribute(eq("directBuyQuantity"), eq(2));
+        verify(session).setAttribute(eq("checkoutAddressId"), eq(5));
+        verify(response).sendRedirect("/checkout/summary");
+        verify(response, never()).sendRedirect("/checkout/address");
+    }
+
+    @Test
+    @DisplayName("CheckoutServlet doPost on /checkout/summary saves notes and redirects to /checkout/payment")
+    void testCheckoutServletDoPostSummaryStepSavesNotesAndRedirectsToPayment() throws ServletException, IOException {
+        com.example.ecommerce.auth.model.UserSession user = new com.example.ecommerce.auth.model.UserSession(
+                1, "test@example.com", "Rahul", "Pawar", java.util.Set.of("CUSTOMER"));
+
+        when(request.getSession(false)).thenReturn(session);
+        when(session.getAttribute("currentUser")).thenReturn(user);
+        when(request.getServletPath()).thenReturn("/checkout/summary");
+        when(request.getParameter("buyNowProductId")).thenReturn(null);
+        when(request.getParameter("notes")).thenReturn("Please ring the doorbell");
+        when(request.getContextPath()).thenReturn("");
+
+        CheckoutServlet servlet = new CheckoutServlet();
+        servlet.doPost(request, response);
+
+        verify(session).setAttribute(eq("checkoutNotes"), eq("Please ring the doorbell"));
+        verify(response).sendRedirect("/checkout/payment");
+    }
 }
