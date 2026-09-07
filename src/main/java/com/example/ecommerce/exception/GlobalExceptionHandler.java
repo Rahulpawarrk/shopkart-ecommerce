@@ -16,11 +16,15 @@ public class GlobalExceptionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    @ExceptionHandler(ResourceNotFoundException.class)
+    @ExceptionHandler({
+            ResourceNotFoundException.class,
+            org.springframework.web.servlet.NoHandlerFoundException.class,
+            org.springframework.web.servlet.resource.NoResourceFoundException.class
+    })
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public String handleNotFound(ResourceNotFoundException ex, Model model) {
-        logger.warn("Resource not found: {}", ex.getMessage());
-        model.addAttribute("errorMessage", ex.getMessage());
+    public String handleNotFound(Exception ex, Model model) {
+        logger.warn("Page or resource not found: {}", ex.getMessage());
+        model.addAttribute("errorMessage", "The page or resource you are looking for does not exist.");
         return "error/404";
     }
 

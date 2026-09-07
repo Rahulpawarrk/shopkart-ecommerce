@@ -1,0 +1,19 @@
+package com.example.ecommerce.home.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+
+/**
+ * Spring MVC Controller for root site endpoints ("/", "/index.jsp").
+ * 
+ * Forwards requests to HomeServlet ("/home") to populate catalog showcases,
+ * flash deals, quads, and categories for index.jsp.
+ */
+@Controller
+public class HomeController {
+
+    @GetMapping({"/", "/index.jsp"})
+    public String home() {
+        return "forward:/home";
+    }
+}
