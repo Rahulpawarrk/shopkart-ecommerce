@@ -2,9 +2,9 @@
 <configuration scan="true" scanPeriod="30 seconds">
 
     <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n" />
-    <property name="LOG_DIR" value="${catalina.base:-./logs}/ecommerce-logs" />
+    <property name="LOG_DIR" value="${LOG_DIR:-/tmp/ecommerce-logs}" />
 
-    <!-- Console Appender -->
+    <!-- Console Appender: Primary for Containerized Cloud Environments (Render, Docker, K8s) -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>${LOG_PATTERN}</pattern>
@@ -12,7 +12,7 @@
         </encoder>
     </appender>
 
-    <!-- Daily Rolling File Appender for Production -->
+    <!-- Daily Rolling File Appender: Writes safely to writable directory (/tmp/ecommerce-logs or custom LOG_DIR) -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_DIR}/application.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -30,11 +30,11 @@
     <logger name="com.example.ecommerce" level="${LOG_LEVEL:-INFO}" />
     <logger name="com.zaxxer.hikari" level="INFO" />
     <logger name="org.apache.catalina" level="WARN" />
+    <logger name="org.springframework.web" level="INFO" />
 
-    <!-- Root Logger -->
+    <!-- Root Logger: Direct all output to CONSOLE for zero-friction cloud deployments -->
     <root level="INFO">
         <appender-ref ref="CONSOLE" />
-        <appender-ref ref="FILE" />
     </root>
 
 </configuration>
