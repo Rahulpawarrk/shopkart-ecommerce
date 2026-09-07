@@ -174,6 +174,7 @@ public class OrderService {
                     if (!success) {
                         throw new ValidationException("Coupon usage limit has been reached.");
                     }
+                    couponDAO.recordCouponUsage(order.getCouponId(), userId, orderId, cart.getCouponDiscount(), conn);
                 }
 
                 // Step C: Insert Order Line Items & Reserve Stock with UPDLOCK
@@ -493,6 +494,7 @@ public class OrderService {
 
                 if (order.getCouponId() != null && order.getCouponId() > 0) {
                     couponDAO.decrementUsedCount(order.getCouponId(), conn);
+                    couponDAO.deleteCouponUsageForOrder(orderId, conn);
                 }
 
                 // 4. Record Status History
@@ -651,5 +653,64 @@ public class OrderService {
 
     public Map<String, Object> getOrderSummaryStats() {
         return orderDAO.getOrderSummaryStats();
+    }
+
+    /**
+     * Inspects and cancels expired pending online payment orders (older than maxAgeMinutes),
+     * restoring locked stock to the catalog and updating order lifecycle history.
+     */
+    public int cancelExpiredPendingOrders(int maxAgeMinutes) {
+        List<Order> expiredOrders = orderDAO.findExpiredPendingOrders(maxAgeMinutes);
+        if (expiredOrders.isEmpty()) {
+            return 0;
+        }
+
+        int count = 0;
+        for (Order order : expiredOrders) {
+            try (Connection conn = DBConnection.getConnection()) {
+                conn.setAutoCommit(false);
+                try {
+                    orderDAO.updateOrderStatus(order.getOrderId(), OrderStatus.CANCELLED, conn);
+                    orderDAO.updatePaymentStatus(order.getOrderId(), PaymentStatus.FAILED, conn);
+
+                    // Restore inventory
+                    List<OrderItem> items = orderDAO.getOrderItems(order.getOrderId(), conn);
+                    for (OrderItem item : items) {
+                        inventoryService.restoreStockForCancellation(
+                                item.getProductId(),
+                                item.getQuantity(),
+                                order.getOrderId(),
+                                TransactionType.CANCELLATION,
+                                "Automatic cancellation: payment window expired (" + maxAgeMinutes + " mins)",
+                                conn
+                        );
+                    }
+
+                    if (order.getCouponId() != null && order.getCouponId() > 0) {
+                        couponDAO.decrementUsedCount(order.getCouponId(), conn);
+                        couponDAO.deleteCouponUsageForOrder(order.getOrderId(), conn);
+                    }
+
+                    OrderStatusHistory history = new OrderStatusHistory(
+                            order.getOrderId(),
+                            order.getOrderStatus(),
+                            OrderStatus.CANCELLED,
+                            null,
+                            "Order automatically cancelled: payment window expired after " + maxAgeMinutes + " minutes"
+                    );
+                    orderDAO.createStatusHistory(history, conn);
+
+                    conn.commit();
+                    count++;
+                    logger.info("Automatically cancelled expired pending order #{} and released stock.", order.getOrderNumber());
+                } catch (Exception e) {
+                    conn.rollback();
+                    logger.error("Failed to cancel expired pending order #{}", order.getOrderNumber(), e);
+                }
+            } catch (SQLException e) {
+                logger.error("Database connection error while cancelling expired order #{}", order.getOrderNumber(), e);
+            }
+        }
+        return count;
     }
 }

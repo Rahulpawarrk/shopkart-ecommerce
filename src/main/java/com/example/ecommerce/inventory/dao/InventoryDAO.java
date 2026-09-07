@@ -123,12 +123,32 @@ public class InventoryDAO {
      * within an active transaction to prevent concurrent race conditions.
      */
     public Optional<Inventory> getInventoryWithLock(int productId, Connection conn) throws SQLException {
-        String sql = "SELECT i.inventory_id, i.product_id, i.quantity, i.low_stock_threshold, i.last_updated, " +
-                "p.product_name, p.sku, p.brand, p.price, c.category_name " +
-                "FROM dbo.inventory i " +
-                "INNER JOIN dbo.products p ON i.product_id = p.product_id " +
-                "INNER JOIN dbo.categories c ON p.category_id = c.category_id " +
-                "WHERE i.product_id = ? FOR UPDATE";
+        boolean isSqlServer = false;
+        try {
+            String dbProduct = conn.getMetaData().getDatabaseProductName();
+            if (dbProduct != null && (dbProduct.toLowerCase().contains("sql server") || dbProduct.toLowerCase().contains("microsoft"))) {
+                isSqlServer = true;
+            }
+        } catch (Exception ignored) {
+        }
+
+        String sql;
+        if (isSqlServer) {
+            sql = "SELECT i.inventory_id, i.product_id, i.quantity, i.low_stock_threshold, i.last_updated, " +
+                    "p.product_name, p.sku, p.brand, p.price, c.category_name " +
+                    "FROM dbo.inventory i WITH (UPDLOCK, ROWLOCK) " +
+                    "INNER JOIN dbo.products p ON i.product_id = p.product_id " +
+                    "INNER JOIN dbo.categories c ON p.category_id = c.category_id " +
+                    "WHERE i.product_id = ?";
+        } else {
+            sql = "SELECT i.inventory_id, i.product_id, i.quantity, i.low_stock_threshold, i.last_updated, " +
+                    "p.product_name, p.sku, p.brand, p.price, c.category_name " +
+                    "FROM dbo.inventory i " +
+                    "INNER JOIN dbo.products p ON i.product_id = p.product_id " +
+                    "INNER JOIN dbo.categories c ON p.category_id = c.category_id " +
+                    "WHERE i.product_id = ? FOR UPDATE";
+        }
+
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, productId);
             try (ResultSet rs = stmt.executeQuery()) {

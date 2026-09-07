@@ -42,6 +42,13 @@ public class CouponService {
      * Validates and applies a coupon code against the customer's current cart subtotal.
      */
     public Coupon validateAndApplyCoupon(String code, BigDecimal subtotal) {
+        return validateAndApplyCoupon(code, subtotal, null);
+    }
+
+    /**
+     * Validates and applies a coupon code with per-user usage enforcement.
+     */
+    public Coupon validateAndApplyCoupon(String code, BigDecimal subtotal, Integer userId) {
         if (code == null || code.trim().isEmpty()) {
             throw new ValidationException("Please enter a promotional coupon code.");
         }
@@ -61,6 +68,13 @@ public class CouponService {
             throw new ValidationException("Coupon code '" + coupon.getCode() + "' has reached its maximum global redemptions.");
         }
 
+        if (userId != null && userId > 0) {
+            int userRedemptions = couponDAO.getUserUsageCount(coupon.getCouponId(), userId);
+            if (userRedemptions >= 1) { // Default max 1 usage per user
+                throw new ValidationException("You have already redeemed coupon code '" + coupon.getCode() + "'.");
+            }
+        }
+
         if (coupon.getMinSpend() != null && subtotal.compareTo(coupon.getMinSpend()) < 0) {
             throw new ValidationException("Minimum cart subtotal of ₹" + coupon.getMinSpend() + " is required to use code '" + coupon.getCode() + "'.");
         }
@@ -70,7 +84,7 @@ public class CouponService {
             throw new ValidationException("Coupon does not provide any discount for the current order items.");
         }
 
-        logger.info("Coupon [{}] successfully validated with discount [₹{}] for subtotal [₹{}]", coupon.getCode(), discount, subtotal);
+        logger.info("Coupon [{}] successfully validated with discount [₹{}] for subtotal [₹{}] (user: {})", coupon.getCode(), discount, subtotal, userId);
         return coupon;
     }
 

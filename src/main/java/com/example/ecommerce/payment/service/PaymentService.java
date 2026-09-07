@@ -101,6 +101,31 @@ public class PaymentService {
             return true;
         }
 
+        return executePaymentStatusUpdate(order, transactionReference, gatewayOrderId, isSuccess, gatewayResponse);
+    }
+
+    /**
+     * Processes server-to-server gateway webhooks where user session is absent,
+     * relying strictly on cryptographic signature validation from the payment gateway.
+     */
+    public boolean processServerWebhook(int orderId, String transactionReference, 
+                                        String gatewayOrderId, boolean isSuccess, String gatewayResponse) {
+        Order order = orderDAO.findById(orderId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with ID: " + orderId));
+
+        if (order.getPaymentStatus() == PaymentStatus.PAID) {
+            logger.info("Order ID #{} already PAID. Webhook accepted idempotently.", orderId);
+            return true;
+        }
+
+        return executePaymentStatusUpdate(order, transactionReference, gatewayOrderId, isSuccess, gatewayResponse);
+    }
+
+    private boolean executePaymentStatusUpdate(Order order, String transactionReference, 
+                                               String gatewayOrderId, boolean isSuccess, String gatewayResponse) {
+        int orderId = order.getOrderId();
+        int userId = order.getUserId();
+
         try (Connection conn = DBConnection.getConnection()) {
             conn.setAutoCommit(false);
             try {

@@ -27,6 +27,7 @@ import java.util.TimeZone;
 })
 @ServletComponentScan(basePackages = "com.example.ecommerce")
 @EnableTransactionManagement
+@org.springframework.scheduling.annotation.EnableScheduling
 public class EcommerceApplication extends SpringBootServletInitializer {
 
     private static final Logger logger = LoggerFactory.getLogger(EcommerceApplication.class);

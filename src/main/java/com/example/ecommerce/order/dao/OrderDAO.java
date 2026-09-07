@@ -552,6 +552,56 @@ public class OrderDAO {
         return stats;
     }
 
+    /**
+     * Finds orders in PENDING status that are older than the specified age in minutes.
+     * Only checks non-COD orders that have not completed payment.
+     */
+    public List<Order> findExpiredPendingOrders(int expirationMinutes) {
+        String sql = "SELECT o.*, u.first_name, u.last_name, u.email " +
+                "FROM dbo.orders o " +
+                "INNER JOIN dbo.users u ON o.user_id = u.user_id " +
+                "WHERE o.order_status = 'PENDING' " +
+                "AND o.payment_status = 'PENDING' " +
+                "AND o.payment_method != 'COD' " +
+                "AND o.created_at < (CURRENT_TIMESTAMP - (? * INTERVAL '1 minute'))";
+
+        List<Order> orders = new ArrayList<>();
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, expirationMinutes);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Order order = mapResultSetToOrder(rs);
+                    order.setItems(getOrderItems(order.getOrderId(), conn));
+                    orders.add(order);
+                }
+            }
+        } catch (SQLException e) {
+            // Fallback for SQL Server syntax (DATEADD) if PostgreSQL interval syntax throws
+            String sqlServerSql = "SELECT o.*, u.first_name, u.last_name, u.email " +
+                    "FROM dbo.orders o " +
+                    "INNER JOIN dbo.users u ON o.user_id = u.user_id " +
+                    "WHERE o.order_status = 'PENDING' " +
+                    "AND o.payment_status = 'PENDING' " +
+                    "AND o.payment_method != 'COD' " +
+                    "AND o.created_at < DATEADD(minute, -?, SYSDATETIME())";
+            try (Connection conn = DBConnection.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sqlServerSql)) {
+                stmt.setInt(1, expirationMinutes);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        Order order = mapResultSetToOrder(rs);
+                        order.setItems(getOrderItems(order.getOrderId(), conn));
+                        orders.add(order);
+                    }
+                }
+            } catch (SQLException ex) {
+                logger.error("Error finding expired pending orders", ex);
+            }
+        }
+        return orders;
+    }
+
     private Order mapResultSetToOrder(ResultSet rs) throws SQLException {
         Order o = new Order();
         o.setOrderId(rs.getInt("order_id"));

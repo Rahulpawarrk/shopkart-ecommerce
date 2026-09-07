@@ -50,11 +50,19 @@ public class CheckoutServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         super.init();
-        this.cartService = new CartService();
-        this.addressService = new AddressService();
-        this.orderService = new OrderService();
-        this.couponService = new CouponService();
-        this.productService = new ProductService();
+        if (com.example.ecommerce.config.SpringContextLookup.isInitialized()) {
+            this.cartService = com.example.ecommerce.config.SpringContextLookup.getBean(CartService.class);
+            this.addressService = com.example.ecommerce.config.SpringContextLookup.getBean(AddressService.class);
+            this.orderService = com.example.ecommerce.config.SpringContextLookup.getBean(OrderService.class);
+            this.couponService = com.example.ecommerce.config.SpringContextLookup.getBean(CouponService.class);
+            this.productService = com.example.ecommerce.config.SpringContextLookup.getBean(ProductService.class);
+        } else {
+            this.cartService = new CartService();
+            this.addressService = new AddressService();
+            this.orderService = new OrderService();
+            this.couponService = new CouponService();
+            this.productService = new ProductService();
+        }
     }
 
     @Override

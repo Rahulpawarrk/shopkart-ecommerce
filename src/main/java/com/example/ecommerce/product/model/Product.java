@@ -262,7 +262,10 @@ public class Product implements Serializable {
         return "/assets/images/placeholder-product.png";
     }
 
+    @Transient
     private double averageRating = 0.0;
+
+    @Transient
     private int reviewCount = 0;
 
     public double getAverageRating() {

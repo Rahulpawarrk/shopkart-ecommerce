@@ -7,6 +7,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +43,22 @@ public class ResetPasswordServlet extends HttpServlet {
 
         String token = request.getParameter("token");
         String identifier = request.getParameter("identifier");
+
+        // Fallback to session if set by ForgotPasswordServlet
+        HttpSession session = request.getSession(false);
+        if ((token == null || token.trim().isEmpty()) && session != null) {
+            Object sessToken = session.getAttribute("passwordResetToken");
+            if (sessToken != null) {
+                token = sessToken.toString();
+            }
+        }
+        if ((identifier == null || identifier.trim().isEmpty()) && session != null) {
+            Object sessId = session.getAttribute("passwordResetIdentifier");
+            if (sessId != null) {
+                identifier = sessId.toString();
+            }
+        }
+
         if (identifier == null || identifier.trim().isEmpty()) {
             identifier = request.getParameter("email");
         }
@@ -87,6 +104,14 @@ public class ResetPasswordServlet extends HttpServlet {
         String newPassword     = request.getParameter("newPassword");
         String confirmPassword = request.getParameter("confirmPassword");
 
+        HttpSession session = request.getSession(false);
+        if ((token == null || token.trim().isEmpty()) && session != null) {
+            Object sessToken = session.getAttribute("passwordResetToken");
+            if (sessToken != null) {
+                token = sessToken.toString();
+            }
+        }
+
         try {
             if (token != null && !token.trim().isEmpty()) {
                 authService.resetPassword(token, newPassword, confirmPassword);
@@ -96,6 +121,12 @@ public class ResetPasswordServlet extends HttpServlet {
                 throw new ValidationException("Invalid or expired session. Please start over from Forgot Password.");
             }
             
+            // Clean up session attributes
+            if (session != null) {
+                session.removeAttribute("passwordResetToken");
+                session.removeAttribute("passwordResetIdentifier");
+            }
+
             // Success: redirect to login with success message
             logger.info("Password successfully updated. Redirecting to login.");
             response.sendRedirect(request.getContextPath() + "/login?reset=success");

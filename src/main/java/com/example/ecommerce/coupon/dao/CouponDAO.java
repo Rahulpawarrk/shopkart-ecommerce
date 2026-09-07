@@ -165,6 +165,54 @@ public class CouponDAO {
         }
     }
 
+    /**
+     * Records an audit log of coupon usage by a specific user on an order.
+     */
+    public void recordCouponUsage(int couponId, int userId, int orderId, java.math.BigDecimal discountApplied, Connection conn) throws SQLException {
+        String sql = "INSERT INTO dbo.coupon_usage (coupon_id, user_id, order_id, discount_applied, used_at) " +
+                     "VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, couponId);
+            stmt.setInt(2, userId);
+            stmt.setInt(3, orderId);
+            stmt.setBigDecimal(4, discountApplied != null ? discountApplied : java.math.BigDecimal.ZERO);
+            stmt.executeUpdate();
+        }
+    }
+
+    /**
+     * Deletes user-level coupon usage records if order is cancelled.
+     */
+    public void deleteCouponUsageForOrder(int orderId, Connection conn) throws SQLException {
+        String sql = "DELETE FROM dbo.coupon_usage WHERE order_id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, orderId);
+            stmt.executeUpdate();
+        }
+    }
+
+    /**
+     * Returns the number of times a specific user has redeemed a given coupon.
+     */
+    public int getUserUsageCount(int couponId, int userId) {
+        String sql = "SELECT COUNT(*) FROM dbo.coupon_usage cu " +
+                     "INNER JOIN dbo.orders o ON cu.order_id = o.order_id " +
+                     "WHERE cu.coupon_id = ? AND cu.user_id = ? AND o.order_status != 'CANCELLED'";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, couponId);
+            stmt.setInt(2, userId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error checking user coupon redemption count for coupon: {}, user: {}", couponId, userId, e);
+        }
+        return 0;
+    }
+
     public void setActiveStatus(int couponId, boolean active) {
         String sql = "UPDATE dbo.coupons SET is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE coupon_id = ?";
         try (Connection conn = DBConnection.getConnection();

@@ -26,7 +26,7 @@ import java.io.IOException;
  * Implements cryptographic signature verification, server-side fetch & capture validation,
  * and zero address-bar leakage redirects.
  */
-@WebServlet(name = "PaymentCallbackServlet", urlPatterns = { "/payment/callback" })
+@WebServlet(name = "PaymentCallbackServlet", urlPatterns = { "/payment/callback", "/api/payment/webhook" })
 public class PaymentCallbackServlet extends HttpServlet {
 
     private static final Logger logger = LoggerFactory.getLogger(PaymentCallbackServlet.class);
@@ -39,10 +39,17 @@ public class PaymentCallbackServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         super.init();
-        this.paymentService = new PaymentService();
-        this.orderService = new OrderService();
-        this.cartService = new CartService();
-        this.razorpayService = new RazorpayService();
+        if (com.example.ecommerce.config.SpringContextLookup.isInitialized()) {
+            this.paymentService = com.example.ecommerce.config.SpringContextLookup.getBean(PaymentService.class);
+            this.orderService = com.example.ecommerce.config.SpringContextLookup.getBean(OrderService.class);
+            this.cartService = com.example.ecommerce.config.SpringContextLookup.getBean(CartService.class);
+            this.razorpayService = com.example.ecommerce.config.SpringContextLookup.getBean(RazorpayService.class);
+        } else {
+            this.paymentService = new PaymentService();
+            this.orderService = new OrderService();
+            this.cartService = new CartService();
+            this.razorpayService = new RazorpayService();
+        }
 
         logger.info("PaymentCallbackServlet initialized. Razorpay configured={}", razorpayService.isConfigured());
     }
@@ -51,10 +58,13 @@ public class PaymentCallbackServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        String path = request.getServletPath();
+        boolean isWebhook = "/api/payment/webhook".equalsIgnoreCase(path);
+
         HttpSession session = request.getSession(false);
         UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
 
-        if (user == null) {
+        if (user == null && !isWebhook) {
             logger.warn("Payment callback rejected: unauthenticated request");
             response.sendRedirect(request.getContextPath() + "/auth/login");
             return;
@@ -63,8 +73,13 @@ public class PaymentCallbackServlet extends HttpServlet {
         // 1. Read Order ID from POST body
         String orderIdParam = request.getParameter("orderId");
         if (isBlank(orderIdParam)) {
-            logger.warn("Payment callback rejected: missing orderId. userId={}", user.getUserId());
-            response.sendRedirect(request.getContextPath() + "/orders");
+            logger.warn("Payment callback rejected: missing orderId.");
+            if (isWebhook) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"error\":\"missing orderId\"}");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/orders");
+            }
             return;
         }
 
@@ -73,23 +88,40 @@ public class PaymentCallbackServlet extends HttpServlet {
             orderId = Integer.parseInt(orderIdParam.trim());
         } catch (NumberFormatException e) {
             logger.warn("Invalid orderId received: {}", orderIdParam);
-            response.sendRedirect(request.getContextPath() + "/orders");
+            if (isWebhook) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            } else {
+                response.sendRedirect(request.getContextPath() + "/orders");
+            }
             return;
         }
 
         // 2. Load order from Database
         final Order order;
         try {
-            order = orderService.getOrderById(orderId, user.getUserId());
+            if (user != null) {
+                order = orderService.getOrderById(orderId, user.getUserId());
+            } else {
+                // Webhook mode: load order by id directly
+                order = orderService.getAdminOrderById(orderId);
+            }
         } catch (Exception e) {
-            logger.error("Unable to load order {} for user {}", orderId, user.getUserId(), e);
-            response.sendRedirect(request.getContextPath() + "/orders");
+            logger.error("Unable to load order {}", orderId, e);
+            if (isWebhook) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            } else {
+                response.sendRedirect(request.getContextPath() + "/orders");
+            }
             return;
         }
 
         if (order == null) {
-            logger.warn("Order {} does not belong to user {}", orderId, user.getUserId());
-            response.sendRedirect(request.getContextPath() + "/orders");
+            logger.warn("Order {} not found", orderId);
+            if (isWebhook) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            } else {
+                response.sendRedirect(request.getContextPath() + "/orders");
+            }
             return;
         }
 
@@ -100,6 +132,12 @@ public class PaymentCallbackServlet extends HttpServlet {
         String clientStatus = trimToNull(request.getParameter("status"));
         String clientReason = trimToNull(request.getParameter("reason"));
         String transactionReference = trimToNull(request.getParameter("transactionReference"));
+
+        // Webhook processing branch
+        if (isWebhook) {
+            handleServerWebhook(request, response, order, rzpPaymentId, rzpOrderId, rzpSignature);
+            return;
+        }
 
         // 4. Handle client-initiated cancellation or window dismissal
         if ("FAILED".equalsIgnoreCase(clientStatus) || "CANCELLED".equalsIgnoreCase(clientStatus)) {
@@ -126,6 +164,41 @@ public class PaymentCallbackServlet extends HttpServlet {
             handleRealRazorpayPayment(request, response, user, order, rzpPaymentId, rzpOrderId, rzpSignature, transactionReference);
         } else {
             handleDevelopmentSimulation(request, response, user, order, clientStatus, clientReason, transactionReference);
+        }
+    }
+
+    private void handleServerWebhook(HttpServletRequest request, HttpServletResponse response,
+                                     Order order, String rzpPaymentId, String rzpOrderId, String rzpSignature) throws IOException {
+        response.setContentType("application/json");
+        if (isBlank(rzpPaymentId) || isBlank(rzpOrderId) || isBlank(rzpSignature)) {
+            logger.warn("Webhook rejected: missing cryptographic signature or IDs for order #{}", order.getOrderNumber());
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"status\":\"error\",\"message\":\"Missing required signature or IDs\"}");
+            return;
+        }
+
+        boolean signatureValid = razorpayService.verifyPaymentSignature(rzpOrderId, rzpPaymentId, rzpSignature);
+        if (!signatureValid) {
+            logger.error("Webhook signature verification failed for order #{}", order.getOrderNumber());
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("{\"status\":\"error\",\"message\":\"Invalid signature\"}");
+            return;
+        }
+
+        boolean processed = paymentService.processServerWebhook(
+                order.getOrderId(),
+                rzpPaymentId,
+                rzpOrderId,
+                true,
+                "Webhook verified payment capture. ID: " + rzpPaymentId
+        );
+
+        if (processed) {
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.getWriter().write("{\"status\":\"ok\",\"orderId\":" + order.getOrderId() + "}");
+        } else {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"status\":\"error\",\"message\":\"Processing failed\"}");
         }
     }
 
@@ -222,6 +295,14 @@ public class PaymentCallbackServlet extends HttpServlet {
             String clientReason,
             String transactionReference)
             throws IOException {
+
+        // Strict Production Protection: disallow client-side status simulation in production environments
+        String env = System.getenv("APP_ENV");
+        if ("production".equalsIgnoreCase(env) || "prod".equalsIgnoreCase(env)) {
+            logger.error("Security Alert: Sandbox simulation attempted in production environment for order #{}", order.getOrderNumber());
+            redirectPaymentFailure(request, response, order, "Online payment processing is temporarily unavailable. Please retry or contact support.");
+            return;
+        }
 
         boolean success = "SUCCESS".equalsIgnoreCase(clientStatus);
         String txnRef = (transactionReference != null) ? transactionReference : "SIM-" + System.currentTimeMillis();

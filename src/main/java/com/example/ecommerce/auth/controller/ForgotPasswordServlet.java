@@ -6,6 +6,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +68,13 @@ public class ForgotPasswordServlet extends HttpServlet {
             try {
                 String resetToken = authService.verifyResetOtp(identifier, otpCode);
                 logger.info("Reset OTP verified for identifier: {}. Redirecting to reset password page.", identifier);
-                response.sendRedirect(request.getContextPath() + "/reset-password?token=" + resetToken);
+                
+                // Securely attach token to user session to prevent leakage via browser URL bar and Referer headers
+                HttpSession session = request.getSession(true);
+                session.setAttribute("passwordResetToken", resetToken);
+                session.setAttribute("passwordResetIdentifier", identifier);
+
+                response.sendRedirect(request.getContextPath() + "/reset-password");
                 return;
             } catch (com.example.ecommerce.exception.ValidationException ve) {
                 request.setAttribute("error", ve.getMessage());
