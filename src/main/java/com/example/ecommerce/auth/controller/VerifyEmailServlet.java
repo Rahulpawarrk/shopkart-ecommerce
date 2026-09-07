@@ -137,13 +137,34 @@ public class VerifyEmailServlet extends HttpServlet {
             // Clean up pending registration state & establish authenticated session
             session.removeAttribute("pendingRegistration");
             session.setAttribute("currentUser", userSession);
-            session.setAttribute("cart", new Cart());
+
+            // If user clicked "Add to Cart" before registration, immediately add it to user's cart in DB
+            Integer pendingCartPid = (Integer) session.getAttribute("pendingCartProductId");
+            Integer pendingCartQty = (Integer) session.getAttribute("pendingCartQuantity");
+            Cart userCart = new Cart();
+            if (pendingCartPid != null && pendingCartPid > 0) {
+                try {
+                    int qtyToAdd = (pendingCartQty != null && pendingCartQty > 0) ? pendingCartQty : 1;
+                    com.example.ecommerce.cart.service.CartService cartService = new com.example.ecommerce.cart.service.CartService();
+                    cartService.addToCart(userSession.getUserId(), pendingCartPid, qtyToAdd);
+                    userCart = cartService.getCart(userSession.getUserId());
+                    logger.info("Added pending cart item pid={} qty={} for new user {}", pendingCartPid, qtyToAdd, userSession.getUserId());
+                } catch (Exception e) {
+                    logger.warn("Could not add pending item pid={} to cart for user {}: {}", pendingCartPid, userSession.getUserId(), e.getMessage());
+                }
+                session.removeAttribute("pendingCartProductId");
+                session.removeAttribute("pendingCartQuantity");
+            }
+            session.setAttribute("cart", userCart);
+
             com.example.ecommerce.auth.service.OtpRateLimiter.reset(pending.getEmail(), "REGISTRATION");
 
             logger.info("Email verified successfully! Registered and authenticated customer: {}", pending.getEmail());
 
             String redirectUrl = (String) session.getAttribute("redirectAfterLogin");
-            if (redirectUrl != null && !redirectUrl.trim().isEmpty()) {
+            if (pendingCartPid != null && pendingCartPid > 0) {
+                response.sendRedirect(request.getContextPath() + "/cart?added=true");
+            } else if (redirectUrl != null && !redirectUrl.trim().isEmpty()) {
                 session.removeAttribute("redirectAfterLogin");
                 response.sendRedirect(redirectUrl);
             } else if (session.getAttribute("directBuyProductId") != null) {

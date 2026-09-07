@@ -784,30 +784,38 @@ function quickAddToCart(productId, quantity = 1, event) {
     }
 
     const contextPath = getContextPath();
-    const formData = new URLSearchParams();
-    formData.append('productId', productId);
-    formData.append('quantity', quantity);
+    const finalQty = quantity && parseInt(quantity, 10) > 0 ? parseInt(quantity, 10) : 1;
+
+    // POST form submission with productId and quantity query params and hidden inputs
+    // This guarantees unauthenticated redirects to /auth/login retain the product & quantity in the session,
+    // and logged-in users are redirected to /cart?added=true without AJAX failure or race conditions.
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `${contextPath}/cart/add?productId=${encodeURIComponent(productId)}&quantity=${encodeURIComponent(finalQty)}`;
+
+    const pidInput = document.createElement('input');
+    pidInput.type = 'hidden';
+    pidInput.name = 'productId';
+    pidInput.value = productId;
+    form.appendChild(pidInput);
+
+    const qtyInput = document.createElement('input');
+    qtyInput.type = 'hidden';
+    qtyInput.name = 'quantity';
+    qtyInput.value = finalQty;
+    form.appendChild(qtyInput);
+
     const csrf = getCsrfToken();
-    if (csrf) formData.append('_csrf', csrf);
+    if (csrf) {
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = '_csrf';
+        csrfInput.value = csrf;
+        form.appendChild(csrfInput);
+    }
 
-    const headers = {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'X-Requested-With': 'XMLHttpRequest'
-    };
-    if (csrf) headers['X-CSRF-Token'] = csrf;
-
-    fetch(`${contextPath}/cart/add`, {
-        method: 'POST',
-        headers: headers,
-        body: formData.toString()
-    })
-        .then(response => {
-            window.location.href = `${contextPath}/cart`;
-        })
-        .catch(error => {
-            console.error('Cart AJAX error:', error);
-            window.location.href = `${contextPath}/cart`;
-        });
+    document.body.appendChild(form);
+    form.submit();
 }
 
 function quickBuyNow(productId, quantity = 1, event) {
@@ -1411,13 +1419,17 @@ function initGlobalActionListeners() {
                 const cartMatch = onclickAttr.match(/quickAddToCart\s*\(\s*['"]?(\d+)['"]?/);
                 if (cartMatch && cartMatch[1]) {
                     e.preventDefault();
-                    quickAddToCart(cartMatch[1], 1, e);
+                    const pdpQty = document.getElementById('pdpQtyInput');
+                    const qty = (pdpQty && parseInt(pdpQty.value, 10) > 0) ? parseInt(pdpQty.value, 10) : 1;
+                    quickAddToCart(cartMatch[1], qty, e);
                     return;
                 }
                 const buyMatch = onclickAttr.match(/quickBuyNow\s*\(\s*['"]?(\d+)['"]?/);
                 if (buyMatch && buyMatch[1]) {
                     e.preventDefault();
-                    quickBuyNow(buyMatch[1], 1, e);
+                    const pdpQty = document.getElementById('pdpQtyInput');
+                    const qty = (pdpQty && parseInt(pdpQty.value, 10) > 0) ? parseInt(pdpQty.value, 10) : 1;
+                    quickBuyNow(buyMatch[1], qty, e);
                     return;
                 }
                 const wishMatch = onclickAttr.match(/quickAddToWishlist\s*\(\s*['"]?(\d+)['"]?/);

@@ -73,6 +73,11 @@ public class CartServlet extends HttpServlet {
         } else if ("/cart/coupon/remove".equals(path)) {
             handleRemoveCoupon(request, response);
         } else if ("/cart/add".equals(path)) {
+            String pid = request.getParameter("productId");
+            if (pid != null && !pid.trim().isEmpty()) {
+                handleAdd(request, response);
+                return;
+            }
             response.sendRedirect(request.getContextPath() + "/cart");
         } else {
             showCart(request, response);
@@ -120,12 +125,13 @@ public class CartServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
 
-        if (user == null) {
-            response.sendRedirect(request.getContextPath() + "/auth/login");
-            return;
+        Cart cart;
+        if (user != null) {
+            cart = cartService.getCart(user.getUserId());
+        } else {
+            cart = new Cart();
         }
 
-        Cart cart = cartService.getCart(user.getUserId());
         if (session != null) {
             session.setAttribute("cart", cart);
         }
@@ -151,16 +157,42 @@ public class CartServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
 
+        boolean isAjax = "XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With"))
+                || "true".equalsIgnoreCase(request.getParameter("ajax"));
+
         if (user == null) {
+            String singleId = request.getParameter("productId");
+            if (singleId != null && !singleId.trim().isEmpty()) {
+                try {
+                    int pid = Integer.parseInt(singleId.trim());
+                    int qty = 1;
+                    String qStr = request.getParameter("quantity");
+                    if (qStr != null && !qStr.trim().isEmpty()) {
+                        qty = Integer.parseInt(qStr.trim());
+                    }
+                    if (qty <= 0) qty = 1;
+                    if (qty > 10) qty = 10;
+                    if (session == null) {
+                        session = request.getSession(true);
+                    }
+                    session.setAttribute("pendingCartProductId", pid);
+                    session.setAttribute("pendingCartQuantity", qty);
+                    session.setAttribute("authMessage", "Please sign in to add items to your cart.");
+                    session.setAttribute("redirectAfterLogin", request.getContextPath() + "/cart?added=true");
+                } catch (NumberFormatException ignored) {}
+            }
+            if (isAjax) {
+                response.setContentType("application/json");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("{\"success\":false,\"redirect\":\"" + request.getContextPath() + "/auth/login\"}");
+                return;
+            }
             response.sendRedirect(request.getContextPath() + "/auth/login");
             return;
         }
 
         String[] productIds = request.getParameterValues("productId");
         String[] quantities = request.getParameterValues("quantity");
-
-        boolean isAjax = "XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With"))
-                || "true".equalsIgnoreCase(request.getParameter("ajax"));
 
         if (productIds == null || productIds.length == 0) {
             String singleId = request.getParameter("productId");

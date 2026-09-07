@@ -75,11 +75,13 @@ public class LoginServlet extends HttpServlet {
         try {
             UserSession userSession = authService.login(email, password);
 
-            // Retrieve possible target URL and buy-now / checkout session state saved before auth redirect
+            // Retrieve possible target URL and buy-now / checkout / cart session state saved before auth redirect
             HttpSession oldSession = request.getSession(false);
             String redirectUrl = null;
             Integer directBuyPid = null;
             Integer directBuyQty = null;
+            Integer pendingCartPid = null;
+            Integer pendingCartQty = null;
             Integer checkoutAddressId = null;
             String checkoutNotes = null;
             Object appliedCoupon = null;
@@ -88,6 +90,8 @@ public class LoginServlet extends HttpServlet {
                 redirectUrl = (String) oldSession.getAttribute("redirectAfterLogin");
                 directBuyPid = (Integer) oldSession.getAttribute("directBuyProductId");
                 directBuyQty = (Integer) oldSession.getAttribute("directBuyQuantity");
+                pendingCartPid = (Integer) oldSession.getAttribute("pendingCartProductId");
+                pendingCartQty = (Integer) oldSession.getAttribute("pendingCartQuantity");
                 checkoutAddressId = (Integer) oldSession.getAttribute("checkoutAddressId");
                 checkoutNotes = (String) oldSession.getAttribute("checkoutNotes");
                 appliedCoupon = oldSession.getAttribute("appliedCoupon");
@@ -115,6 +119,18 @@ public class LoginServlet extends HttpServlet {
                 newSession.setAttribute("appliedCoupon", appliedCoupon);
             }
 
+            // If user clicked "Add to Cart" prior to authentication, add it to user's database cart now
+            if (pendingCartPid != null && pendingCartPid > 0 && !userSession.isAdmin()) {
+                try {
+                    int qtyToAdd = (pendingCartQty != null && pendingCartQty > 0) ? pendingCartQty : 1;
+                    com.example.ecommerce.cart.service.CartService cartService = new com.example.ecommerce.cart.service.CartService();
+                    cartService.addToCart(userSession.getUserId(), pendingCartPid, qtyToAdd);
+                    logger.info("Added pending cart item pid={} qty={} for logged in user {}", pendingCartPid, qtyToAdd, userSession.getUserId());
+                } catch (Exception e) {
+                    logger.warn("Could not add pending item pid={} to cart for user {}: {}", pendingCartPid, userSession.getUserId(), e.getMessage());
+                }
+            }
+
             // Preload user's persistent cart from DB into session
             try {
                 com.example.ecommerce.cart.service.CartService cartService = new com.example.ecommerce.cart.service.CartService();
@@ -130,10 +146,12 @@ public class LoginServlet extends HttpServlet {
             // Redirect logic with Open Redirect prevention
             if (userSession.isAdmin()) {
                 response.sendRedirect(request.getContextPath() + "/admin/dashboard");
-            } else if (redirectUrl != null && isSafeRedirect(request, redirectUrl)) {
-                response.sendRedirect(redirectUrl);
+            } else if (pendingCartPid != null && pendingCartPid > 0) {
+                response.sendRedirect(request.getContextPath() + "/cart?added=true");
             } else if (directBuyPid != null) {
                 response.sendRedirect(request.getContextPath() + "/checkout");
+            } else if (redirectUrl != null && isSafeRedirect(request, redirectUrl)) {
+                response.sendRedirect(redirectUrl);
             } else {
                 response.sendRedirect(request.getContextPath() + "/");
             }

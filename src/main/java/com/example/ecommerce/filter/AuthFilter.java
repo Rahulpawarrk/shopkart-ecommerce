@@ -89,6 +89,31 @@ public class AuthFilter implements Filter {
                 } catch (NumberFormatException ignored) {}
             }
 
+            // Capture add to cart product & quantity if present in request (GET query or POST body)
+            String cartPid = httpRequest.getParameter("productId");
+            if (cartPid == null || cartPid.trim().isEmpty()) {
+                cartPid = httpRequest.getParameter("cartProductId");
+            }
+            if (cartPid != null && !cartPid.trim().isEmpty()) {
+                try {
+                    int pid = Integer.parseInt(cartPid.trim());
+                    int qty = 1;
+                    String qtyParam = httpRequest.getParameter("quantity");
+                    if (qtyParam != null && !qtyParam.trim().isEmpty()) {
+                        try {
+                            qty = Integer.parseInt(qtyParam.trim());
+                        } catch (NumberFormatException ignored) {}
+                    }
+                    if (qty <= 0) qty = 1;
+                    if (qty > 10) qty = 10;
+
+                    session.setAttribute("pendingCartProductId", pid);
+                    session.setAttribute("pendingCartQuantity", qty);
+                    session.setAttribute("authMessage", "Please sign in to add items to your cart.");
+                    targetUrl = httpRequest.getContextPath() + "/cart?added=true";
+                } catch (NumberFormatException ignored) {}
+            }
+
             logger.info("Unauthenticated request to [{}]. Redirecting to /auth/login", targetUrl);
             session.setAttribute("redirectAfterLogin", targetUrl);
             httpResponse.sendRedirect(httpRequest.getContextPath() + "/auth/login");
