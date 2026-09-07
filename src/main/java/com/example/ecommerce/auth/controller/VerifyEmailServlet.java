@@ -141,7 +141,16 @@ public class VerifyEmailServlet extends HttpServlet {
             com.example.ecommerce.auth.service.OtpRateLimiter.reset(pending.getEmail(), "REGISTRATION");
 
             logger.info("Email verified successfully! Registered and authenticated customer: {}", pending.getEmail());
-            response.sendRedirect(request.getContextPath() + "/?registered=true&welcome=true");
+
+            String redirectUrl = (String) session.getAttribute("redirectAfterLogin");
+            if (redirectUrl != null && !redirectUrl.trim().isEmpty()) {
+                session.removeAttribute("redirectAfterLogin");
+                response.sendRedirect(redirectUrl);
+            } else if (session.getAttribute("directBuyProductId") != null) {
+                response.sendRedirect(request.getContextPath() + "/checkout");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/?registered=true&welcome=true");
+            }
 
         } catch (ValidationException ve) {
             logger.warn("Validation failure completing registration for {}: {}", pending.getEmail(), ve.getMessage());

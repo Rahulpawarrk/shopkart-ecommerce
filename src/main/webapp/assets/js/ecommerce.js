@@ -819,10 +819,10 @@ function quickBuyNow(productId, quantity = 1, event) {
     const contextPath = getContextPath();
     const finalQty = quantity && parseInt(quantity, 10) > 0 ? parseInt(quantity, 10) : 1;
     
-    // Clean POST form submission to keep address bar 100% clean
+    // POST form submission with buyNow query params so unauthenticated redirects preserve product & quantity
     const form = document.createElement('form');
     form.method = 'POST';
-    form.action = `${contextPath}/checkout`;
+    form.action = `${contextPath}/checkout?buyNowProductId=${encodeURIComponent(productId)}&quantity=${encodeURIComponent(finalQty)}`;
     
     const pidInput = document.createElement('input');
     pidInput.type = 'hidden';

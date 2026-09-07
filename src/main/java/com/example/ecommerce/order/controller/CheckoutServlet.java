@@ -64,19 +64,6 @@ public class CheckoutServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
 
-        if (user == null) {
-            response.sendRedirect(request.getContextPath() + "/auth/login");
-            return;
-        }
-
-        // Enforce RBAC: Admins cannot checkout or place customer orders
-        if (user.isAdmin()) {
-            response.sendRedirect(request.getContextPath() + "/admin/dashboard?error=admin_cannot_shop");
-            return;
-        }
-
-        String path = request.getServletPath();
-
         // 1. If Buy Now query params are present in URL, store into session and REDIRECT immediately to clean the address bar!
         String buyNowPidParam = request.getParameter("buyNowProductId");
         if (buyNowPidParam != null && !buyNowPidParam.trim().isEmpty()) {
@@ -92,14 +79,43 @@ public class CheckoutServlet extends HttpServlet {
                 if (qty <= 0) qty = 1;
                 if (qty > 3) qty = 3;
 
+                if (session == null) {
+                    session = request.getSession(true);
+                }
                 session.setAttribute("directBuyProductId", pid);
                 session.setAttribute("directBuyQuantity", qty);
 
-                // Clean address bar immediately!
-                response.sendRedirect(request.getContextPath() + "/checkout");
-                return;
+                // Clean address bar immediately if authenticated!
+                if (user != null) {
+                    response.sendRedirect(request.getContextPath() + "/checkout");
+                    return;
+                } else {
+                    session.setAttribute("authMessage", "Please sign in to proceed with your purchase.");
+                    session.setAttribute("redirectAfterLogin", request.getContextPath() + "/checkout?buyNowProductId=" + pid + "&quantity=" + qty);
+                    response.sendRedirect(request.getContextPath() + "/auth/login");
+                    return;
+                }
             } catch (NumberFormatException ignored) {}
         }
+
+        if (user == null) {
+            if (session == null) {
+                session = request.getSession(true);
+            }
+            if (session.getAttribute("redirectAfterLogin") == null) {
+                session.setAttribute("redirectAfterLogin", request.getContextPath() + "/checkout");
+            }
+            response.sendRedirect(request.getContextPath() + "/auth/login");
+            return;
+        }
+
+        // Enforce RBAC: Admins cannot checkout or place customer orders
+        if (user.isAdmin()) {
+            response.sendRedirect(request.getContextPath() + "/admin/dashboard?error=admin_cannot_shop");
+            return;
+        }
+
+        String path = request.getServletPath();
 
         Integer sessionBuyNowPid = (session != null) ? (Integer) session.getAttribute("directBuyProductId") : null;
         boolean isDirectBuy = (sessionBuyNowPid != null && sessionBuyNowPid > 0);
@@ -274,7 +290,43 @@ public class CheckoutServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
 
+        String initialBuyNowPid = request.getParameter("buyNowProductId");
+        if (initialBuyNowPid != null && !initialBuyNowPid.trim().isEmpty()) {
+            try {
+                int pid = Integer.parseInt(initialBuyNowPid.trim());
+                int qty = 1;
+                String qtyParam = request.getParameter("quantity");
+                if (qtyParam != null && !qtyParam.trim().isEmpty()) {
+                    try { qty = Integer.parseInt(qtyParam.trim()); } catch (NumberFormatException ignored) {}
+                }
+                if (qty <= 0) qty = 1;
+                if (qty > 3) qty = 3;
+
+                if (session == null) {
+                    session = request.getSession(true);
+                }
+                session.setAttribute("directBuyProductId", pid);
+                session.setAttribute("directBuyQuantity", qty);
+
+                if (user == null) {
+                    session.setAttribute("authMessage", "Please sign in to proceed with your purchase.");
+                    session.setAttribute("redirectAfterLogin", request.getContextPath() + "/checkout?buyNowProductId=" + pid + "&quantity=" + qty);
+                    response.sendRedirect(request.getContextPath() + "/auth/login");
+                    return;
+                }
+
+                response.sendRedirect(request.getContextPath() + "/checkout/address");
+                return;
+            } catch (NumberFormatException ignored) {}
+        }
+
         if (user == null) {
+            if (session == null) {
+                session = request.getSession(true);
+            }
+            if (session.getAttribute("redirectAfterLogin") == null) {
+                session.setAttribute("redirectAfterLogin", request.getContextPath() + "/checkout");
+            }
             response.sendRedirect(request.getContextPath() + "/auth/login");
             return;
         }
@@ -309,31 +361,13 @@ public class CheckoutServlet extends HttpServlet {
             return;
         }
 
-        // 3. If POST to /checkout without paymentMethod: check if address selected or initial Buy Now
+        // 3. If POST to /checkout without paymentMethod: check if address selected
         if ("/checkout".equals(path) && (request.getParameter("paymentMethod") == null || request.getParameter("paymentMethod").trim().isEmpty())) {
             String aidParam = request.getParameter("addressId");
             if (aidParam != null && !aidParam.trim().isEmpty()) {
                 try {
                     session.setAttribute("checkoutAddressId", Integer.parseInt(aidParam.trim()));
                     response.sendRedirect(request.getContextPath() + "/checkout/summary");
-                    return;
-                } catch (NumberFormatException ignored) {}
-            }
-
-            String initialBuyNowPid = request.getParameter("buyNowProductId");
-            if (initialBuyNowPid != null && !initialBuyNowPid.trim().isEmpty()) {
-                try {
-                    int pid = Integer.parseInt(initialBuyNowPid.trim());
-                    int qty = 1;
-                    String qtyParam = request.getParameter("quantity");
-                    if (qtyParam != null && !qtyParam.trim().isEmpty()) {
-                        try { qty = Integer.parseInt(qtyParam.trim()); } catch (NumberFormatException ignored) {}
-                    }
-                    if (qty <= 0) qty = 1;
-                    if (qty > 3) qty = 3;
-                    session.setAttribute("directBuyProductId", pid);
-                    session.setAttribute("directBuyQuantity", qty);
-                    response.sendRedirect(request.getContextPath() + "/checkout/address");
                     return;
                 } catch (NumberFormatException ignored) {}
             }

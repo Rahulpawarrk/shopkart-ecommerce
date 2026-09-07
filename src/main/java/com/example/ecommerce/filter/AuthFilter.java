@@ -62,8 +62,34 @@ public class AuthFilter implements Filter {
                 targetUrl += "?" + query;
             }
 
-            logger.info("Unauthenticated request to [{}]. Redirecting to /auth/login", targetUrl);
             session = httpRequest.getSession(true);
+
+            // Capture direct buy product & quantity if present in request (GET query or POST body)
+            String buyNowPid = httpRequest.getParameter("buyNowProductId");
+            if (buyNowPid != null && !buyNowPid.trim().isEmpty()) {
+                try {
+                    int pid = Integer.parseInt(buyNowPid.trim());
+                    int qty = 1;
+                    String qtyParam = httpRequest.getParameter("quantity");
+                    if (qtyParam != null && !qtyParam.trim().isEmpty()) {
+                        try {
+                            qty = Integer.parseInt(qtyParam.trim());
+                        } catch (NumberFormatException ignored) {}
+                    }
+                    if (qty <= 0) qty = 1;
+                    if (qty > 3) qty = 3;
+
+                    session.setAttribute("directBuyProductId", pid);
+                    session.setAttribute("directBuyQuantity", qty);
+                    session.setAttribute("authMessage", "Please sign in to proceed with your purchase.");
+
+                    if (query == null || !query.contains("buyNowProductId")) {
+                        targetUrl = httpRequest.getContextPath() + "/checkout?buyNowProductId=" + pid + "&quantity=" + qty;
+                    }
+                } catch (NumberFormatException ignored) {}
+            }
+
+            logger.info("Unauthenticated request to [{}]. Redirecting to /auth/login", targetUrl);
             session.setAttribute("redirectAfterLogin", targetUrl);
             httpResponse.sendRedirect(httpRequest.getContextPath() + "/auth/login");
             return;

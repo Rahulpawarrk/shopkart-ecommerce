@@ -42,9 +42,15 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
-        String errorParam = request.getParameter("error");
-        if ("auth_required".equalsIgnoreCase(errorParam)) {
-            request.setAttribute("warning", "Please sign in to access the requested page.");
+        String authMessage = (session != null) ? (String) session.getAttribute("authMessage") : null;
+        if (authMessage != null) {
+            request.setAttribute("warning", authMessage);
+            session.removeAttribute("authMessage");
+        } else {
+            String errorParam = request.getParameter("error");
+            if ("auth_required".equalsIgnoreCase(errorParam)) {
+                request.setAttribute("warning", "Please sign in to access the requested page.");
+            }
         }
 
         request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
@@ -69,17 +75,45 @@ public class LoginServlet extends HttpServlet {
         try {
             UserSession userSession = authService.login(email, password);
 
-            // Retrieve possible target URL saved before auth redirect
+            // Retrieve possible target URL and buy-now / checkout session state saved before auth redirect
             HttpSession oldSession = request.getSession(false);
             String redirectUrl = null;
+            Integer directBuyPid = null;
+            Integer directBuyQty = null;
+            Integer checkoutAddressId = null;
+            String checkoutNotes = null;
+            Object appliedCoupon = null;
+
             if (oldSession != null) {
                 redirectUrl = (String) oldSession.getAttribute("redirectAfterLogin");
+                directBuyPid = (Integer) oldSession.getAttribute("directBuyProductId");
+                directBuyQty = (Integer) oldSession.getAttribute("directBuyQuantity");
+                checkoutAddressId = (Integer) oldSession.getAttribute("checkoutAddressId");
+                checkoutNotes = (String) oldSession.getAttribute("checkoutNotes");
+                appliedCoupon = oldSession.getAttribute("appliedCoupon");
                 oldSession.invalidate(); // Invalidate old session to protect against session fixation attacks
             }
 
             // Create new session
             HttpSession newSession = request.getSession(true);
             newSession.setAttribute("currentUser", userSession);
+
+            // Restore buy-now / checkout state into new authenticated session
+            if (directBuyPid != null) {
+                newSession.setAttribute("directBuyProductId", directBuyPid);
+            }
+            if (directBuyQty != null) {
+                newSession.setAttribute("directBuyQuantity", directBuyQty);
+            }
+            if (checkoutAddressId != null) {
+                newSession.setAttribute("checkoutAddressId", checkoutAddressId);
+            }
+            if (checkoutNotes != null) {
+                newSession.setAttribute("checkoutNotes", checkoutNotes);
+            }
+            if (appliedCoupon != null) {
+                newSession.setAttribute("appliedCoupon", appliedCoupon);
+            }
 
             // Preload user's persistent cart from DB into session
             try {
@@ -98,6 +132,8 @@ public class LoginServlet extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/admin/dashboard");
             } else if (redirectUrl != null && isSafeRedirect(request, redirectUrl)) {
                 response.sendRedirect(redirectUrl);
+            } else if (directBuyPid != null) {
+                response.sendRedirect(request.getContextPath() + "/checkout");
             } else {
                 response.sendRedirect(request.getContextPath() + "/");
             }
