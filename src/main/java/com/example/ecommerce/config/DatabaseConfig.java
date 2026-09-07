@@ -32,13 +32,14 @@ public class DatabaseConfig {
             @Value("${spring.datasource.username:postgres}") String configuredUsername,
             @Value("${spring.datasource.password:}") String configuredPassword,
             @Value("${spring.datasource.driver-class-name:org.postgresql.Driver}") String driverClassName,
-            @Value("${spring.datasource.hikari.maximum-pool-size:10}") int maxPoolSize,
-            @Value("${spring.datasource.hikari.minimum-idle:2}") int minIdle,
-            @Value("${spring.datasource.hikari.idle-timeout:120000}") long idleTimeout,
-            @Value("${spring.datasource.hikari.max-lifetime:300000}") long maxLifetime,
-            @Value("${spring.datasource.hikari.keepalive-time:60000}") long keepaliveTime,
-            @Value("${spring.datasource.hikari.connection-timeout:30000}") long connectionTimeout,
-            @Value("${spring.datasource.hikari.leak-detection-threshold:60000}") long leakThreshold) {
+            @Value("${spring.datasource.hikari.maximum-pool-size:5}") int maxPoolSize,
+            @Value("${spring.datasource.hikari.minimum-idle:1}") int minIdle,
+            @Value("${spring.datasource.hikari.idle-timeout:30000}") long idleTimeout,
+            @Value("${spring.datasource.hikari.max-lifetime:60000}") long maxLifetime,
+            @Value("${spring.datasource.hikari.keepalive-time:30000}") long keepaliveTime,
+            @Value("${spring.datasource.hikari.connection-timeout:20000}") long connectionTimeout,
+            @Value("${spring.datasource.hikari.leak-detection-threshold:60000}") long leakThreshold,
+            @Value("${spring.datasource.hikari.initialization-fail-timeout:-1}") long initFailTimeout) {
 
         String rawUrl = System.getenv("DATABASE_URL");
         if (rawUrl == null || rawUrl.trim().isEmpty()) {
@@ -106,6 +107,7 @@ public class DatabaseConfig {
         config.setKeepaliveTime(keepaliveTime);
         config.setConnectionTimeout(connectionTimeout);
         config.setLeakDetectionThreshold(leakThreshold);
+        config.setInitializationFailTimeout(initFailTimeout);
 
         if (jdbcUrl.startsWith("jdbc:postgresql:")) {
             config.setConnectionTestQuery("SELECT 1");

@@ -27,11 +27,10 @@ FROM tomcat:11.0-jdk21-temurin
 
 WORKDIR /usr/local/tomcat
 
-# Remove default sample webapps to maximize security and startup speed
-RUN rm -rf webapps/* webapps.dist
-
-# Copy the compiled WAR archive from builder stage directly as ROOT.war
-COPY --from=builder /app/target/ecommerce-web.war webapps/ROOT.war
+# Remove default sample webapps and pre-explode WAR directly into webapps/ROOT for instant startup
+RUN rm -rf webapps/* webapps.dist && mkdir -p webapps/ROOT
+COPY --from=builder /app/target/ecommerce-web.war /tmp/ecommerce-web.war
+RUN cd webapps/ROOT && jar -xf /tmp/ecommerce-web.war && rm /tmp/ecommerce-web.war
 
 # Copy dynamic entrypoint script to adapt Tomcat port to cloud platform $PORT (Render / Koyeb)
 COPY bin/docker-entrypoint.sh /usr/local/tomcat/bin/docker-entrypoint.sh

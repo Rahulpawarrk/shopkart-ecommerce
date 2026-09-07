@@ -22,7 +22,9 @@ import java.util.TimeZone;
  *   jar/war or deployed to external Tomcat / cloud containers).
  * - Timezone Enforcement: Locks Asia/Kolkata (IST +05:30) on startup.
  */
-@SpringBootApplication
+@SpringBootApplication(exclude = {
+        org.springframework.boot.actuate.autoconfigure.mail.MailHealthContributorAutoConfiguration.class
+})
 @ServletComponentScan(basePackages = "com.example.ecommerce")
 @EnableTransactionManagement
 public class EcommerceApplication extends SpringBootServletInitializer {
