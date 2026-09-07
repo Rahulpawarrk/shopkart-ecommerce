@@ -15,11 +15,11 @@
 1. Open **SQL Server Management Studio (SSMS)** or `sqlcmd`.
 2. Execute the schema generation script:
    ```bash
-   sqlcmd -S localhost -U sa -P YourStrongPassword123! -i src/main/resources/db/schema.sql
+   sqlcmd -S localhost -U  -P  -i src/main/resources/db/schema.sql
    ```
 3. Execute the seed data script:
    ```bash
-   sqlcmd -S localhost -U sa -P YourStrongPassword123! -i src/main/resources/db/seed.sql
+   sqlcmd -S localhost -U  -P  -i src/main/resources/db/seed.sql
    ```
 4. Verify database creation:
    ```sql
@@ -37,8 +37,6 @@ Open `src/main/resources/db.properties` and adjust your database connection cred
 ```properties
 db.driver=com.microsoft.sqlserver.jdbc.SQLServerDriver
 db.url=jdbc:sqlserver://localhost:1433;databaseName=ecommerce_db;encrypt=true;trustServerCertificate=true;sendStringParametersAsUnicode=true;
-db.user=sa
-db.password=YourStrongPassword123!
 
 hikaricp.poolName=EcommerceHikariPool
 hikaricp.maximumPoolSize=20
