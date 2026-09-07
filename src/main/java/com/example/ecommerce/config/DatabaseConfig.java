@@ -32,10 +32,11 @@ public class DatabaseConfig {
             @Value("${spring.datasource.username:postgres}") String configuredUsername,
             @Value("${spring.datasource.password:}") String configuredPassword,
             @Value("${spring.datasource.driver-class-name:org.postgresql.Driver}") String driverClassName,
-            @Value("${spring.datasource.hikari.maximum-pool-size:20}") int maxPoolSize,
-            @Value("${spring.datasource.hikari.minimum-idle:5}") int minIdle,
-            @Value("${spring.datasource.hikari.idle-timeout:300000}") long idleTimeout,
-            @Value("${spring.datasource.hikari.max-lifetime:1800000}") long maxLifetime,
+            @Value("${spring.datasource.hikari.maximum-pool-size:10}") int maxPoolSize,
+            @Value("${spring.datasource.hikari.minimum-idle:2}") int minIdle,
+            @Value("${spring.datasource.hikari.idle-timeout:120000}") long idleTimeout,
+            @Value("${spring.datasource.hikari.max-lifetime:300000}") long maxLifetime,
+            @Value("${spring.datasource.hikari.keepalive-time:60000}") long keepaliveTime,
             @Value("${spring.datasource.hikari.connection-timeout:30000}") long connectionTimeout,
             @Value("${spring.datasource.hikari.leak-detection-threshold:60000}") long leakThreshold) {
 
@@ -102,6 +103,7 @@ public class DatabaseConfig {
         config.setMinimumIdle(minIdle);
         config.setIdleTimeout(idleTimeout);
         config.setMaxLifetime(maxLifetime);
+        config.setKeepaliveTime(keepaliveTime);
         config.setConnectionTimeout(connectionTimeout);
         config.setLeakDetectionThreshold(leakThreshold);
 

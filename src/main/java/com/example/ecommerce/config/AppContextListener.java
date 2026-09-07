@@ -35,15 +35,7 @@ public class AppContextListener implements ServletContextListener {
                 TimeZone.getDefault().getID(), TimeZone.getDefault().getDisplayName());
         logger.info("===============================================================");
 
-        try {
-            // Eagerly initialize DB pool to detect connectivity issues early on startup
-            DBConnection.getDataSource();
-            logger.info("Database connection pool initialized successfully.");
-        } catch (Exception e) {
-            logger.warn(
-                    "Database connection could not be established on startup. Will attempt on first request. Cause: {}",
-                    e.getMessage());
-        }
+        logger.info("Application lifecycle listener initialized; Spring Boot manages DataSource lifecycle.");
     }
 
     @Override

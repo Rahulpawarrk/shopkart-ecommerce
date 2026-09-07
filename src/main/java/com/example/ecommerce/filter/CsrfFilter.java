@@ -1,6 +1,5 @@
 package com.example.ecommerce.filter;
 
-import com.example.ecommerce.auth.model.UserSession;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
@@ -22,7 +21,8 @@ import java.util.Set;
 
 /**
  * Cross-Site Request Forgery (CSRF) Protection Filter.
- * Generates cryptographic session tokens and enforces CSRF validation on state-changing requests.
+ * Generates cryptographic session tokens and enforces CSRF validation on
+ * state-changing requests.
  */
 @WebFilter(filterName = "CsrfFilter", urlPatterns = "/*")
 public class CsrfFilter implements Filter {
@@ -35,8 +35,7 @@ public class CsrfFilter implements Filter {
     // Paths exempted from CSRF (External Webhooks / Payment Gateways)
     private static final Set<String> EXEMPT_PREFIXES = Set.of(
             "/api/logistics/webhook",
-            "/payment/callback"
-    );
+            "/payment/callback");
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -47,7 +46,8 @@ public class CsrfFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
 
-        if (!(request instanceof HttpServletRequest httpRequest) || !(response instanceof HttpServletResponse httpResponse)) {
+        if (!(request instanceof HttpServletRequest httpRequest)
+                || !(response instanceof HttpServletResponse httpResponse)) {
             chain.doFilter(request, response);
             return;
         }
@@ -78,7 +78,8 @@ public class CsrfFilter implements Filter {
         String path = httpRequest.getRequestURI().substring(httpRequest.getContextPath().length());
 
         // Only enforce CSRF on mutating operations (POST, PUT, DELETE, PATCH)
-        if ("POST".equalsIgnoreCase(method) || "PUT".equalsIgnoreCase(method) || "DELETE".equalsIgnoreCase(method) || "PATCH".equalsIgnoreCase(method)) {
+        if ("POST".equalsIgnoreCase(method) || "PUT".equalsIgnoreCase(method) || "DELETE".equalsIgnoreCase(method)
+                || "PATCH".equalsIgnoreCase(method)) {
 
             // Check if path is exempted (e.g. carrier webhooks, gateway callback)
             boolean isExempt = false;
@@ -115,7 +116,8 @@ public class CsrfFilter implements Filter {
                 }
 
                 if (!valid) {
-                    logger.warn("CSRF validation blocked request to [{}] from IP [{}] (Method: {})", path, httpRequest.getRemoteAddr(), method);
+                    logger.warn("CSRF validation blocked request to [{}] from IP [{}] (Method: {})", path,
+                            httpRequest.getRemoteAddr(), method);
                     httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid or missing CSRF token.");
                     return;
                 }
@@ -128,33 +130,5 @@ public class CsrfFilter implements Filter {
     @Override
     public void destroy() {
         logger.info("CsrfFilter destroyed.");
-    }
-
-    private boolean isAllowedOrigin(HttpServletRequest request, String header) {
-        if (header == null || header.isBlank()) return false;
-        try {
-            java.net.URI uri = new java.net.URI(header);
-            String host = uri.getHost();
-            if (host == null) return false;
-
-            String serverName = request.getServerName();
-            if (host.equalsIgnoreCase(serverName)) return true;
-
-            String hostHeader = request.getHeader("Host");
-            if (hostHeader != null) {
-                String cleanHost = hostHeader.contains(":") ? hostHeader.split(":")[0] : hostHeader;
-                if (host.equalsIgnoreCase(cleanHost)) return true;
-            }
-
-            String forwardedHost = request.getHeader("X-Forwarded-Host");
-            if (forwardedHost != null) {
-                String cleanForwardedHost = forwardedHost.contains(":") ? forwardedHost.split(":")[0] : forwardedHost;
-                if (host.equalsIgnoreCase(cleanForwardedHost)) return true;
-            }
-
-            return false;
-        } catch (java.net.URISyntaxException e) {
-            return false;
-        }
     }
 }

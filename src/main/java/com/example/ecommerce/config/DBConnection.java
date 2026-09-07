@@ -128,10 +128,11 @@ public final class DBConnection {
 
             // Pool Sizing and Timeouts
             config.setPoolName(props.getProperty("hikaricp.poolName", "EcommerceHikariPool"));
-            config.setMaximumPoolSize(Integer.parseInt(props.getProperty("hikaricp.maximumPoolSize", "20")));
-            config.setMinimumIdle(Integer.parseInt(props.getProperty("hikaricp.minimumIdle", "5")));
-            config.setIdleTimeout(Long.parseLong(props.getProperty("hikaricp.idleTimeout", "300000")));
-            config.setMaxLifetime(Long.parseLong(props.getProperty("hikaricp.maxLifetime", "1800000")));
+            config.setMaximumPoolSize(Integer.parseInt(props.getProperty("hikaricp.maximumPoolSize", "10")));
+            config.setMinimumIdle(Integer.parseInt(props.getProperty("hikaricp.minimumIdle", "2")));
+            config.setIdleTimeout(Long.parseLong(props.getProperty("hikaricp.idleTimeout", "120000")));
+            config.setMaxLifetime(Long.parseLong(props.getProperty("hikaricp.maxLifetime", "300000")));
+            config.setKeepaliveTime(Long.parseLong(props.getProperty("hikaricp.keepaliveTime", "60000")));
             config.setConnectionTimeout(Long.parseLong(props.getProperty("hikaricp.connectionTimeout", "30000")));
             config.setLeakDetectionThreshold(
                     Long.parseLong(props.getProperty("hikaricp.leakDetectionThreshold", "60000")));
