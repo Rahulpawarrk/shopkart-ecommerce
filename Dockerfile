@@ -21,16 +21,16 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # ------------------------------------------------------------------------------
-# Stage 2: Production Container Runtime (Lightweight JRE 21)
+# Stage 2: Production Container Runtime (JDK 21 for runtime JSP bytecode compilation)
 # ------------------------------------------------------------------------------
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:21-jdk-alpine
 
 WORKDIR /app
 
-# Security Hardening: Create dedicated non-root application user and ensure writable logs directories
+# Security Hardening: Create dedicated non-root application user and ensure writable logs and tomcat work directories
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup \
-    && mkdir -p /app/logs /tmp/ecommerce-logs \
-    && chown -R appuser:appgroup /app /tmp/ecommerce-logs
+    && mkdir -p /app/logs /tmp/ecommerce-logs /tmp/tomcat \
+    && chown -R appuser:appgroup /app /tmp/ecommerce-logs /tmp/tomcat
 
 # Copy compiled Spring Boot executable WAR artifact
 COPY --from=builder --chown=appuser:appgroup /app/target/ecommerce-web.war /app/ecommerce-web.war
