@@ -226,15 +226,11 @@
             </div>
         </c:if>
 
-        <form id="finalOrderPlacementForm" action="${pageContext.request.contextPath}/checkout" method="POST">
+        <form id="finalOrderPlacementForm" action="${pageContext.request.contextPath}/checkout/payment" method="POST">
             <input type="hidden" name="_csrf" value="${csrfToken}">
             <input type="hidden" name="step" value="place_order">
             <input type="hidden" name="addressId" value="${selectedAddress.addressId}">
             <input type="hidden" name="notes" value="<c:out value="${notes}" />">
-            <c:if test="${isDirectBuy}">
-                <input type="hidden" name="buyNowProductId" value="${directBuyProductId}">
-                <input type="hidden" name="quantity" value="${directBuyQuantity}">
-            </c:if>
 
             <div class="checkout-layout">
                 

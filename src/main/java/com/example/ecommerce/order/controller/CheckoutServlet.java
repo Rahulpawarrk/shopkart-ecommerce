@@ -299,6 +299,10 @@ public class CheckoutServlet extends HttpServlet {
         UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
         String path = request.getServletPath();
 
+        boolean isStepAction = "/checkout/address".equals(path)
+                || "/checkout/summary".equals(path)
+                || "/checkout/payment".equals(path);
+
         String initialBuyNowPid = request.getParameter("buyNowProductId");
         if (initialBuyNowPid != null && !initialBuyNowPid.trim().isEmpty()) {
             try {
@@ -325,7 +329,7 @@ public class CheckoutServlet extends HttpServlet {
                 }
 
                 // If on initial checkout entry, redirect to /checkout/address to begin step 1
-                if (path == null || "/checkout".equals(path) || "/checkout/".equals(path)) {
+                if (!isStepAction && (path == null || "/checkout".equals(path) || "/checkout/".equals(path))) {
                     response.sendRedirect(request.getContextPath() + "/checkout/address");
                     return;
                 }
@@ -410,6 +414,16 @@ public class CheckoutServlet extends HttpServlet {
         boolean isDirectBuy = (sessionBuyNowPid != null && sessionBuyNowPid > 0);
 
         if (addressId <= 0) {
+            try {
+                List<Address> addresses = addressService.getUserAddresses(user.getUserId());
+                Address fallback = resolveSelectedAddress(request, user, addresses);
+                if (fallback != null) {
+                    addressId = fallback.getAddressId();
+                }
+            } catch (Exception ignored) {}
+        }
+
+        if (addressId <= 0) {
             response.sendRedirect(request.getContextPath() + "/checkout/address");
             return;
         }
@@ -467,12 +481,23 @@ public class CheckoutServlet extends HttpServlet {
             }
 
         } catch (ValidationException ve) {
+            logger.warn("Checkout validation failed: {}", ve.getMessage());
             request.setAttribute("error", ve.getMessage());
-            doGet(request, response);
+            try {
+                List<Address> addresses = addressService.getUserAddresses(user.getUserId());
+                handlePaymentStep(request, response, user, addresses);
+            } catch (Exception ex) {
+                doGet(request, response);
+            }
         } catch (Exception e) {
             logger.error("Checkout submission failed", e);
             request.setAttribute("error", "An error occurred while placing your order. Please try again.");
-            doGet(request, response);
+            try {
+                List<Address> addresses = addressService.getUserAddresses(user.getUserId());
+                handlePaymentStep(request, response, user, addresses);
+            } catch (Exception ex) {
+                doGet(request, response);
+            }
         }
     }
 }

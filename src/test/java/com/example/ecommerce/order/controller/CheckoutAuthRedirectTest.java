@@ -133,4 +133,45 @@ class CheckoutAuthRedirectTest {
         verify(session).setAttribute(eq("checkoutNotes"), eq("Please ring the doorbell"));
         verify(response).sendRedirect("/checkout/payment");
     }
+
+    @Test
+    @DisplayName("CheckoutServlet doPost on /checkout/payment processes order and redirects to /payment/gateway")
+    void testCheckoutServletDoPostPaymentStepRedirectsToPaymentGateway() throws Exception {
+        com.example.ecommerce.auth.model.UserSession user = new com.example.ecommerce.auth.model.UserSession(
+                1, "test@example.com", "Rahul", "Pawar", java.util.Set.of("CUSTOMER"));
+
+        when(request.getSession(false)).thenReturn(session);
+        when(session.getAttribute("currentUser")).thenReturn(user);
+        when(request.getServletPath()).thenReturn("/checkout/payment");
+        when(request.getParameter("paymentMethod")).thenReturn("UPI");
+        when(request.getParameter("addressId")).thenReturn("5");
+        when(request.getParameter("notes")).thenReturn("");
+        when(request.getParameter("buyNowProductId")).thenReturn(null);
+        when(request.getContextPath()).thenReturn("");
+
+        com.example.ecommerce.order.model.Order mockOrder = mock(com.example.ecommerce.order.model.Order.class);
+        when(mockOrder.getOrderId()).thenReturn(101);
+        when(mockOrder.getPaymentMethod()).thenReturn("UPI");
+
+        com.example.ecommerce.order.service.OrderService mockOrderService = mock(com.example.ecommerce.order.service.OrderService.class);
+        when(mockOrderService.processCheckout(eq(1), eq(5), eq("UPI"), org.mockito.ArgumentMatchers.nullable(String.class), org.mockito.ArgumentMatchers.nullable(com.example.ecommerce.coupon.model.Coupon.class))).thenReturn(mockOrder);
+
+        com.example.ecommerce.cart.service.CartService mockCartService = mock(com.example.ecommerce.cart.service.CartService.class);
+        when(mockCartService.getCart(anyInt())).thenReturn(new com.example.ecommerce.cart.model.Cart());
+
+        CheckoutServlet servlet = new CheckoutServlet();
+        java.lang.reflect.Field orderField = CheckoutServlet.class.getDeclaredField("orderService");
+        orderField.setAccessible(true);
+        orderField.set(servlet, mockOrderService);
+
+        java.lang.reflect.Field cartField = CheckoutServlet.class.getDeclaredField("cartService");
+        cartField.setAccessible(true);
+        cartField.set(servlet, mockCartService);
+
+        servlet.doPost(request, response);
+
+        verify(session).setAttribute(eq("pendingPaymentOrderId"), eq(101));
+        verify(response).sendRedirect("/payment/gateway");
+        verify(response, never()).sendRedirect("/checkout/address");
+    }
 }

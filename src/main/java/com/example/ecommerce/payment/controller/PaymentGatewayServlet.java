@@ -36,9 +36,15 @@ public class PaymentGatewayServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         super.init();
-        this.orderService = new OrderService();
-        this.paymentService = new PaymentService();
-        this.razorpayService = new RazorpayService();
+        if (com.example.ecommerce.config.SpringContextLookup.isInitialized()) {
+            this.orderService = com.example.ecommerce.config.SpringContextLookup.getBean(OrderService.class);
+            this.paymentService = com.example.ecommerce.config.SpringContextLookup.getBean(PaymentService.class);
+            this.razorpayService = com.example.ecommerce.config.SpringContextLookup.getBean(RazorpayService.class);
+        } else {
+            this.orderService = new OrderService();
+            this.paymentService = new PaymentService();
+            this.razorpayService = new RazorpayService();
+        }
     }
 
     @Override
