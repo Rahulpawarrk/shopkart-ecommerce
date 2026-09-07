@@ -14,7 +14,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
     "spring.datasource.password=",
     "spring.datasource.driver-class-name=org.postgresql.Driver",
     "spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect",
-    "spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect",
     "spring.jpa.hibernate.ddl-auto=none"
 })
 class EcommerceApplicationTests {
