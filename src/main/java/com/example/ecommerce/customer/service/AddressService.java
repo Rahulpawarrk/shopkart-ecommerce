@@ -12,10 +12,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 /**
  * Service Layer orchestrating customer shipping and billing addresses,
  * validation, ownership enforcement, and default address promotion.
  */
+@Service
+@Transactional
 public class AddressService {
 
     private static final Logger logger = LoggerFactory.getLogger(AddressService.class);

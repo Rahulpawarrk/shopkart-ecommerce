@@ -7,9 +7,12 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
+import org.springframework.stereotype.Service;
+
 /**
  * Service Layer for aggregating system environment, JVM metrics, and database health.
  */
+@Service
 public class HealthCheckService {
 
     private static final Logger logger = LoggerFactory.getLogger(HealthCheckService.class);

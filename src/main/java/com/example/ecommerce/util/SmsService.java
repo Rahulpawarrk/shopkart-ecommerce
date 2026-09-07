@@ -12,18 +12,12 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Base64;
+import org.springframework.stereotype.Service;
 
 /**
  * Real Cloud SMS Gateway Service supporting Twilio Virtual Cloud Gateway and TextBee.
- *
- * <p>Twilio Environment Variables:</p>
- * <ul>
- *   <li>{@code TWILIO_ACCOUNT_SID} — Twilio Account SID (starts with AC...)</li>
- *   <li>{@code TWILIO_AUTH_TOKEN} or {@code TWILIO_API_KEY_SECRET} — Twilio Auth Token or API Secret</li>
- *   <li>{@code TWILIO_API_KEY_SID} — Optional API Key SID (starts with SK...)</li>
- *   <li>{@code TWILIO_FROM_PHONE} — Dedicated Twilio Cloud Phone Number (e.g. +1234567890)</li>
- * </ul>
  */
+@Service
 public class SmsService {
 
     private static final Logger logger = LoggerFactory.getLogger(SmsService.class);

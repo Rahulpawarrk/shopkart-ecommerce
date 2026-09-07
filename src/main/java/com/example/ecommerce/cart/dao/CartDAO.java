@@ -13,10 +13,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Optional;
+import org.springframework.stereotype.Repository;
 
 /**
  * Data Access Object for Shopping Cart operations in Microsoft SQL Server.
  */
+@Repository
 public class CartDAO {
 
     private static final Logger logger = LoggerFactory.getLogger(CartDAO.class);

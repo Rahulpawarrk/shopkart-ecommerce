@@ -17,10 +17,15 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 /**
  * Service Layer coordinating shopping cart operations, live stock validation,
  * and authoritative database pricing retrieval.
  */
+@Service
+@Transactional
 public class CartService {
 
     private static final Logger logger = LoggerFactory.getLogger(CartService.class);

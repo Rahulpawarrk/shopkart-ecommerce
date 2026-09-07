@@ -10,10 +10,13 @@ import org.slf4j.LoggerFactory;
 
 import java.util.function.Supplier;
 
+import org.springframework.stereotype.Service;
+
 /**
  * High-level caching service providing generic Jackson JSON serialization 
  * and transparent cache-aside pattern with Redis.
  */
+@Service
 public class CacheService {
 
     private static final Logger logger = LoggerFactory.getLogger(CacheService.class);

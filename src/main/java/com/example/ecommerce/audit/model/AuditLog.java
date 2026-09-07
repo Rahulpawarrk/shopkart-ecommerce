@@ -1,23 +1,47 @@
 package com.example.ecommerce.audit.model;
 
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
  * Audit Log Entity recording security, administrative, and data mutation events.
  */
+@Entity
+@Table(name = "audit_logs", schema = "dbo")
 public class AuditLog implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "audit_id")
     private long auditId;
+
+    @Column(name = "user_id")
     private Integer userId;
+
+    @Transient
     private String userEmail;
+
+    @Column(name = "action", nullable = false)
     private String action;
+
+    @Column(name = "entity_name", nullable = false)
     private String entityName;
+
+    @Column(name = "entity_id")
     private Integer entityId;
+
+    @Column(name = "old_value")
     private String oldValue;
+
+    @Column(name = "new_value")
     private String newValue;
+
+    @Column(name = "ip_address")
     private String ipAddress;
+
+    @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
     public AuditLog() {}

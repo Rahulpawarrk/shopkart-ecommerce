@@ -14,10 +14,12 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.stereotype.Repository;
 
 /**
- * Data Access Object for customer delivery and billing addresses in Microsoft SQL Server.
+ * Data Access Object for Customer Shipping & Billing Addresses in Microsoft SQL Server.
  */
+@Repository
 public class AddressDAO {
 
     private static final Logger logger = LoggerFactory.getLogger(AddressDAO.class);

@@ -11,9 +11,12 @@ import java.math.BigDecimal;
 import java.sql.*;
 import java.util.*;
 
+import org.springframework.stereotype.Repository;
+
 /**
  * Data Access Object for Payment Failures and Dispute Reconciliation records.
  */
+@Repository
 public class PaymentReconciliationDAO {
 
     private static final Logger logger = LoggerFactory.getLogger(PaymentReconciliationDAO.class);

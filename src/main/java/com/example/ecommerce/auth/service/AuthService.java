@@ -28,10 +28,16 @@ import com.example.ecommerce.auth.model.ForgotPasswordResult;
 
 import com.example.ecommerce.util.SmsService;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 /**
  * Service orchestrating authentication, customer registration, session
  * preparation, and profile management.
  */
+@Service
+@Transactional
 public class AuthService {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
@@ -59,6 +65,7 @@ public class AuthService {
         this(userDAO, roleDAO, passwordResetDAO, new EmailService(), new SmsService());
     }
 
+    @Autowired
     public AuthService(UserDAO userDAO, RoleDAO roleDAO, PasswordResetDAO passwordResetDAO, EmailService emailService,
             SmsService smsService) {
         this.userDAO = userDAO;

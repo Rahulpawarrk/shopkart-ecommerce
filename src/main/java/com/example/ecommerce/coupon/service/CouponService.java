@@ -15,10 +15,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 /**
- * Service Layer enforcing promotional discount rules, validity dates, minimum spend thresholds,
+ * Service Layer handling promotional coupon validation, discount computation,
  * and usage caps.
  */
+@Service
+@Transactional
 public class CouponService {
 
     private static final Logger logger = LoggerFactory.getLogger(CouponService.class);

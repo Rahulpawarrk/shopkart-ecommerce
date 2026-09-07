@@ -23,10 +23,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.stereotype.Repository;
+
 /**
  * Data Access Object for Orders, Order Line Items, and Lifecycle Status
  * Histories.
  */
+@Repository
 public class OrderDAO {
 
     private static final Logger logger = LoggerFactory.getLogger(OrderDAO.class);

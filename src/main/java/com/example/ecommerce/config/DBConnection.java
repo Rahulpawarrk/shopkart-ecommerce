@@ -20,11 +20,23 @@ import java.util.Properties;
 public final class DBConnection {
 
     private static final Logger logger = LoggerFactory.getLogger(DBConnection.class);
-    private static volatile HikariDataSource dataSource;
+    private static volatile DataSource dataSource;
     private static final Object lock = new Object();
 
     private DBConnection() {
         // Prevent instantiation
+    }
+
+    /**
+     * Injects the Spring-managed DataSource into DBConnection.
+     *
+     * @param ds Spring DataSource bean
+     */
+    public static void setDataSource(DataSource ds) {
+        synchronized (lock) {
+            dataSource = ds;
+            logger.info("Configured DBConnection to use Spring-managed DataSource.");
+        }
     }
 
     /**
@@ -691,11 +703,15 @@ public final class DBConnection {
      */
     public static void shutdown() {
         synchronized (lock) {
-            if (dataSource != null && !dataSource.isClosed()) {
-                logger.info("Closing HikariCP connection pool...");
-                dataSource.close();
+            if (dataSource instanceof AutoCloseable closeable) {
+                logger.info("Closing database connection pool...");
+                try {
+                    closeable.close();
+                } catch (Exception e) {
+                    logger.warn("Error closing data source", e);
+                }
                 dataSource = null;
-                logger.info("HikariCP connection pool successfully closed.");
+                logger.info("Database connection pool successfully closed.");
             }
         }
     }

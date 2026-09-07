@@ -1,5 +1,6 @@
 package com.example.ecommerce.cart.model;
 
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -11,13 +12,26 @@ import java.util.List;
 /**
  * Customer Shopping Cart Entity aggregating line items and calculating authoritative totals.
  */
+@Entity
+@Table(name = "carts", schema = "dbo")
 public class Cart implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "cart_id")
     private int cartId;
+
+    @Column(name = "user_id", nullable = false, unique = true)
     private int userId;
+
+    @Transient
     private List<CartItem> items = new ArrayList<>();
+
+    @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", insertable = false, updatable = false)
     private LocalDateTime updatedAt;
 
     public Cart() {}

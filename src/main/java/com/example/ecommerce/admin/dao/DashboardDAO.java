@@ -16,11 +16,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.stereotype.Repository;
+
 /**
  * Data Access Object for high-level administrative business intelligence and
  * revenue metrics.
  * Revenue and sales rankings are strictly recognized only for DELIVERED orders.
  */
+@Repository
 public class DashboardDAO {
 
     private static final Logger logger = LoggerFactory.getLogger(DashboardDAO.class);

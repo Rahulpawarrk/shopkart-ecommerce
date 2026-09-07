@@ -14,9 +14,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.stereotype.Repository;
+
 /**
  * DAO handling roles and role-assignment queries in SQL Server.
  */
+@Repository
 public class RoleDAO {
 
     private static final Logger logger = LoggerFactory.getLogger(RoleDAO.class);

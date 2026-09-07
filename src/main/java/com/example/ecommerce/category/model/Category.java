@@ -1,5 +1,6 @@
 package com.example.ecommerce.category.model;
 
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -8,20 +9,42 @@ import java.util.List;
 /**
  * Category Entity supporting hierarchical trees (Parent -> Subcategories).
  */
+@Entity
+@Table(name = "categories", schema = "dbo")
 public class Category implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "category_id")
     private int categoryId;
+
+    @Column(name = "parent_category_id")
     private Integer parentCategoryId;
+
+    @Column(name = "category_name", nullable = false)
     private String categoryName;
+
+    @Column(name = "slug", nullable = false, unique = true)
     private String slug;
+
+    @Column(name = "description")
     private String description;
+
+    @Column(name = "is_active", nullable = false)
     private boolean active = true;
+
+    @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", insertable = false, updatable = false)
     private LocalDateTime updatedAt;
 
     // Transient hierarchical fields
+    @Transient
     private String parentCategoryName;
+
+    @Transient
     private List<Category> subcategories = new ArrayList<>();
 
     public Category() {}

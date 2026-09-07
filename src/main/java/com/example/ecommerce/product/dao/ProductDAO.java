@@ -22,10 +22,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.stereotype.Repository;
+
 /**
  * Data Access Object for Product catalog management and SQL Server paginated
  * queries.
  */
+@Repository
 public class ProductDAO {
 
     private static final Logger logger = LoggerFactory.getLogger(ProductDAO.class);

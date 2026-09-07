@@ -16,9 +16,12 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.stereotype.Repository;
+
 /**
  * Data Access Object for security and mutation audit logs in Microsoft SQL Server.
  */
+@Repository
 public class AuditLogDAO {
 
     private static final Logger logger = LoggerFactory.getLogger(AuditLogDAO.class);

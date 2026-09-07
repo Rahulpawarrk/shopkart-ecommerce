@@ -20,10 +20,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.stereotype.Repository;
+
 /**
  * Data Access Object managing real-time inventory balances, row-level locking,
  * and immutable stock transaction audit ledgers.
  */
+@Repository
 public class InventoryDAO {
 
     private static final Logger logger = LoggerFactory.getLogger(InventoryDAO.class);

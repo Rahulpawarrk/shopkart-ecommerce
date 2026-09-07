@@ -12,9 +12,12 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.stereotype.Repository;
+
 /**
  * DAO responsible for performing low-level database health verification.
  */
+@Repository
 public class HealthCheckDAO {
 
     private static final Logger logger = LoggerFactory.getLogger(HealthCheckDAO.class);

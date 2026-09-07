@@ -1,5 +1,6 @@
 package com.example.ecommerce.order.model;
 
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -11,49 +12,114 @@ import java.util.List;
  * Order Entity representing a confirmed customer order, immutable address snapshots,
  * and point-in-time financial amounts.
  */
+@Entity
+@Table(name = "orders", schema = "dbo")
 public class Order implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "order_id")
     private int orderId;
+
+    @Column(name = "order_number", nullable = false, unique = true)
     private String orderNumber;
+
+    @Column(name = "user_id", nullable = false)
     private int userId;
+
+    @Transient
     private String customerName;
+
+    @Transient
     private String customerEmail;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "order_status", nullable = false)
     private OrderStatus orderStatus = OrderStatus.PENDING;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_status", nullable = false)
     private PaymentStatus paymentStatus = PaymentStatus.PENDING;
+
+    @Column(name = "payment_method", nullable = false)
     private String paymentMethod = "COD";
 
+    @Column(name = "subtotal", nullable = false)
     private BigDecimal subtotal = BigDecimal.ZERO;
+
+    @Column(name = "discount_amount", nullable = false)
     private BigDecimal discountAmount = BigDecimal.ZERO;
+
+    @Column(name = "tax_amount", nullable = false)
     private BigDecimal taxAmount = BigDecimal.ZERO;
+
+    @Column(name = "shipping_amount", nullable = false)
     private BigDecimal shippingAmount = BigDecimal.ZERO;
+
+    @Column(name = "total_amount", nullable = false)
     private BigDecimal totalAmount = BigDecimal.ZERO;
+
+    @Column(name = "coupon_id")
     private Integer couponId;
 
     // Shipping Address Snapshot
+    @Column(name = "shipping_full_name")
     private String shippingFullName;
+
+    @Column(name = "shipping_phone")
     private String shippingPhone;
+
+    @Column(name = "shipping_address_line1")
     private String shippingAddressLine1;
+
+    @Column(name = "shipping_address_line2")
     private String shippingAddressLine2;
+
+    @Column(name = "shipping_city")
     private String shippingCity;
+
+    @Column(name = "shipping_state")
     private String shippingState;
+
+    @Column(name = "shipping_postal_code")
     private String shippingPostalCode;
+
+    @Column(name = "shipping_country")
     private String shippingCountry;
 
+    @Column(name = "billing_address_snapshot")
     private String billingAddressSnapshot;
+
+    @Column(name = "notes")
     private String notes;
 
     // Logistics & Fulfillment Tracking
+    @Column(name = "courier_partner")
     private String courierPartner;
+
+    @Column(name = "tracking_number")
     private String trackingNumber;
+
+    @Column(name = "delivery_agent_phone")
     private String deliveryAgentPhone;
+
+    @Column(name = "estimated_delivery_date")
     private LocalDateTime estimatedDeliveryDate;
+
+    @Column(name = "delivered_at")
     private LocalDateTime deliveredAt;
 
+    @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", insertable = false, updatable = false)
     private LocalDateTime updatedAt;
 
+    @Transient
     private List<OrderItem> items = new ArrayList<>();
+
+    @Transient
     private List<OrderStatusHistory> statusHistory = new ArrayList<>();
 
     public Order() {}

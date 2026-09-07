@@ -1,5 +1,6 @@
 package com.example.ecommerce.order.model;
 
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -8,19 +9,44 @@ import java.time.LocalDateTime;
  * Immutable Line Item snapshot inside an Order.
  * Captures historical unit price, product name, and taxes at time of purchase.
  */
+@Entity
+@Table(name = "order_items", schema = "dbo")
 public class OrderItem implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "order_item_id")
     private int orderItemId;
+
+    @Column(name = "order_id", nullable = false)
     private int orderId;
+
+    @Column(name = "product_id", nullable = false)
     private int productId;
+
+    @Column(name = "product_name", nullable = false)
     private String productName;
+
+    @Column(name = "sku", nullable = false)
     private String sku;
+
+    @Column(name = "unit_price", nullable = false)
     private BigDecimal unitPrice;
+
+    @Column(name = "discount_amount", nullable = false)
     private BigDecimal discountAmount = BigDecimal.ZERO;
+
+    @Column(name = "tax_amount", nullable = false)
     private BigDecimal taxAmount = BigDecimal.ZERO;
+
+    @Column(name = "line_total", nullable = false)
     private BigDecimal lineTotal;
+
+    @Column(name = "quantity", nullable = false)
     private int quantity;
+
+    @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
     public OrderItem() {}

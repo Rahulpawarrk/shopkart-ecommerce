@@ -25,9 +25,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 /**
  * Service Layer orchestrating Payment Gateway integrations, COD verifications, idempotency, and audit logging.
  */
+@Service
+@Transactional
 public class PaymentService {
 
     private static final Logger logger = LoggerFactory.getLogger(PaymentService.class);
@@ -48,6 +54,7 @@ public class PaymentService {
         this.paymentReconciliationDAO = new PaymentReconciliationDAO();
     }
 
+    @Autowired
     public PaymentService(PaymentDAO paymentDAO, OrderDAO orderDAO, PaymentReconciliationDAO paymentReconciliationDAO) {
         this.paymentDAO = paymentDAO;
         this.orderDAO = orderDAO;

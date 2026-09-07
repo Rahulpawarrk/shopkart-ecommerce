@@ -15,9 +15,14 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 /**
  * Service Layer managing customer Wishlists and Move-to-Cart transfers.
  */
+@Service
+@Transactional
 public class WishlistService {
 
     private static final Logger logger = LoggerFactory.getLogger(WishlistService.class);

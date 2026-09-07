@@ -1,28 +1,62 @@
 package com.example.ecommerce.review.model;
 
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
  * Product Review & Rating Entity.
  */
+@Entity
+@Table(name = "reviews", schema = "dbo")
 public class Review implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "review_id")
     private int reviewId;
+
+    @Column(name = "product_id", nullable = false)
     private int productId;
+
+    @Transient
     private String productName;
+
+    @Column(name = "user_id", nullable = false)
     private int userId;
+
+    @Transient
     private String customerName;
+
+    @Transient
     private String customerEmail;
+
+    @Column(name = "rating", nullable = false)
     private int rating = 5; // 1 to 5
+
+    @Column(name = "review_title", nullable = false)
     private String title;
+
+    @Column(name = "review_text", nullable = false)
     private String comment;
+
+    @Column(name = "image_url")
     private String imageUrl;
+
+    @Transient
     private java.util.List<String> imageUrls = new java.util.ArrayList<>();
+
+    @Transient
     private boolean verifiedPurchase = false;
+
+    @Transient
     private boolean approved = true;
+
+    @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", insertable = false, updatable = false)
     private LocalDateTime updatedAt;
 
     public Review() {}

@@ -1,6 +1,7 @@
 package com.example.ecommerce.product.model;
 
 import com.example.ecommerce.category.model.Category;
+import jakarta.persistence.*;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -12,28 +13,66 @@ import java.util.List;
 /**
  * Product Entity representing items in the e-commerce catalog.
  */
+@Entity
+@Table(name = "products", schema = "dbo")
 public class Product implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "product_id")
     private int productId;
+
+    @Column(name = "category_id", nullable = false)
     private int categoryId;
+
+    @Column(name = "sku", nullable = false, unique = true)
     private String sku;
+
+    @Column(name = "product_name", nullable = false)
     private String productName;
+
+    @Column(name = "slug", nullable = false, unique = true)
     private String slug;
+
+    @Column(name = "description")
     private String description;
+
+    @Column(name = "brand")
     private String brand;
+
+    @Column(name = "price", nullable = false)
     private BigDecimal price = BigDecimal.ZERO;
+
+    @Column(name = "discount_percentage", nullable = false)
     private BigDecimal discountPercentage = BigDecimal.ZERO;
+
+    @Column(name = "tax_percentage", nullable = false)
     private BigDecimal taxPercentage = BigDecimal.ZERO;
+
+    @Column(name = "weight_kg")
     private BigDecimal weightKg = BigDecimal.ZERO;
+
+    @Column(name = "status", nullable = false)
     private String status = "ACTIVE"; // 'ACTIVE', 'INACTIVE', 'ARCHIVED'
+
+    @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", insertable = false, updatable = false)
     private LocalDateTime updatedAt;
 
     // Joined/Enriched fields
+    @Transient
     private Category category;
+
+    @Transient
     private List<ProductImage> images = new ArrayList<>();
+
+    @Transient
     private int stockQuantity = 0;
+
+    @Transient
     private int lowStockThreshold = 5;
 
     public Product() {}

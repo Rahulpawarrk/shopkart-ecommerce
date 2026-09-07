@@ -1,27 +1,59 @@
 package com.example.ecommerce.customer.model;
 
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
  * Customer Postal Address Entity for shipping and billing fulfillment.
  */
+@Entity
+@Table(name = "addresses", schema = "dbo")
 public class Address implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "address_id")
     private int addressId;
+
+    @Column(name = "user_id", nullable = false)
     private int userId;
+
+    @Column(name = "address_type", nullable = false)
     private String addressType = "SHIPPING"; // 'SHIPPING', 'BILLING', 'BOTH'
+
+    @Column(name = "full_name", nullable = false)
     private String fullName;
+
+    @Column(name = "phone", nullable = false)
     private String phone;
+
+    @Column(name = "address_line1", nullable = false)
     private String addressLine1;
+
+    @Column(name = "address_line2")
     private String addressLine2;
+
+    @Column(name = "city", nullable = false)
     private String city;
+
+    @Column(name = "state", nullable = false)
     private String state;
+
+    @Column(name = "postal_code", nullable = false)
     private String postalCode;
+
+    @Column(name = "country", nullable = false)
     private String country = "India";
+
+    @Column(name = "is_default", nullable = false)
     private boolean defaultAddress = false;
+
+    @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", insertable = false, updatable = false)
     private LocalDateTime updatedAt;
 
     public Address() {}

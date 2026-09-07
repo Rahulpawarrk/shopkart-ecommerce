@@ -1,5 +1,6 @@
 package com.example.ecommerce.coupon.model;
 
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -9,22 +10,54 @@ import java.time.LocalDateTime;
  * Promotional Coupon Entity supporting Percentage discounts with maximum caps
  * and Fixed Amount flat discounts.
  */
+@Entity
+@Table(name = "coupons", schema = "dbo")
 public class Coupon implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "coupon_id")
     private int couponId;
+
+    @Column(name = "code", nullable = false, unique = true)
     private String code;
+
+    @Column(name = "description")
     private String description;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "discount_type", nullable = false)
     private DiscountType discountType = DiscountType.PERCENTAGE;
+
+    @Column(name = "discount_value", nullable = false)
     private BigDecimal discountValue = BigDecimal.ZERO;
+
+    @Column(name = "min_order_amount", nullable = false)
     private BigDecimal minSpend = BigDecimal.ZERO;
+
+    @Column(name = "max_discount_amount")
     private BigDecimal maxDiscount;
+
+    @Column(name = "start_date")
     private LocalDateTime startDate;
+
+    @Column(name = "end_date")
     private LocalDateTime endDate;
+
+    @Column(name = "usage_limit")
     private Integer usageLimit;
+
+    @Column(name = "current_usage", nullable = false)
     private int usedCount = 0;
+
+    @Column(name = "is_active", nullable = false)
     private boolean active = true;
+
+    @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", insertable = false, updatable = false)
     private LocalDateTime updatedAt;
 
     public Coupon() {}

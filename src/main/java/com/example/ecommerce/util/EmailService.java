@@ -21,11 +21,14 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.springframework.stereotype.Service;
+
 /**
  * Service for sending transactional emails (Password Resets, OTP Verification,
  * Order Invoices)
  * via Brevo/Resend HTTPS REST API (Port 443) or fallback SMTP.
  */
+@Service
 public class EmailService {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);

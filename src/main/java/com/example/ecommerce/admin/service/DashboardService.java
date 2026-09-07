@@ -7,10 +7,15 @@ import java.time.Year;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 /**
  * Service Layer aggregating executive dashboard KPIs and multi-dimensional
  * financial reports.
  */
+@Service
+@Transactional
 public class DashboardService {
 
     private final DashboardDAO dashboardDAO;

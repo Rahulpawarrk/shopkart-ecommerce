@@ -1,5 +1,6 @@
 package com.example.ecommerce.payment.model;
 
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -7,19 +8,45 @@ import java.time.LocalDateTime;
 /**
  * Payment Entity recording all payment gateway attempts, transactions, and refunds.
  */
+@Entity
+@Table(name = "payments", schema = "dbo")
 public class Payment implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "payment_id")
     private int paymentId;
+
+    @Column(name = "order_id", nullable = false)
     private int orderId;
+
+    @Transient
     private String orderNumber;
+
+    @Transient
     private String customerName;
+
+    @Column(name = "payment_method", nullable = false)
     private String paymentMethod;
+
+    @Column(name = "transaction_reference", nullable = false)
     private String transactionReference;
+
+    @Column(name = "amount", nullable = false)
     private BigDecimal amount = BigDecimal.ZERO;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_status", nullable = false)
     private PaymentTransactionStatus paymentStatus = PaymentTransactionStatus.PENDING;
+
+    @Column(name = "gateway_response")
     private String gatewayResponse;
+
+    @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", insertable = false, updatable = false)
     private LocalDateTime updatedAt;
 
     public Payment() {}

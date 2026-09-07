@@ -1,5 +1,6 @@
 package com.example.ecommerce.wishlist.model;
 
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -8,19 +9,44 @@ import java.time.LocalDateTime;
 /**
  * Item inside customer Wishlist enriched with live catalog metadata and stock.
  */
+@Entity
+@Table(name = "wishlist_items", schema = "dbo")
 public class WishlistItem implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "wishlist_item_id")
     private int wishlistItemId;
+
+    @Column(name = "wishlist_id", nullable = false)
     private int wishlistId;
+
+    @Column(name = "product_id", nullable = false)
     private int productId;
+
+    @Transient
     private String productName;
+
+    @Transient
     private String sku;
+
+    @Transient
     private String brand;
+
+    @Transient
     private BigDecimal price = BigDecimal.ZERO;
+
+    @Transient
     private BigDecimal discountPercentage = BigDecimal.ZERO;
+
+    @Transient
     private String primaryImageUrl;
+
+    @Transient
     private int stockQuantity = 0;
+
+    @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
     public WishlistItem() {}

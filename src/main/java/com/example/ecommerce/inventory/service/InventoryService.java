@@ -16,10 +16,15 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 /**
  * Service Layer enforcing strict inventory accounting, row-level locking concurrency protection,
  * and immutable stock transaction logging.
  */
+@Service
+@Transactional
 public class InventoryService {
 
     private static final Logger logger = LoggerFactory.getLogger(InventoryService.class);

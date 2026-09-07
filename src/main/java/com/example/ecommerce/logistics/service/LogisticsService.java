@@ -18,10 +18,13 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.stereotype.Service;
+
 /**
  * Orchestrator service routing multi-carrier live tracking requests and webhook
  * callbacks.
  */
+@Service
 public class LogisticsService {
     private static final Logger logger = LoggerFactory.getLogger(LogisticsService.class);
 

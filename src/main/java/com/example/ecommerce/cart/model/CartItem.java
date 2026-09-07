@@ -1,5 +1,6 @@
 package com.example.ecommerce.cart.model;
 
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -9,22 +10,53 @@ import java.time.LocalDateTime;
  * Line Item inside a customer's Shopping Cart.
  * Always enriched with current live database product pricing, discounts, and inventory stock.
  */
+@Entity
+@Table(name = "cart_items", schema = "dbo")
 public class CartItem implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "cart_item_id")
     private int cartItemId;
+
+    @Column(name = "cart_id", nullable = false)
     private int cartId;
+
+    @Column(name = "product_id", nullable = false)
     private int productId;
+
+    @Transient
     private String productName;
+
+    @Transient
     private String sku;
+
+    @Transient
     private String brand;
+
+    @Transient
     private String primaryImageUrl;
+
+    @Transient
     private BigDecimal unitPrice = BigDecimal.ZERO;
+
+    @Transient
     private BigDecimal discountPercentage = BigDecimal.ZERO;
+
+    @Transient
     private BigDecimal taxPercentage = BigDecimal.ZERO;
+
+    @Transient
     private int stockQuantity = 0;
+
+    @Column(name = "quantity", nullable = false)
     private int quantity = 1;
+
+    @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", insertable = false, updatable = false)
     private LocalDateTime updatedAt;
 
     public CartItem() {}

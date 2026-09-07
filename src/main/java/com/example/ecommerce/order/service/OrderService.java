@@ -37,10 +37,16 @@ import java.util.UUID;
 import com.example.ecommerce.product.dao.ProductDAO;
 import com.example.ecommerce.product.model.Product;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 /**
  * Service Layer coordinating Atomic Order Processing, Checkout,
  * Inventory Reservation, Status Transitions, and Cancellations.
  */
+@Service
+@Transactional
 public class OrderService {
 
     private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
@@ -75,6 +81,7 @@ public class OrderService {
         this(orderDAO, cartService, cartDAO, addressService, inventoryService, emailService, new ProductDAO());
     }
 
+    @Autowired
     public OrderService(OrderDAO orderDAO, CartService cartService, CartDAO cartDAO, 
                         AddressService addressService, InventoryService inventoryService, 
                         EmailService emailService, ProductDAO productDAO) {

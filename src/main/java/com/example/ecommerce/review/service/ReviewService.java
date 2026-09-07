@@ -14,9 +14,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 /**
- * Service Layer enforcing Verified Purchase validation, rating bounds, and review moderation.
+ * Service Layer orchestrating Customer Reviews, Verified Purchase checks,
+ * and Rating aggregation recalculations.
  */
+@Service
+@Transactional
 public class ReviewService {
 
     private static final Logger logger = LoggerFactory.getLogger(ReviewService.class);

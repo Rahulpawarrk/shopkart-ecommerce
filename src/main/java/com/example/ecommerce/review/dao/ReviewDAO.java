@@ -17,9 +17,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.stereotype.Repository;
+
 /**
  * Data Access Object for Product Reviews and Ratings in Microsoft SQL Server.
  */
+@Repository
 public class ReviewDAO {
 
     private static final Logger logger = LoggerFactory.getLogger(ReviewDAO.class);

@@ -10,11 +10,14 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+import org.springframework.stereotype.Service;
+
 /**
  * Production-Grade Service Layer orchestrating Razorpay Payment Gateway integration (Live & Sandbox modes).
  * Supports full UPI Apps (Google Pay, PhonePe, Paytm, BHIM, CRED), Custom VPA, Dynamic QR, NetBanking, and Cards.
  * Implements cryptographic HMAC-SHA256 signature verification and server-side payment validation.
  */
+@Service
 public class RazorpayService {
 
     private static final Logger logger = LoggerFactory.getLogger(RazorpayService.class);

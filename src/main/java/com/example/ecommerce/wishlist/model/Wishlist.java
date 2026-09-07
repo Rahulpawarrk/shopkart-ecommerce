@@ -1,5 +1,6 @@
 package com.example.ecommerce.wishlist.model;
 
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -9,13 +10,26 @@ import java.util.List;
 /**
  * Customer Wishlist Entity aggregating saved products.
  */
+@Entity
+@Table(name = "wishlists", schema = "dbo")
 public class Wishlist implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "wishlist_id")
     private int wishlistId;
+
+    @Column(name = "user_id", nullable = false, unique = true)
     private int userId;
+
+    @Transient
     private List<WishlistItem> items = new ArrayList<>();
+
+    @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", insertable = false, updatable = false)
     private LocalDateTime updatedAt;
 
     public Wishlist() {}

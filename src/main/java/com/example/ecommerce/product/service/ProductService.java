@@ -18,10 +18,15 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 /**
  * Service Layer coordinating product catalog operations, pricing validation,
  * image associations, and inventory transaction onboarding.
  */
+@Service
+@Transactional
 public class ProductService {
 
     private static final Logger logger = LoggerFactory.getLogger(ProductService.class);

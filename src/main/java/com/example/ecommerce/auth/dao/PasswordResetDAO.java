@@ -15,10 +15,13 @@ import java.time.LocalDateTime;
 import java.util.HexFormat;
 import java.util.Optional;
 
+import org.springframework.stereotype.Repository;
+
 /**
  * Data Access Object for password reset token lifecycle management.
  * Hashes all tokens and OTPs using SHA-256 prior to database persistence.
  */
+@Repository
 public class PasswordResetDAO {
 
     private static final Logger logger = LoggerFactory.getLogger(PasswordResetDAO.class);

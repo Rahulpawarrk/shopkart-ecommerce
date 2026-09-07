@@ -1,10 +1,10 @@
 # ==============================================================================
-# Multi-Stage Dockerfile for ShopKart E-Commerce Web Application (Tomcat 11 + JDK 21)
-# Optimized for 1-Click Free Cloud Deployment on Render, Koyeb, Railway, or Docker
+# Multi-Stage Dockerfile for ShopKart E-Commerce Platform (Spring Boot 3 + JDK 21)
+# Optimized for 1-Click Production Cloud Deployment on Render, Koyeb, Railway, or Docker
 # ==============================================================================
 
 # ------------------------------------------------------------------------------
-# Stage 1: Build the Maven WAR artifact
+# Stage 1: Build the Spring Boot executable WAR artifact
 # ------------------------------------------------------------------------------
 FROM maven:3.9.9-eclipse-temurin-21 AS builder
 
@@ -17,38 +17,26 @@ RUN mvn dependency:go-offline -B
 # Copy full application source code
 COPY src ./src
 
-# Compile and package production WAR archive
+# Compile and package production Spring Boot executable WAR archive
 RUN mvn clean package -DskipTests
 
 # ------------------------------------------------------------------------------
-# Stage 2: Production Runtime with Apache Tomcat 11
+# Stage 2: Production Container Runtime (Lightweight JRE 21)
 # ------------------------------------------------------------------------------
-FROM tomcat:11.0-jdk21-temurin
+FROM eclipse-temurin:21-jre-alpine
 
-WORKDIR /usr/local/tomcat
+WORKDIR /app
 
-# Remove default sample webapps to maximize security and startup speed
-RUN rm -rf webapps/* webapps.dist
+# Security Hardening: Create dedicated non-root application user
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
-# Copy the compiled WAR archive from builder stage directly as ROOT.war
-COPY --from=builder /app/target/ecommerce-web.war webapps/ROOT.war
-
-# Create dynamic entrypoint script to adapt Tomcat port to cloud platform $PORT (Render / Koyeb)
-RUN printf '#!/bin/sh\n\
-sed -i "s/port=\"8005\"/port=\"-1\"/g" conf/server.xml\n\
-PORT_TO_USE="${PORT:-8080}"\n\
-sed -i "s/<Connector port=\"8080\"/<Connector port=\"$PORT_TO_USE\" address=\"0.0.0.0\"/g" conf/server.xml\n\
-exec catalina.sh run\n' > /usr/local/tomcat/bin/docker-entrypoint.sh && \
-chmod +x /usr/local/tomcat/bin/docker-entrypoint.sh
-
-# Security Hardening: Run as dedicated non-root tomcat user
-RUN groupadd -r tomcat && useradd -r -g tomcat -d /usr/local/tomcat -s /sbin/nologin tomcat && \
-    chown -R tomcat:tomcat /usr/local/tomcat
+# Copy compiled Spring Boot executable WAR artifact
+COPY --from=builder --chown=appuser:appgroup /app/target/ecommerce-web.war /app/ecommerce-web.war
 
 # Expose default HTTP port
 EXPOSE 8080
 
-USER tomcat
+USER appuser
 
-# Start Tomcat via dynamic entrypoint
-CMD ["/usr/local/tomcat/bin/docker-entrypoint.sh"]
+# Spring Boot production runtime flags: Enforces IST, container memory ergonomics, and port binding
+ENTRYPOINT ["sh", "-c", "java -Duser.timezone=Asia/Kolkata -Dserver.port=${PORT:-8080} -XX:+UseG1GC -XX:MaxRAMPercentage=75.0 -jar /app/ecommerce-web.war"]

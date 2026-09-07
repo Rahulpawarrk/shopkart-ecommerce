@@ -1,5 +1,6 @@
 package com.example.ecommerce.auth.model;
 
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -8,18 +9,41 @@ import java.util.List;
 /**
  * User Entity representing a customer or administrative user.
  */
+@Entity
+@Table(name = "users", schema = "dbo")
 public class User implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "user_id")
     private int userId;
+
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
+
+    @Column(name = "password_hash", nullable = false)
     private String passwordHash;
+
+    @Column(name = "first_name", nullable = false)
     private String firstName;
+
+    @Column(name = "last_name", nullable = false)
     private String lastName;
+
+    @Column(name = "phone")
     private String phone;
-    private String status; // 'ACTIVE', 'INACTIVE', 'SUSPENDED', 'PENDING_VERIFICATION'
+
+    @Column(name = "status", nullable = false)
+    private String status = "ACTIVE"; // 'ACTIVE', 'INACTIVE', 'SUSPENDED', 'PENDING_VERIFICATION'
+
+    @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", insertable = false, updatable = false)
     private LocalDateTime updatedAt;
+
+    @Transient
     private List<Role> roles = new ArrayList<>();
 
     public User() {}

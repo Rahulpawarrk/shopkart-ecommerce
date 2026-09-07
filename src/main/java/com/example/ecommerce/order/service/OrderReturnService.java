@@ -19,9 +19,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 /**
  * Service Layer for Order Returns, Replacements, and Refund Resolutions.
  */
+@Service
+@Transactional
 public class OrderReturnService {
 
     private static final Logger logger = LoggerFactory.getLogger(OrderReturnService.class);

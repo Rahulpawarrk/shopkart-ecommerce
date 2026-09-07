@@ -16,9 +16,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.stereotype.Repository;
+
 /**
  * DAO responsible for category queries and hierarchical relationship mapping in SQL Server.
  */
+@Repository
 public class CategoryDAO {
 
     private static final Logger logger = LoggerFactory.getLogger(CategoryDAO.class);

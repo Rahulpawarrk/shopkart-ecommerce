@@ -21,9 +21,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.stereotype.Repository;
+
 /**
  * Data Access Object for Coupons and Promotions in Microsoft SQL Server.
  */
+@Repository
 public class CouponDAO {
 
     private static final Logger logger = LoggerFactory.getLogger(CouponDAO.class);
