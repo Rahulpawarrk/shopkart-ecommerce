@@ -12,11 +12,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class RazorpayServiceTest {
 
     @Test
-    @DisplayName("Should initialize in sandbox mode when no env credentials provided")
-    void testDefaultSandboxInitialization() {
+    @DisplayName("Should initialize in unconfigured mode when no env credentials provided")
+    void testDefaultUnconfiguredInitialization() {
         RazorpayService razorpayService = new RazorpayService(null, null);
         assertFalse(razorpayService.isConfigured());
-        assertEquals("rzp_test_ShopKartSandbox", razorpayService.getKeyId());
+        assertEquals("", razorpayService.getKeyId());
     }
 
     @Test
@@ -28,33 +28,30 @@ class RazorpayServiceTest {
     }
 
     @Test
-    @DisplayName("Should create simulated Razorpay order ID in sandbox mode")
-    void testCreateSimulatedRazorpayOrder() {
-        RazorpayService razorpayService = new RazorpayService();
+    @DisplayName("Should throw IllegalStateException when creating Razorpay order without configuration")
+    void testCreateRazorpayOrderUnconfigured() {
+        RazorpayService razorpayService = new RazorpayService(null, null);
 
         Order order = new Order();
         order.setOrderId(101);
         order.setOrderNumber("ORD-2026-101");
         order.setTotalAmount(new BigDecimal("1499.00"));
 
-        String orderId = razorpayService.createRazorpayOrder(order);
-
-        assertNotNull(orderId);
-        assertTrue(orderId.startsWith("order_"));
+        assertThrows(IllegalStateException.class, () -> razorpayService.createRazorpayOrder(order));
     }
 
     @Test
-    @DisplayName("Should verify simulation payment signatures in sandbox unconfigured mode")
-    void testVerifySimulatedSignature() {
+    @DisplayName("Should reject payment signatures when gateway is unconfigured")
+    void testRejectUnconfiguredSignature() {
         RazorpayService razorpayService = new RazorpayService(null, null);
 
         boolean isValid = razorpayService.verifyPaymentSignature(
-                "order_sim_1234567890", 
-                "pay_sim_ABCDEF12345", 
-                "sig_sim_sample"
+                "order_1234567890", 
+                "pay_ABCDEF12345", 
+                "sig_sample"
         );
 
-        assertTrue(isValid);
+        assertFalse(isValid);
     }
 
     @Test

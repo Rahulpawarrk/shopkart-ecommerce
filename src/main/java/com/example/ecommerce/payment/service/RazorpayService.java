@@ -37,11 +37,10 @@ public class RazorpayService {
             this.isConfigured = true;
             logger.info("Razorpay Payment Gateway initialized in LIVE/CONFIGURED mode with Key ID: {}", maskKey(this.keyId));
         } else {
-            // Default Sandbox Test Mode Key for instant plug-and-play local development
             this.keyId = "";
             this.keySecret = "";
             this.isConfigured = false;
-            logger.error("Razorpay Payment Gateway is disabled (credentials not found in environment). Running in Simulation mode.");
+            logger.warn("Razorpay Payment Gateway credentials not found in environment. Online card/UPI payments will be disabled.");
         }
     }
 
@@ -51,14 +50,14 @@ public class RazorpayService {
             this.keySecret = keySecret.trim();
             this.isConfigured = true;
         } else {
-            this.keyId = "rzp_test_ShopKartSandbox";
-            this.keySecret = "ShopKartTestSecretKey123";
+            this.keyId = "";
+            this.keySecret = "";
             this.isConfigured = false;
         }
     }
 
     /**
-     * Creates a Razorpay Order entity via Razorpay API (or generates simulated order if running in local sandbox).
+     * Creates a Razorpay Order entity via official Razorpay API.
      *
      * @param order the e-commerce Order entity
      * @return Razorpay Order ID (e.g. order_Nx8Y9z7...)
@@ -68,38 +67,36 @@ public class RazorpayService {
             throw new IllegalArgumentException("Order and order total amount must not be null.");
         }
 
+        if (!isConfigured) {
+            throw new IllegalStateException("Razorpay Payment Gateway is not configured. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in environment.");
+        }
+
         // Convert amount to paise (1 INR = 100 paise)
         long amountInPaise = order.getTotalAmount().multiply(new BigDecimal(100)).longValue();
 
-        if (isConfigured) {
-            try {
-                RazorpayClient razorpay = getRazorpayClient();
+        try {
+            RazorpayClient razorpay = getRazorpayClient();
 
-                JSONObject orderRequest = new JSONObject();
-                orderRequest.put("amount", amountInPaise);
-                orderRequest.put("currency", "INR");
-                orderRequest.put("receipt", "rcpt_ord_" + order.getOrderId());
-                orderRequest.put("payment_capture", 1); // Auto-capture payment
+            JSONObject orderRequest = new JSONObject();
+            orderRequest.put("amount", amountInPaise);
+            orderRequest.put("currency", "INR");
+            orderRequest.put("receipt", "rcpt_ord_" + order.getOrderId());
+            orderRequest.put("payment_capture", 1); // Auto-capture payment
 
-                JSONObject notes = new JSONObject();
-                notes.put("ecommerce_order_id", String.valueOf(order.getOrderId()));
-                notes.put("order_number", order.getOrderNumber());
-                orderRequest.put("notes", notes);
+            JSONObject notes = new JSONObject();
+            notes.put("ecommerce_order_id", String.valueOf(order.getOrderId()));
+            notes.put("order_number", order.getOrderNumber());
+            orderRequest.put("notes", notes);
 
-                com.razorpay.Order rzpOrder = razorpay.orders.create(orderRequest);
-                String rzpOrderId = rzpOrder.get("id");
-                logger.info("Successfully created Razorpay Order [{}] for Order #{} (ID: {})", rzpOrderId, order.getOrderNumber(), order.getOrderId());
-                return rzpOrderId;
+            com.razorpay.Order rzpOrder = razorpay.orders.create(orderRequest);
+            String rzpOrderId = rzpOrder.get("id");
+            logger.info("Successfully created Razorpay Order [{}] for Order #{} (ID: {})", rzpOrderId, order.getOrderNumber(), order.getOrderId());
+            return rzpOrderId;
 
-            } catch (Exception e) {
-                logger.error("Razorpay API order creation failed for Order ID #{}. Falling back to simulation.", order.getOrderId(), e);
-            }
+        } catch (Exception e) {
+            logger.error("Razorpay API order creation failed for Order ID #{}: {}", order.getOrderId(), e.getMessage(), e);
+            throw new IllegalStateException("Failed to create order with Razorpay Payment Gateway: " + e.getMessage(), e);
         }
-
-        // Sandbox simulated fallback order ID
-        String simulatedOrderId = "order_sim_" + UUID.randomUUID().toString().replace("-", "").substring(0, 14);
-        logger.info("Generated Sandbox Simulated Order [{}] for Order ID #{}", simulatedOrderId, order.getOrderId());
-        return simulatedOrderId;
     }
 
     /**
@@ -121,35 +118,29 @@ public class RazorpayService {
             return false;
         }
 
-        if (isConfigured) {
-            // Live or test key configured: enforce strict HMAC-SHA256 cryptographic verification
-            try {
-                JSONObject options = new JSONObject();
-                options.put("razorpay_order_id", razorpayOrderId.trim());
-                options.put("razorpay_payment_id", razorpayPaymentId.trim());
-                options.put("razorpay_signature", razorpaySignature.trim());
+        if (!isConfigured) {
+            logger.error("Razorpay signature verification rejected: Gateway credentials not configured.");
+            return false;
+        }
 
-                boolean isValid = Utils.verifyPaymentSignature(options, keySecret);
-                if (isValid) {
-                    logger.info("Razorpay signature verified successfully for Order: {}, Payment: {}", razorpayOrderId, razorpayPaymentId);
-                } else {
-                    logger.error("Razorpay signature verification returned FALSE for Order: {}, Payment: {}", razorpayOrderId, razorpayPaymentId);
-                }
-                return isValid;
-            } catch (Exception e) {
-                logger.error("Razorpay signature verification failed with exception for Order: {}, Payment: {}", razorpayOrderId, razorpayPaymentId, e);
-                return false;
+        // Enforce strict HMAC-SHA256 cryptographic verification
+        try {
+            JSONObject options = new JSONObject();
+            options.put("razorpay_order_id", razorpayOrderId.trim());
+            options.put("razorpay_payment_id", razorpayPaymentId.trim());
+            options.put("razorpay_signature", razorpaySignature.trim());
+
+            boolean isValid = Utils.verifyPaymentSignature(options, keySecret);
+            if (isValid) {
+                logger.info("Razorpay signature verified successfully for Order: {}, Payment: {}", razorpayOrderId, razorpayPaymentId);
+            } else {
+                logger.error("Razorpay signature verification returned FALSE for Order: {}, Payment: {}", razorpayOrderId, razorpayPaymentId);
             }
+            return isValid;
+        } catch (Exception e) {
+            logger.error("Razorpay signature verification failed with exception for Order: {}, Payment: {}", razorpayOrderId, razorpayPaymentId, e);
+            return false;
         }
-
-        // Only allow fallback simulation in local sandbox when keys are not configured
-        if (razorpayOrderId.startsWith("order_sim_") && razorpayPaymentId.startsWith("pay_sim_")) {
-            logger.warn("Development Sandbox: Accepted simulated signature for Order [{}]", razorpayOrderId);
-            return true;
-        }
-
-        logger.error("Razorpay signature verification failed: Gateway not configured and invalid simulation parameters.");
-        return false;
     }
 
     /**
@@ -167,10 +158,6 @@ public class RazorpayService {
         }
 
         if (!isConfigured) {
-            if (razorpayPaymentId.startsWith("pay_sim_")) {
-                logger.warn("Development Sandbox: Accepted simulated payment fetch for ID [{}]", razorpayPaymentId);
-                return true;
-            }
             logger.error("Server-side payment verification failed: Razorpay credentials not configured.");
             return false;
         }

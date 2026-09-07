@@ -91,6 +91,17 @@ public class PaymentGatewayServlet extends HttpServlet {
             }
 
             Payment payment = paymentService.initiatePayment(order, order.getPaymentMethod());
+
+            if (!razorpayService.isConfigured()) {
+                logger.warn("Razorpay credentials not configured in environment for Order #{}", order.getOrderNumber());
+                request.setAttribute("order", order);
+                request.setAttribute("payment", payment);
+                request.setAttribute("isRazorpayLive", false);
+                request.setAttribute("paymentGatewayUnavailable", true);
+                request.getRequestDispatcher("/WEB-INF/views/payment/gateway.jsp").forward(request, response);
+                return;
+            }
+
             String razorpayOrderId = razorpayService.createRazorpayOrder(order);
 
             request.setAttribute("order", order);
@@ -98,7 +109,7 @@ public class PaymentGatewayServlet extends HttpServlet {
             request.setAttribute("razorpayOrderId", razorpayOrderId);
             request.setAttribute("razorpayKeyId", razorpayService.getKeyId());
             request.setAttribute("razorpayAmountInPaise", order.getTotalAmount().multiply(new java.math.BigDecimal(100)).longValue());
-            request.setAttribute("isRazorpayLive", razorpayService.isConfigured());
+            request.setAttribute("isRazorpayLive", true);
 
             request.getRequestDispatcher("/WEB-INF/views/payment/gateway.jsp").forward(request, response);
         } catch (Exception e) {
