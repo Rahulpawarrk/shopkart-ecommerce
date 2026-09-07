@@ -1,10 +1,10 @@
 # ==============================================================================
-# Multi-Stage Dockerfile for ShopKart E-Commerce Platform (Spring Boot 3 + JDK 21)
+# Multi-Stage Dockerfile for ShopKart E-Commerce Platform (Tomcat 11 + JDK 21)
 # Optimized for 1-Click Production Cloud Deployment on Render, Koyeb, Railway, or Docker
 # ==============================================================================
 
 # ------------------------------------------------------------------------------
-# Stage 1: Build the Spring Boot executable WAR artifact
+# Stage 1: Build the Maven WAR artifact
 # ------------------------------------------------------------------------------
 FROM maven:3.9.9-eclipse-temurin-21 AS builder
 
@@ -17,28 +17,35 @@ RUN mvn dependency:go-offline -B
 # Copy full application source code
 COPY src ./src
 
-# Compile and package production Spring Boot executable WAR archive
+# Compile and package production WAR archive
 RUN mvn clean package -DskipTests
 
 # ------------------------------------------------------------------------------
-# Stage 2: Production Container Runtime (JDK 21 for runtime JSP bytecode compilation)
+# Stage 2: Production Runtime with Apache Tomcat 11
 # ------------------------------------------------------------------------------
-FROM eclipse-temurin:21-jdk-alpine
+FROM tomcat:11.0-jdk21-temurin
 
-WORKDIR /app
+WORKDIR /usr/local/tomcat
 
-# Security Hardening: Create dedicated non-root application user and ensure writable logs and tomcat work directories
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup \
-    && mkdir -p /app/logs /tmp/ecommerce-logs /tmp/tomcat \
-    && chown -R appuser:appgroup /app /tmp/ecommerce-logs /tmp/tomcat
+# Remove default sample webapps to maximize security and startup speed
+RUN rm -rf webapps/* webapps.dist
 
-# Copy compiled Spring Boot executable WAR artifact
-COPY --from=builder --chown=appuser:appgroup /app/target/ecommerce-web.war /app/ecommerce-web.war
+# Copy the compiled WAR archive from builder stage directly as ROOT.war
+COPY --from=builder /app/target/ecommerce-web.war webapps/ROOT.war
+
+# Copy dynamic entrypoint script to adapt Tomcat port to cloud platform $PORT (Render / Koyeb)
+COPY bin/docker-entrypoint.sh /usr/local/tomcat/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/tomcat/bin/docker-entrypoint.sh
+
+# Security Hardening: Create tomcat user if not exists and ensure writable log directory
+RUN (id -u tomcat >/dev/null 2>&1 || (groupadd -r tomcat && useradd -r -g tomcat -d /usr/local/tomcat -s /sbin/nologin tomcat)) && \
+    mkdir -p /tmp/ecommerce-logs && \
+    chown -R tomcat:tomcat /usr/local/tomcat /tmp/ecommerce-logs
 
 # Expose default HTTP port
 EXPOSE 8080
 
-USER appuser
+USER tomcat
 
-# Spring Boot production runtime flags: Enforces IST, container memory ergonomics, explicit IPv4 0.0.0.0 bind, and dynamic port binding for Render/Cloud
-ENTRYPOINT ["sh", "-c", "java -Duser.timezone=Asia/Kolkata -Dserver.address=0.0.0.0 -Dserver.port=${PORT:-8080} -Djava.net.preferIPv4Stack=true -XX:+UseG1GC -XX:MaxRAMPercentage=75.0 -jar /app/ecommerce-web.war"]
+# Start Tomcat via dynamic entrypoint
+CMD ["/usr/local/tomcat/bin/docker-entrypoint.sh"]

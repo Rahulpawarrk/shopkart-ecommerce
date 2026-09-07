@@ -70,10 +70,16 @@
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
 
-        <!-- Embedded JSP Engine for Spring Boot Tomcat -->
+        <!-- Servlet Container and JSP Engine provided by external Apache Tomcat 11 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-tomcat</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-jasper</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <!-- Jakarta JSTL API & Implementation for JSP Rendering -->
