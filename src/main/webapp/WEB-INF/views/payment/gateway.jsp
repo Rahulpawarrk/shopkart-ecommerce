@@ -348,12 +348,24 @@
 
         <%-- 1. REAL-TIME RAZORPAY STANDARD CHECKOUT LAUNCHER --%>
         <div class="rzp-action-box">
-            <button type="button" class="rzp-launch-btn" id="launchRazorpayBtn" onclick="launchRazorpayCheckout()">
-                <span>🔒 Pay ₹<fmt:formatNumber value="${order.totalAmount}" minFractionDigits="2"/> with Razorpay Secure</span>
-            </button>
-            <div style="margin-top: 0.85rem; font-size: 0.82rem; color: #64748b;">
-                Click above to open the secure Razorpay payment window
-            </div>
+            <c:choose>
+                <c:when test="${isRazorpayLive}">
+                    <button type="button" class="rzp-launch-btn" id="launchRazorpayBtn" onclick="launchRazorpayCheckout()">
+                        <span>🔒 Pay ₹<fmt:formatNumber value="${order.totalAmount}" minFractionDigits="2"/> with Razorpay Secure</span>
+                    </button>
+                    <div style="margin-top: 0.85rem; font-size: 0.82rem; color: #64748b;">
+                        Click above to open the secure Razorpay payment window
+                    </div>
+                </c:when>
+                <c:otherwise>
+                    <button type="button" class="rzp-launch-btn" id="launchRazorpayBtn" onclick="simulateSandboxPayment()" style="background: linear-gradient(135deg, #059669 0%, #047857 100%);">
+                        <span>🧪 Complete Test Payment (Instant Sandbox Approval)</span>
+                    </button>
+                    <div style="margin-top: 0.85rem; font-size: 0.82rem; color: #64748b;">
+                        Sandbox Mode Active: Click to simulate instant order approval and payment completion
+                    </div>
+                </c:otherwise>
+            </c:choose>
         </div>
 
         <%-- Supported Payment Channels Showcase --%>
@@ -439,9 +451,22 @@
     const MAX_PAYMENT_ATTEMPTS = 3;
 
     // Real-Time Razorpay Standard Checkout Modal
+    function simulateSandboxPayment() {
+        const configDiv = document.getElementById('razorpayConfig');
+        const rzpOrderId = configDiv ? (configDiv.dataset.orderId || 'order_sim_test') : 'order_sim_test';
+        const simPaymentId = 'pay_sim_' + Math.random().toString(36).substring(2, 12);
+
+        document.getElementById('rzpPaymentIdField').value = simPaymentId;
+        document.getElementById('rzpOrderIdField').value = rzpOrderId;
+        document.getElementById('rzpSignatureField').value = 'sig_sim_valid';
+        document.getElementById('txnRefField').value = simPaymentId;
+        document.getElementById('statusField').value = 'SUCCESS';
+        document.getElementById('paymentForm').submit();
+    }
+
     function launchRazorpayCheckout() {
         const configDiv = document.getElementById('razorpayConfig');
-        const keyId = configDiv.dataset.keyId;
+        const keyId = configDiv ? configDiv.dataset.keyId : '';
         const amountPaise = parseInt(configDiv.dataset.amount, 10);
         const rzpOrderId = configDiv.dataset.orderId;
         const orderNumber = configDiv.dataset.orderNumber;
@@ -449,6 +474,11 @@
         const customerName = configDiv.dataset.customerName;
         const customerEmail = configDiv.dataset.customerEmail;
         const customerPhone = configDiv.dataset.customerPhone;
+
+        if (!keyId || keyId.trim() === '' || (rzpOrderId && rzpOrderId.startsWith('order_sim_'))) {
+            simulateSandboxPayment();
+            return;
+        }
 
         const options = {
             "key": keyId,
@@ -543,11 +573,16 @@
         launchRazorpayCheckout();
     }
 
-    // Auto-launch Razorpay Checkout popup upon page load
+    // Auto-launch Razorpay Checkout popup upon page load only when live key is configured
     window.addEventListener('DOMContentLoaded', () => {
-        setTimeout(() => {
-            launchRazorpayCheckout();
-        }, 400);
+        const configDiv = document.getElementById('razorpayConfig');
+        const keyId = configDiv ? configDiv.dataset.keyId : '';
+        const rzpOrderId = configDiv ? configDiv.dataset.orderId : '';
+        if (keyId && keyId.trim() !== '' && !rzpOrderId.startsWith('order_sim_')) {
+            setTimeout(() => {
+                launchRazorpayCheckout();
+            }, 400);
+        }
     });
 </script>
 
