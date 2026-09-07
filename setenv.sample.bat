@@ -7,7 +7,7 @@ REM ============================================================================
 REM 1. Database Connection (SQL Server or PostgreSQL)
 set "DB_URL=jdbc:sqlserver://localhost:1433;databaseName=shopkart_db;encrypt=true;trustServerCertificate=true"
 set "DB_USER=sa"
-set "DB_PASSWORD=YourStrongPassword123!"
+set "DB_PASSWORD=YOUR_DATABASE_PASSWORD_HERE"
 
 REM 2. SMS Gateway API Key (Fast2SMS for OTPs & Password Resets)
 REM Get free key from: https://www.fast2sms.com -> Dev API
@@ -17,7 +17,7 @@ set "FAST2SMS_API_KEY=YOUR_FAST2SMS_API_KEY_HERE"
 REM 3. Carrier Logistics Webhook Secret
 REM Set any random secure string here and configure the SAME value in your Carrier Dashboards
 REM (Shiprocket: Settings > Webhooks, Delhivery: Contact support, BlueDart: NetConnect portal)
-set "LOGISTICS_WEBHOOK_SECRET=sec_wh_shopkart_prod_2026_x89a"
+set "LOGISTICS_WEBHOOK_SECRET=YOUR_LOGISTICS_WEBHOOK_SECRET_HERE"
 
 REM 6. Shiprocket API Credentials (Multi-Carrier Aggregator)
 REM Get from: https://app.shiprocket.in -> Settings -> API -> Generate Token
@@ -40,8 +40,8 @@ set "BLUEDART_LICENSE_KEY=YOUR_BLUEDART_LICENSE_KEY"
 set "BLUEDART_CUSTOMER_CODE=YOUR_BLUEDART_CUSTOMER_CODE"
 
 REM 4. Payment Gateway (Razorpay)
-set "RAZORPAY_KEY_ID=rzp_live_your_actual_key_id"
-set "RAZORPAY_KEY_SECRET=your_actual_razorpay_secret"
+set "RAZORPAY_KEY_ID=rzp_test_your_key_id"
+set "RAZORPAY_KEY_SECRET=your_razorpay_secret"
 
 REM 5. HTTPS & SSL Enforcement
 set "ENFORCE_HTTPS=true"
