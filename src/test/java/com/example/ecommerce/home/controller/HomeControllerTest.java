@@ -8,10 +8,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class HomeControllerTest {
 
     @Test
-    @DisplayName("Root URL GET / forwards to /home")
+    @DisplayName("Root URL GET / forwards to /index.html")
     void testRootMapping() {
         HomeController controller = new HomeController();
         String target = controller.home();
-        assertEquals("forward:/home", target);
+        assertEquals("forward:/index.html", target);
     }
 }

@@ -4,7 +4,20 @@
 # ==============================================================================
 
 # ------------------------------------------------------------------------------
-# Stage 1: Build the Maven WAR artifact
+# Stage 1: Build the React SPA Frontend
+# ------------------------------------------------------------------------------
+FROM node:20-alpine AS frontend-builder
+
+WORKDIR /app/frontend
+
+COPY frontend/package*.json ./
+RUN npm ci
+
+COPY frontend/ ./
+RUN npm run build
+
+# ------------------------------------------------------------------------------
+# Stage 2: Build the Maven WAR artifact with bundled Frontend SPA
 # ------------------------------------------------------------------------------
 FROM maven:3.9.9-eclipse-temurin-21 AS builder
 
@@ -17,11 +30,15 @@ RUN mvn dependency:go-offline -B
 # Copy full application source code
 COPY src ./src
 
+# Inject built React production bundle into static resources and webapp root
+COPY --from=frontend-builder /app/frontend/dist ./src/main/resources/static
+COPY --from=frontend-builder /app/frontend/dist ./src/main/webapp
+
 # Compile and package production WAR archive
 RUN mvn clean package -DskipTests
 
 # ------------------------------------------------------------------------------
-# Stage 2: Production Runtime with Apache Tomcat 11
+# Stage 3: Production Runtime with Apache Tomcat 11
 # ------------------------------------------------------------------------------
 FROM tomcat:11.0-jdk21-temurin
 

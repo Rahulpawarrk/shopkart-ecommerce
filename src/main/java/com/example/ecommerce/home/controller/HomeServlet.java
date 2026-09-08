@@ -162,6 +162,6 @@ public class HomeServlet extends HttpServlet {
             request.setAttribute("catalogError", "Unable to load dynamic catalog items.");
         }
 
-        request.getRequestDispatcher("/index.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 }
