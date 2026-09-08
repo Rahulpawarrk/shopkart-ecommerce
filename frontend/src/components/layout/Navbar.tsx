@@ -73,20 +73,20 @@ export const Navbar: React.FC = () => {
   const totalWishlistCount = wishlistItems.length;
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
+    <header className="sticky top-0 z-40 bg-slate-900 border-b border-slate-800 shadow-md">
       {/* Top Utility Ticker Bar */}
-      <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-slate-900 text-white text-[11px] py-2 px-4">
+      <div className="bg-slate-950 border-b border-slate-800/80 text-slate-300 text-[11px] py-2 px-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2 font-medium">
-            <Truck className="w-3.5 h-3.5 text-blue-300" />
+            <Truck className="w-3.5 h-3.5 text-blue-400" />
             <span>⚡ Free Express Delivery on orders above ₹499 across India</span>
           </div>
-          <div className="hidden sm:flex items-center gap-4 text-blue-200">
-            <span className="flex items-center gap-1.5 text-blue-100 font-medium">
+          <div className="hidden sm:flex items-center gap-4 text-slate-400">
+            <span className="flex items-center gap-1.5 text-slate-300 font-medium">
               <span>📞 24x7 Customer Support: 1800-SHOPKART</span>
             </span>
-            <span className="text-white/40">|</span>
-            <span className="text-blue-100">100% Genuine & Verified Products</span>
+            <span className="text-slate-700">|</span>
+            <span className="text-slate-300">100% Genuine &amp; Verified Products</span>
           </div>
         </div>
       </div>
@@ -99,19 +99,23 @@ export const Navbar: React.FC = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={() => dispatch(toggleMobileMenu())}
-              className="lg:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition"
+              className="lg:hidden p-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 transition"
               aria-label="Toggle Navigation Menu"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
 
             <Link to="/" className="flex items-center gap-2.5 group">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-black text-xl shadow-md shadow-blue-600/20 group-hover:scale-105 transition">
-                SK
+              <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-500/25 group-hover:scale-105 transition">
+                <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                  <path d="M3 6h18" />
+                  <path d="M16 10a4 4 0 0 1-8 0" />
+                </svg>
               </div>
               <div className="flex flex-col">
-                <span className="font-black text-2xl tracking-tight text-slate-900 leading-none">
-                  Shop<span className="text-blue-600">Kart</span>
+                <span className="font-black text-2xl tracking-tight text-white leading-none">
+                  Shop<span className="text-blue-500">Kart</span>
                 </span>
                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
                   India's Store
@@ -128,7 +132,7 @@ export const Navbar: React.FC = () => {
                 placeholder="Search laptops, smartphones, fashion, audio..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-4 py-2.5 border border-slate-200 rounded-2xl text-xs font-medium focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition bg-slate-50/70 focus:bg-white shadow-2xs"
+                className="w-full pl-11 pr-4 py-2.5 bg-slate-800/90 text-white placeholder-slate-400 border border-slate-700/80 rounded-2xl text-xs font-medium focus:outline-none focus:border-blue-500 focus:bg-slate-800 focus:ring-2 focus:ring-blue-500/20 transition shadow-inner"
               />
               <Search className="w-4 h-4 text-slate-400 absolute left-4 top-3" />
             </div>
@@ -140,7 +144,7 @@ export const Navbar: React.FC = () => {
             {/* Wishlist Link */}
             <Link
               to="/wishlist"
-              className="relative p-2.5 text-slate-600 hover:text-rose-600 rounded-2xl hover:bg-rose-50/60 transition group flex items-center gap-1.5"
+              className="relative p-2.5 text-slate-300 hover:text-rose-400 rounded-2xl hover:bg-slate-800/80 transition group flex items-center gap-1.5"
               title="View Wishlist"
             >
               <Heart className="w-5 h-5 transition group-hover:scale-110" />
@@ -154,7 +158,7 @@ export const Navbar: React.FC = () => {
             {/* Cart Trigger */}
             <button
               onClick={() => dispatch(toggleCartDrawer())}
-              className="relative p-2.5 text-slate-700 hover:text-blue-600 rounded-2xl hover:bg-blue-50/60 transition group flex items-center gap-2 cursor-pointer"
+              className="relative p-2.5 text-slate-300 hover:text-blue-400 rounded-2xl hover:bg-slate-800/80 transition group flex items-center gap-2 cursor-pointer"
               title="Shopping Cart"
             >
               <div className="relative">
@@ -166,7 +170,7 @@ export const Navbar: React.FC = () => {
                 )}
               </div>
               {cart && cart.finalTotal > 0 && (
-                <span className="hidden xl:inline text-xs font-black text-slate-900">
+                <span className="hidden xl:inline text-xs font-black text-white">
                   ₹{cart.finalTotal.toLocaleString('en-IN')}
                 </span>
               )}
@@ -178,13 +182,13 @@ export const Navbar: React.FC = () => {
                 <div>
                   <button
                     onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                    className="flex items-center gap-2 p-1.5 pr-3 rounded-2xl hover:bg-slate-100 transition text-xs font-bold text-slate-800 border border-slate-200/80 cursor-pointer"
+                    className="flex items-center gap-2 p-1.5 pr-3 rounded-2xl hover:bg-slate-800 transition text-xs font-bold text-white border border-slate-700/80 bg-slate-800/50 cursor-pointer"
                   >
                     <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-black shadow-xs">
                       {user.firstName ? user.firstName.charAt(0).toUpperCase() : 'U'}
                     </div>
                     <div className="hidden lg:flex flex-col text-left">
-                      <span className="text-slate-900 leading-tight truncate max-w-[100px]">{user.firstName}</span>
+                      <span className="text-white leading-tight truncate max-w-[100px]">{user.firstName}</span>
                       <span className="text-[10px] text-slate-400 font-normal">
                         {user.admin ? 'Administrator' : 'Customer'}
                       </span>
@@ -193,19 +197,19 @@ export const Navbar: React.FC = () => {
                   </button>
 
                   {userDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-60 bg-white rounded-2xl shadow-card border border-slate-200/90 py-2.5 z-50 animate-in fade-in slide-in-from-top-2">
-                      <div className="px-4 py-2.5 border-b border-slate-100">
+                    <div className="absolute right-0 mt-2 w-60 bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 py-2.5 z-50 animate-in fade-in slide-in-from-top-2 text-slate-200">
+                      <div className="px-4 py-2.5 border-b border-slate-700/80">
                         <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Signed in as</p>
-                        <p className="text-xs font-bold text-slate-900 truncate mt-0.5">{user.fullName || user.email}</p>
+                        <p className="text-xs font-bold text-white truncate mt-0.5">{user.fullName || user.email}</p>
                       </div>
 
                       {user.admin && (
                         <Link
                           to="/admin/dashboard"
                           onClick={() => setUserDropdownOpen(false)}
-                          className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-purple-700 hover:bg-purple-50 font-bold"
+                          className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-purple-400 hover:bg-slate-700/60 font-bold"
                         >
-                          <ShieldAlert className="w-4 h-4 text-purple-600" />
+                          <ShieldAlert className="w-4 h-4 text-purple-400" />
                           <span>Admin Console</span>
                         </Link>
                       )}
@@ -213,7 +217,7 @@ export const Navbar: React.FC = () => {
                       <Link
                         to="/orders"
                         onClick={() => setUserDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-700 hover:bg-slate-50 font-semibold"
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-200 hover:bg-slate-700/60 font-semibold"
                       >
                         <Package className="w-4 h-4 text-slate-400" />
                         <span>My Orders</span>
@@ -222,7 +226,7 @@ export const Navbar: React.FC = () => {
                       <Link
                         to="/wishlist"
                         onClick={() => setUserDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-700 hover:bg-slate-50 font-semibold"
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-200 hover:bg-slate-700/60 font-semibold"
                       >
                         <Heart className="w-4 h-4 text-slate-400" />
                         <span>My Wishlist ({totalWishlistCount})</span>
@@ -231,7 +235,7 @@ export const Navbar: React.FC = () => {
                       <Link
                         to="/addresses"
                         onClick={() => setUserDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-700 hover:bg-slate-50 font-semibold"
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-200 hover:bg-slate-700/60 font-semibold"
                       >
                         <MapPin className="w-4 h-4 text-slate-400" />
                         <span>Saved Addresses</span>
@@ -240,17 +244,17 @@ export const Navbar: React.FC = () => {
                       <Link
                         to="/profile"
                         onClick={() => setUserDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-700 hover:bg-slate-50 font-semibold"
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-200 hover:bg-slate-700/60 font-semibold"
                       >
                         <UserIcon className="w-4 h-4 text-slate-400" />
                         <span>Account Profile</span>
                       </Link>
 
-                      <div className="border-t border-slate-100 my-1.5"></div>
+                      <div className="border-t border-slate-700/80 my-1.5"></div>
 
                       <button
                         onClick={handleLogout}
-                        className="w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-xs text-rose-600 hover:bg-rose-50 font-bold cursor-pointer"
+                        className="w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-xs text-rose-400 hover:bg-rose-950/40 font-bold cursor-pointer"
                       >
                         <LogOut className="w-4 h-4" />
                         <span>Sign Out</span>
@@ -262,13 +266,13 @@ export const Navbar: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <Link
                     to="/login"
-                    className="text-xs font-bold text-slate-700 hover:text-blue-600 px-3.5 py-2 rounded-xl hover:bg-slate-100 transition"
+                    className="text-xs font-bold text-slate-200 hover:text-white px-3.5 py-2 rounded-xl hover:bg-slate-800 transition"
                   >
                     Sign In
                   </Link>
                   <Link
                     to="/register"
-                    className="text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl transition shadow-sm shadow-blue-600/20"
+                    className="text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl transition shadow-md shadow-blue-600/30"
                   >
                     Sign Up
                   </Link>
@@ -280,25 +284,25 @@ export const Navbar: React.FC = () => {
         </div>
 
         {/* Secondary Category Navigation Bar */}
-        <div className="hidden lg:flex items-center gap-8 py-2.5 border-t border-slate-100 text-xs font-bold text-slate-600">
+        <div className="hidden lg:flex items-center gap-8 py-2.5 border-t border-slate-800/80 text-xs font-bold text-slate-300">
           <div className="relative">
             <button
               onClick={() => setCategoryMenuOpen(!categoryMenuOpen)}
-              className="flex items-center gap-2 font-black text-slate-900 hover:text-blue-600 transition cursor-pointer"
+              className="flex items-center gap-2 font-black text-white hover:text-blue-400 transition cursor-pointer"
             >
-              <Layers className="w-4 h-4 text-blue-600" />
+              <Layers className="w-4 h-4 text-blue-400" />
               <span>All Categories</span>
               <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
             </button>
 
             {categoryMenuOpen && (
-              <div className="absolute left-0 mt-2 w-72 bg-white rounded-2xl shadow-card border border-slate-200/90 py-2.5 z-50 animate-in fade-in slide-in-from-top-2">
+              <div className="absolute left-0 mt-2 w-72 bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 py-2.5 z-50 animate-in fade-in slide-in-from-top-2 text-slate-200">
                 {categories.map((cat) => (
                   <Link
                     key={cat.categoryId}
                     to={`/products?categorySlug=${cat.slug}`}
                     onClick={() => setCategoryMenuOpen(false)}
-                    className="block px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-blue-600 transition"
+                    className="block px-4 py-2.5 text-xs font-semibold text-slate-200 hover:bg-slate-700 hover:text-blue-400 transition"
                   >
                     {cat.categoryName}
                   </Link>
@@ -307,17 +311,17 @@ export const Navbar: React.FC = () => {
             )}
           </div>
 
-          <Link to="/products?sort=deals" className="text-red-600 font-black hover:underline flex items-center gap-1">
-            <Zap className="w-3.5 h-3.5 fill-red-600" />
+          <Link to="/products?sort=deals" className="text-amber-400 font-black hover:underline flex items-center gap-1">
+            <Zap className="w-3.5 h-3.5 fill-amber-400" />
             <span>Super Flash Deals</span>
           </Link>
-          <Link to="/products?sort=bestsellers" className="hover:text-blue-600 transition">
+          <Link to="/products?sort=bestsellers" className="hover:text-blue-400 transition">
             Bestsellers
           </Link>
-          <Link to="/products?sort=newest" className="hover:text-blue-600 transition">
+          <Link to="/products?sort=newest" className="hover:text-blue-400 transition">
             New Arrivals
           </Link>
-          <Link to="/products" className="hover:text-blue-600 transition">
+          <Link to="/products" className="hover:text-blue-400 transition">
             All Products Catalog
           </Link>
         </div>
@@ -325,14 +329,14 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-slate-200 bg-white px-4 pt-4 pb-6 space-y-4">
+        <div className="lg:hidden border-t border-slate-800 bg-slate-900 px-4 pt-4 pb-6 space-y-4 text-white">
           <form onSubmit={handleSearch} className="relative">
             <input
               type="text"
               placeholder="Search products..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl text-xs"
+              className="w-full pl-9 pr-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-400"
             />
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
           </form>
@@ -341,24 +345,24 @@ export const Navbar: React.FC = () => {
             <Link
               to="/products"
               onClick={() => dispatch(toggleMobileMenu(false))}
-              className="text-slate-800 py-2 hover:text-blue-600 border-b border-slate-100"
+              className="text-slate-200 py-2 hover:text-blue-400 border-b border-slate-800"
             >
               All Products Catalog
             </Link>
             <Link
               to="/products?sort=deals"
               onClick={() => dispatch(toggleMobileMenu(false))}
-              className="text-red-600 py-2 flex items-center gap-1.5 border-b border-slate-100"
+              className="text-amber-400 py-2 flex items-center gap-1.5 border-b border-slate-800"
             >
-              <Zap className="w-3.5 h-3.5 fill-red-600" />
+              <Zap className="w-3.5 h-3.5 fill-amber-400" />
               <span>Super Flash Deals</span>
             </Link>
             <Link
               to="/wishlist"
               onClick={() => dispatch(toggleMobileMenu(false))}
-              className="text-slate-800 py-2 flex items-center gap-1.5 border-b border-slate-100"
+              className="text-slate-200 py-2 flex items-center gap-1.5 border-b border-slate-800"
             >
-              <Heart className="w-3.5 h-3.5 text-rose-500" />
+              <Heart className="w-3.5 h-3.5 text-rose-400" />
               <span>My Wishlist ({totalWishlistCount})</span>
             </Link>
 
@@ -367,7 +371,7 @@ export const Navbar: React.FC = () => {
                 <Link
                   to="/orders"
                   onClick={() => dispatch(toggleMobileMenu(false))}
-                  className="text-slate-800 py-2 flex items-center gap-1.5 border-b border-slate-100"
+                  className="text-slate-200 py-2 flex items-center gap-1.5 border-b border-slate-800"
                 >
                   <Package className="w-3.5 h-3.5 text-slate-400" />
                   <span>My Orders</span>
@@ -375,14 +379,14 @@ export const Navbar: React.FC = () => {
                 <Link
                   to="/profile"
                   onClick={() => dispatch(toggleMobileMenu(false))}
-                  className="text-slate-800 py-2 flex items-center gap-1.5 border-b border-slate-100"
+                  className="text-slate-200 py-2 flex items-center gap-1.5 border-b border-slate-800"
                 >
                   <UserIcon className="w-3.5 h-3.5 text-slate-400" />
-                  <span>Profile & Addresses</span>
+                  <span>Profile &amp; Addresses</span>
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="text-left text-rose-600 py-2 flex items-center gap-1.5"
+                  className="text-left text-rose-400 py-2 flex items-center gap-1.5"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                   <span>Sign Out</span>
@@ -393,7 +397,7 @@ export const Navbar: React.FC = () => {
                 <Link
                   to="/login"
                   onClick={() => dispatch(toggleMobileMenu(false))}
-                  className="flex-1 text-center py-2.5 bg-slate-100 text-slate-800 rounded-xl"
+                  className="flex-1 text-center py-2.5 bg-slate-800 text-slate-200 rounded-xl"
                 >
                   Sign In
                 </Link>
@@ -417,7 +421,7 @@ export const Navbar: React.FC = () => {
                     key={cat.categoryId}
                     to={`/products?categorySlug=${cat.slug}`}
                     onClick={() => dispatch(toggleMobileMenu(false))}
-                    className="p-2 bg-slate-50 rounded-xl text-slate-700 text-[11px] hover:bg-blue-50 hover:text-blue-600 transition"
+                    className="p-2 bg-slate-800 rounded-xl text-slate-200 text-[11px] hover:bg-slate-700 hover:text-blue-400 transition"
                   >
                     {cat.categoryName}
                   </Link>

@@ -46,6 +46,9 @@ public class OrderItem implements Serializable {
     @Column(name = "quantity", nullable = false)
     private int quantity;
 
+    @Transient
+    private String primaryImageUrl;
+
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -152,5 +155,13 @@ public class OrderItem implements Serializable {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getPrimaryImageUrl() {
+        return primaryImageUrl;
+    }
+
+    public void setPrimaryImageUrl(String primaryImageUrl) {
+        this.primaryImageUrl = primaryImageUrl;
     }
 }

@@ -374,9 +374,10 @@ public class OrderDAO {
     }
 
     public List<OrderItem> getOrderItems(int orderId, Connection conn) throws SQLException {
-        String sql = "SELECT order_item_id, order_id, product_id, product_name, sku, unit_price, " +
-                "discount_amount, tax_amount, line_total, quantity, created_at " +
-                "FROM dbo.order_items WHERE order_id = ?";
+        String sql = "SELECT oi.order_item_id, oi.order_id, oi.product_id, oi.product_name, oi.sku, oi.unit_price, " +
+                "oi.discount_amount, oi.tax_amount, oi.line_total, oi.quantity, oi.created_at, " +
+                "(SELECT pi.image_url FROM dbo.product_images pi WHERE pi.product_id = oi.product_id ORDER BY pi.is_primary DESC, pi.display_order ASC LIMIT 1) AS primary_image_url " +
+                "FROM dbo.order_items oi WHERE oi.order_id = ?";
         List<OrderItem> items = new ArrayList<>();
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, orderId);
@@ -393,6 +394,7 @@ public class OrderDAO {
                     item.setTaxAmount(rs.getBigDecimal("tax_amount"));
                     item.setLineTotal(rs.getBigDecimal("line_total"));
                     item.setQuantity(rs.getInt("quantity"));
+                    item.setPrimaryImageUrl(rs.getString("primary_image_url"));
                     item.setCreatedAt(
                             rs.getTimestamp("created_at") != null ? rs.getTimestamp("created_at").toLocalDateTime()
                                     : null);

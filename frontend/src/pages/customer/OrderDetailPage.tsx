@@ -329,9 +329,9 @@ export const OrderDetailPage: React.FC = () => {
             <div key={item.orderItemId} className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-4 w-full sm:w-auto">
                 <img
-                  src={item.primaryImageUrl || '/placeholder.svg'}
+                  src={(item.primaryImageUrl && !item.primaryImageUrl.endsWith('placeholder.png')) ? item.primaryImageUrl : '/placeholder.svg'}
                   alt={item.productName}
-                  className="w-20 h-20 object-contain rounded-lg border border-slate-200 bg-slate-50 flex-shrink-0 p-1"
+                  className="w-20 h-20 object-contain rounded-xl border border-slate-200 bg-white flex-shrink-0 p-1 shadow-2xs"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = '/placeholder.svg';
                   }}

@@ -25,9 +25,9 @@ public class OrderItemDto {
         dto.setOrderId(item.getOrderId());
         dto.setProductId(item.getProductId());
         dto.setProductName(item.getProductName());
-        dto.setSku(item.getSku());
-        dto.setPrimaryImageUrl("/assets/images/products/placeholder.png");
-        dto.setQuantity(item.getQuantity());
+        dto.setPrimaryImageUrl(item.getPrimaryImageUrl() != null && !item.getPrimaryImageUrl().trim().isEmpty()
+                ? item.getPrimaryImageUrl()
+                : null);
         dto.setUnitPrice(item.getUnitPrice());
         BigDecimal discountAmt = item.getDiscountAmount() != null ? item.getDiscountAmount() : BigDecimal.ZERO;
         BigDecimal unitPrice = item.getUnitPrice() != null ? item.getUnitPrice() : BigDecimal.ZERO;
