@@ -6,7 +6,7 @@ import { productService } from '@/services/productService';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { fetchCart, applyCoupon, removeCoupon } from '@/store/slices/cartSlice';
 import { showToast } from '@/store/slices/uiSlice';
-import type { Address, Product } from '@/types';
+import type { Address, Product, Order } from '@/types';
 import {
   MapPin,
   CreditCard,
@@ -220,7 +220,12 @@ export const CheckoutPage: React.FC = () => {
           transactionReference: 'DEV-SIM-' + Date.now(),
         });
         dispatch(fetchCart());
-        navigate(`/order-confirmation/${confirmedOrder.orderId}`, { state: { order: confirmedOrder } });
+        const paidOrder: Order = {
+          ...confirmedOrder,
+          paymentStatus: 'PAID',
+          orderStatus: 'CONFIRMED',
+        };
+        navigate(`/order-confirmation/${confirmedOrder.orderId}`, { state: { order: paidOrder } });
         return;
       }
 
@@ -248,7 +253,12 @@ export const CheckoutPage: React.FC = () => {
               razorpaySignature: response.razorpay_signature,
             });
             dispatch(fetchCart());
-            navigate(`/order-confirmation/${confirmedOrder.orderId}`, { state: { order: confirmedOrder } });
+            const paidOrder: Order = {
+              ...confirmedOrder,
+              paymentStatus: 'PAID',
+              orderStatus: 'CONFIRMED',
+            };
+            navigate(`/order-confirmation/${confirmedOrder.orderId}`, { state: { order: paidOrder } });
           } catch (verErr: any) {
             dispatch(showToast({ message: verErr.message || 'Payment signature mismatch', type: 'error' }));
           }

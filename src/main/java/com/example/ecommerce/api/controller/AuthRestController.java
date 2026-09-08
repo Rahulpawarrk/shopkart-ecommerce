@@ -50,11 +50,22 @@ public class AuthRestController {
 
             // Renew session to prevent session fixation
             HttpSession oldSession = httpRequest.getSession(false);
+            String oldCsrfToken = null;
+            String redirectAfterLogin = null;
             if (oldSession != null) {
+                oldCsrfToken = (String) oldSession.getAttribute("CSRF_TOKEN");
+                redirectAfterLogin = (String) oldSession.getAttribute("redirectAfterLogin");
                 oldSession.invalidate();
             }
             HttpSession newSession = httpRequest.getSession(true);
             newSession.setAttribute("currentUser", userSession);
+            if (oldCsrfToken != null) {
+                newSession.setAttribute("CSRF_TOKEN", oldCsrfToken);
+                newSession.setAttribute("csrfToken", oldCsrfToken);
+            }
+            if (redirectAfterLogin != null) {
+                newSession.setAttribute("redirectAfterLogin", redirectAfterLogin);
+            }
 
             // Preload cart for customer
             if (!userSession.isAdmin()) {

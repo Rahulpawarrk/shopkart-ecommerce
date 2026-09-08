@@ -16,11 +16,6 @@ export const OrderConfirmationPage: React.FC = () => {
   const effectiveId = params.orderId || params.id;
 
   useEffect(() => {
-    if (order) {
-      setLoading(false);
-      return;
-    }
-
     if (!effectiveId) {
       setLoading(false);
       return;
@@ -32,18 +27,23 @@ export const OrderConfirmationPage: React.FC = () => {
       return;
     }
 
-    setLoading(true);
-    orderService
-      .getOrderById(numId)
-      .then((data) => {
-        setOrder(data);
-      })
-      .catch((err: any) => {
-        console.warn('Could not fetch order by ID:', err);
-        setError(err?.message || 'Could not load order details');
-      })
-      .finally(() => setLoading(false));
-  }, [effectiveId, order]);
+    // If order is missing or non-COD payment is pending, query backend for latest status
+    if (!order || (order.paymentMethod !== 'COD' && order.paymentStatus === 'PENDING')) {
+      if (!order) setLoading(true);
+      orderService
+        .getOrderById(numId)
+        .then((data) => {
+          setOrder(data);
+        })
+        .catch((err: any) => {
+          console.warn('Could not fetch order by ID:', err);
+          if (!order) setError(err?.message || 'Could not load order details');
+        })
+        .finally(() => setLoading(false));
+    } else {
+      setLoading(false);
+    }
+  }, [effectiveId]);
 
   if (loading) {
     return (

@@ -58,7 +58,7 @@ public class CartRestController {
         return ResponseEntity.ok(ApiResponse.ok(CartDto.fromEntity(cart, coupon)));
     }
 
-    @PostMapping("/add")
+    @PostMapping({"/add", "/items"})
     public ResponseEntity<ApiResponse<CartDto>> addToCart(
             @Valid @RequestBody AddToCartRequest req,
             HttpServletRequest request
@@ -125,7 +125,7 @@ public class CartRestController {
         return ResponseEntity.ok(ApiResponse.ok("Item removed from cart", CartDto.fromEntity(cart, coupon)));
     }
 
-    @DeleteMapping("/clear")
+    @DeleteMapping({"/clear", ""})
     public ResponseEntity<ApiResponse<CartDto>> clearCart(HttpServletRequest request) {
         UserSession user = getAuthenticatedUser(request);
         if (user == null) {

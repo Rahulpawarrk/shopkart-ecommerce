@@ -57,6 +57,14 @@ public class CsrfFilter implements Filter {
             return;
         }
 
+        // Prevent Tomcat infinite filter recursion on ERROR/FORWARD dispatches
+        if (httpRequest.getDispatcherType() == jakarta.servlet.DispatcherType.FORWARD
+                || httpRequest.getDispatcherType() == jakarta.servlet.DispatcherType.ERROR
+                || httpRequest.getDispatcherType() == jakarta.servlet.DispatcherType.INCLUDE) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         HttpSession session = httpRequest.getSession(true);
         String sessionCsrfToken = (String) session.getAttribute(CSRF_SESSION_ATTR);
 
@@ -77,6 +85,7 @@ public class CsrfFilter implements Filter {
         xsrfCookie.setPath(httpRequest.getContextPath().isEmpty() ? "/" : httpRequest.getContextPath());
         xsrfCookie.setHttpOnly(false);
         xsrfCookie.setSecure(httpRequest.isSecure());
+        xsrfCookie.setAttribute("SameSite", "Lax");
         httpResponse.addCookie(xsrfCookie);
 
         String method = httpRequest.getMethod();
@@ -120,11 +129,21 @@ public class CsrfFilter implements Filter {
                     valid = java.security.MessageDigest.isEqual(reqBytes, sessionBytes);
                 }
 
-                if (!valid) {
+                // SPA AJAX requests sending custom X-Requested-With header cannot be forged by standard cross-origin form submissions
+                boolean isAjax = "XMLHttpRequest".equalsIgnoreCase(httpRequest.getHeader("X-Requested-With"));
+
+                if (!valid && !isAjax) {
                     logger.warn("CSRF validation blocked request to [{}] from IP [{}] (Method: {})", path,
                             httpRequest.getRemoteAddr(), method);
-                    httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid or missing CSRF token.");
-                    return;
+                    if (path.startsWith("/api/") || isAjax) {
+                        httpResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                        httpResponse.setContentType("application/json;charset=UTF-8");
+                        httpResponse.getWriter().write("{\"success\":false,\"message\":\"Invalid or missing CSRF token.\",\"code\":\"CSRF_FORBIDDEN\"}");
+                        return;
+                    } else {
+                        httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "Invalid or missing CSRF token.");
+                        return;
+                    }
                 }
             }
         }

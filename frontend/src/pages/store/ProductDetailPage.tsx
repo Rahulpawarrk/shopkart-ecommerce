@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { productService } from '@/services/productService';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { addToCart } from '@/store/slices/cartSlice';
@@ -23,6 +23,7 @@ import {
 export const ProductDetailPage: React.FC = () => {
   const { slugOrId } = useParams<{ slugOrId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useAppDispatch();
 
   const { isAuthenticated } = useAppSelector((state) => state.auth);
@@ -53,10 +54,10 @@ export const ProductDetailPage: React.FC = () => {
     setLoading(true);
     productService
       .getProduct(slugOrId)
-      .then((p) => {
-        setProduct(p);
-        setSelectedImage(p.primaryImageUrl || '/placeholder.svg');
-        return productService.getProductReviews(p.productId);
+      .then((data) => {
+        setProduct(data);
+        setSelectedImage(data.primaryImageUrl || '/placeholder.svg');
+        return productService.getProductReviews(data.productId);
       })
       .then((revData) => {
         setReviewSummary(revData.summary);
@@ -70,6 +71,11 @@ export const ProductDetailPage: React.FC = () => {
 
   const handleAddToCart = async () => {
     if (!product || !product.inStock) return;
+    if (!isAuthenticated) {
+      dispatch(showToast({ message: 'Please sign in to add items to your cart', type: 'info' }));
+      navigate(`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`);
+      return;
+    }
     try {
       await dispatch(addToCart({ productId: product.productId, quantity })).unwrap();
       dispatch(showToast({ message: `Added ${product.productName} to cart!`, type: 'success' }));

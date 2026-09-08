@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '@/store';
 import { addToCart } from '@/store/slices/cartSlice';
 import { toggleWishlist } from '@/store/slices/wishlistSlice';
@@ -15,6 +15,7 @@ interface ProductCardProps {
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const isInWishlist = useAppSelector(
     (state) => !!state.wishlist.productIdMap[product.productId]
@@ -25,6 +26,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     e.preventDefault();
     e.stopPropagation();
     if (!product.inStock) return;
+    if (!isAuthenticated) {
+      dispatch(showToast({ message: 'Please sign in to add items to your cart', type: 'info' }));
+      navigate(`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`);
+      return;
+    }
 
     try {
       await dispatch(addToCart({ productId: product.productId, quantity: 1 })).unwrap();
