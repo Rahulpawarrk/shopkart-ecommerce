@@ -216,7 +216,7 @@ public class OrderDAO {
     }
 
     public Pagination<Order> findByUserId(int userId, String statusFilter, String sortBy, int page, int pageSize) {
-        StringBuilder where = new StringBuilder(" WHERE o.user_id = ? AND (o.payment_method = 'COD' OR o.payment_status IN ('PAID', 'COMPLETED') OR o.order_status NOT IN ('PENDING', 'CANCELLED')) ");
+        StringBuilder where = new StringBuilder(" WHERE o.user_id = ? ");
         List<Object> params = new ArrayList<>();
         params.add(userId);
 
@@ -232,10 +232,17 @@ public class OrderDAO {
                 where.append("AND o.order_status = 'DELIVERED' ");
             } else if ("CANCELLED".equals(sf)) {
                 where.append("AND o.order_status IN ('CANCELLED', 'RETURNED', 'RETURN_REQUESTED') ");
+            } else if ("CONFIRMED".equals(sf)) {
+                where.append("AND o.order_status = 'CONFIRMED' ");
+            } else if ("PENDING".equals(sf)) {
+                where.append("AND o.order_status = 'PENDING' AND (o.payment_method = 'COD' OR o.payment_status IN ('PAID', 'COMPLETED')) ");
             } else {
                 where.append("AND o.order_status = ? ");
                 params.add(sf);
             }
+        } else {
+            // Default (All Orders): Show all orders except abandoned draft checkouts (unpaid PENDING checkouts)
+            where.append("AND NOT (o.order_status = 'PENDING' AND o.payment_status = 'PENDING' AND o.payment_method != 'COD') ");
         }
 
         String countSql = "SELECT COUNT(*) FROM dbo.orders o " + where;
