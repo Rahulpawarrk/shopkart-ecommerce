@@ -144,7 +144,7 @@ public class ProductDetailServlet extends HttpServlet {
             request.setAttribute("reviews", reviews);
             request.setAttribute("canReview", canReview);
 
-            request.getRequestDispatcher("/WEB-INF/views/product/detail.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
 
         } catch (ResourceNotFoundException e) {
             logger.warn("Product not found: {}", e.getMessage());
@@ -200,3 +200,4 @@ public class ProductDetailServlet extends HttpServlet {
         return seo;
     }
 }
+

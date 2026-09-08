@@ -91,7 +91,7 @@ public class AddressServlet extends HttpServlet {
         List<Address> addresses = addressService.getUserAddresses(user.getUserId());
         request.setAttribute("addresses", addresses);
 
-        request.getRequestDispatcher("/WEB-INF/views/customer/address-list.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     private void showAddForm(HttpServletRequest request, HttpServletResponse response) 
@@ -101,7 +101,7 @@ public class AddressServlet extends HttpServlet {
         if (returnUrl != null && !returnUrl.trim().isEmpty()) {
             request.setAttribute("returnUrl", returnUrl.trim());
         }
-        request.getRequestDispatcher("/WEB-INF/views/customer/address-form.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response) 
@@ -127,7 +127,7 @@ public class AddressServlet extends HttpServlet {
             if (returnUrl != null && !returnUrl.trim().isEmpty()) {
                 request.setAttribute("returnUrl", returnUrl.trim());
             }
-            request.getRequestDispatcher("/WEB-INF/views/customer/address-form.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
         } catch (Exception e) {
             response.sendRedirect(request.getContextPath() + "/addresses?error=unauthorized");
         }
@@ -188,7 +188,7 @@ public class AddressServlet extends HttpServlet {
             if (returnUrl != null && !returnUrl.trim().isEmpty()) {
                 request.setAttribute("returnUrl", returnUrl.trim());
             }
-            request.getRequestDispatcher("/WEB-INF/views/customer/address-form.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
         }
     }
 
@@ -250,3 +250,4 @@ public class AddressServlet extends HttpServlet {
                 && !url.contains("\r");
     }
 }
+

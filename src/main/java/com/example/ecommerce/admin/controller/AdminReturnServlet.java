@@ -46,7 +46,7 @@ public class AdminReturnServlet extends HttpServlet {
         request.setAttribute("keyword", keyword);
         request.setAttribute("selectedStatus", status != null ? status : "ALL");
 
-        request.getRequestDispatcher("/WEB-INF/views/admin/return-list.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     @Override
@@ -73,3 +73,4 @@ public class AdminReturnServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/admin/returns?updated=true");
     }
 }
+

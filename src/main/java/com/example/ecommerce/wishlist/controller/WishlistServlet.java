@@ -98,7 +98,7 @@ public class WishlistServlet extends HttpServlet {
         Wishlist wishlist = wishlistService.getWishlist(user.getUserId());
         request.setAttribute("wishlist", wishlist);
 
-        request.getRequestDispatcher("/WEB-INF/views/wishlist/wishlist.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     private void handleAdd(HttpServletRequest request, HttpServletResponse response) 
@@ -204,7 +204,8 @@ public class WishlistServlet extends HttpServlet {
             Wishlist wishlist = wishlistService.getWishlist(user.getUserId());
             request.setAttribute("wishlist", wishlist);
             request.setAttribute("error", ve.getMessage());
-            request.getRequestDispatcher("/WEB-INF/views/wishlist/wishlist.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
         }
     }
 }
+

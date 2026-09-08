@@ -73,7 +73,7 @@ public class AdminReconciliationServlet extends HttpServlet {
             request.setAttribute("successMessage", "Payment reconciliation status & resolution notes updated successfully.");
         }
 
-        request.getRequestDispatcher("/WEB-INF/views/admin/reconciliation-list.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     @Override
@@ -126,3 +126,4 @@ public class AdminReconciliationServlet extends HttpServlet {
         }
     }
 }
+

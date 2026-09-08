@@ -80,7 +80,7 @@ public class VerifyEmailServlet extends HttpServlet {
 
         request.setAttribute("pendingEmail", pending.getEmail());
         request.setAttribute("pendingFirstName", pending.getFirstName());
-        request.getRequestDispatcher("/WEB-INF/views/auth/verify-email.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     @Override
@@ -112,20 +112,20 @@ public class VerifyEmailServlet extends HttpServlet {
 
         if (inputOtp == null || inputOtp.isEmpty()) {
             request.setAttribute("error", "Please enter the 6-digit verification code sent to your email.");
-            request.getRequestDispatcher("/WEB-INF/views/auth/verify-email.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
             return;
         }
 
         if (pending.isOtpExpired()) {
             request.setAttribute("error", "Your verification code has expired. Please click 'Resend Code' to receive a new one.");
-            request.getRequestDispatcher("/WEB-INF/views/auth/verify-email.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
             return;
         }
 
         if (!pending.isEmailOtpValid(inputOtp)) {
             logger.warn("Invalid OTP entered for pending registration: {}", pending.getEmail());
             request.setAttribute("error", "Invalid verification code. Please check your email inbox and try again.");
-            request.getRequestDispatcher("/WEB-INF/views/auth/verify-email.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
             return;
         }
 
@@ -180,12 +180,12 @@ public class VerifyEmailServlet extends HttpServlet {
         } catch (ValidationException ve) {
             logger.warn("Validation failure completing registration for {}: {}", pending.getEmail(), ve.getMessage());
             request.setAttribute("error", ve.getMessage());
-            request.getRequestDispatcher("/WEB-INF/views/auth/verify-email.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
 
         } catch (Exception e) {
             logger.error("Unexpected error finalizing customer registration for: {}", pending.getEmail(), e);
             request.setAttribute("error", "An unexpected system error occurred while creating your account. Please try again.");
-            request.getRequestDispatcher("/WEB-INF/views/auth/verify-email.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
         }
     }
 }

@@ -58,7 +58,7 @@ public class AdminReviewServlet extends HttpServlet {
         request.setAttribute("keyword", keyword);
         request.setAttribute("status", statusParam != null ? statusParam : "ALL");
 
-        request.getRequestDispatcher("/WEB-INF/views/admin/review-list.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     @Override
@@ -83,3 +83,4 @@ public class AdminReviewServlet extends HttpServlet {
         }
     }
 }
+

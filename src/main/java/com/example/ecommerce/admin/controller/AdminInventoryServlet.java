@@ -89,7 +89,7 @@ public class AdminInventoryServlet extends HttpServlet {
         request.setAttribute("keyword", keyword);
         request.setAttribute("filter", filter != null ? filter : "all");
 
-        request.getRequestDispatcher("/WEB-INF/views/admin/inventory-list.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     private void showTransactionHistory(HttpServletRequest request, HttpServletResponse response) 
@@ -116,7 +116,7 @@ public class AdminInventoryServlet extends HttpServlet {
         request.setAttribute("inventory", inventory);
         request.setAttribute("transactions", transactions);
 
-        request.getRequestDispatcher("/WEB-INF/views/admin/inventory-transactions.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     private void handleRestock(HttpServletRequest request, HttpServletResponse response) 
@@ -188,3 +188,4 @@ public class AdminInventoryServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/admin/inventory?thresholdUpdated=true");
     }
 }
+

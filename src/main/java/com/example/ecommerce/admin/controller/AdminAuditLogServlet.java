@@ -49,6 +49,7 @@ public class AdminAuditLogServlet extends HttpServlet {
         request.setAttribute("entity", entityName);
         request.setAttribute("keyword", keyword);
 
-        request.getRequestDispatcher("/WEB-INF/views/admin/audit-list.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 }
+

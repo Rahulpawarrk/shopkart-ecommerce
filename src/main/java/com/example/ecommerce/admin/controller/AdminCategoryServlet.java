@@ -69,7 +69,7 @@ public class AdminCategoryServlet extends HttpServlet {
             throws ServletException, IOException {
         List<Category> categories = categoryService.getAllCategories(false);
         request.setAttribute("categories", categories);
-        request.getRequestDispatcher("/WEB-INF/views/admin/category-list.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     private void showAddForm(HttpServletRequest request, HttpServletResponse response) 
@@ -77,7 +77,7 @@ public class AdminCategoryServlet extends HttpServlet {
         List<Category> parentOptions = categoryService.getAllCategories(true);
         request.setAttribute("parentOptions", parentOptions);
         request.setAttribute("isEdit", false);
-        request.getRequestDispatcher("/WEB-INF/views/admin/category-form.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response) 
@@ -93,7 +93,7 @@ public class AdminCategoryServlet extends HttpServlet {
         request.setAttribute("category", category);
         request.setAttribute("parentOptions", parentOptions);
         request.setAttribute("isEdit", true);
-        request.getRequestDispatcher("/WEB-INF/views/admin/category-form.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     private void saveCategory(HttpServletRequest request, HttpServletResponse response, boolean isEdit) 
@@ -135,7 +135,7 @@ public class AdminCategoryServlet extends HttpServlet {
             request.setAttribute("category", category);
             request.setAttribute("parentOptions", categoryService.getAllCategories(true));
             request.setAttribute("isEdit", isEdit);
-            request.getRequestDispatcher("/WEB-INF/views/admin/category-form.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
         }
     }
 
@@ -151,3 +151,4 @@ public class AdminCategoryServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/admin/categories?statusUpdated=true");
     }
 }
+

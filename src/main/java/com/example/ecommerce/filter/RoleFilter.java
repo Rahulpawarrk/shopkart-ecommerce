@@ -78,7 +78,7 @@ public class RoleFilter implements Filter {
                     httpResponse.getWriter().write("{\"success\":false,\"message\":\"Access denied. Admin privileges required.\",\"code\":\"FORBIDDEN\"}");
                     return;
                 }
-                httpRequest.getRequestDispatcher("/WEB-INF/views/error/403.jsp").forward(request, response);
+                httpRequest.getRequestDispatcher("/index.html").forward(request, response);
                 return;
             }
             chain.doFilter(request, response);

@@ -83,7 +83,7 @@ public class ResetPasswordServlet extends HttpServlet {
         request.setAttribute("identifier", identifier != null ? identifier.trim() : "");
         request.setAttribute("token", token != null ? token.trim() : "");
 
-        request.getRequestDispatcher("/WEB-INF/views/auth/reset-password.jsp")
+        request.getRequestDispatcher("/index.html")
                .forward(request, response);
     }
 
@@ -136,7 +136,7 @@ public class ResetPasswordServlet extends HttpServlet {
             request.setAttribute("token", token);
             request.setAttribute("otpCode", otpCode);
             request.setAttribute("error", ve.getMessage());
-            request.getRequestDispatcher("/WEB-INF/views/auth/reset-password.jsp")
+            request.getRequestDispatcher("/index.html")
                    .forward(request, response);
 
         } catch (Exception e) {
@@ -145,8 +145,9 @@ public class ResetPasswordServlet extends HttpServlet {
             request.setAttribute("token", token);
             request.setAttribute("otpCode", otpCode);
             request.setAttribute("error", "An unexpected error occurred. Please try again or request a new reset code.");
-            request.getRequestDispatcher("/WEB-INF/views/auth/reset-password.jsp")
+            request.getRequestDispatcher("/index.html")
                    .forward(request, response);
         }
     }
 }
+

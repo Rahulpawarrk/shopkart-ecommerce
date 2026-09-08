@@ -115,7 +115,7 @@ public class CustomerOrderServlet extends HttpServlet {
             }
         }
 
-        request.getRequestDispatcher("/WEB-INF/views/order/order-list.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     private void showOrderDetail(HttpServletRequest request, HttpServletResponse response) 
@@ -158,7 +158,7 @@ public class CustomerOrderServlet extends HttpServlet {
                 request.setAttribute("userReviews", userReviews);
             }
 
-            request.getRequestDispatcher("/WEB-INF/views/order/order-detail.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
         } catch (Exception e) {
             response.sendRedirect(request.getContextPath() + "/orders?error=notfound");
         }
@@ -191,3 +191,4 @@ public class CustomerOrderServlet extends HttpServlet {
         }
     }
 }
+

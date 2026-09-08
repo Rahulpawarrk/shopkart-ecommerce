@@ -98,7 +98,7 @@ public class PaymentGatewayServlet extends HttpServlet {
                 request.setAttribute("payment", payment);
                 request.setAttribute("isRazorpayLive", false);
                 request.setAttribute("paymentGatewayUnavailable", true);
-                request.getRequestDispatcher("/WEB-INF/views/payment/gateway.jsp").forward(request, response);
+                request.getRequestDispatcher("/index.html").forward(request, response);
                 return;
             }
 
@@ -111,7 +111,7 @@ public class PaymentGatewayServlet extends HttpServlet {
             request.setAttribute("razorpayAmountInPaise", order.getTotalAmount().multiply(new java.math.BigDecimal(100)).longValue());
             request.setAttribute("isRazorpayLive", true);
 
-            request.getRequestDispatcher("/WEB-INF/views/payment/gateway.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
         } catch (Exception e) {
             logger.error("Payment Gateway initialization failed for orderId: {}", orderId, e);
             response.sendRedirect(request.getContextPath() + "/orders");
@@ -143,3 +143,4 @@ public class PaymentGatewayServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/payment/gateway");
     }
 }
+

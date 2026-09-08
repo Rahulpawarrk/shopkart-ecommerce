@@ -80,7 +80,7 @@ public class HealthCheckServlet extends HttpServlet {
 
         // Bind model attribute and forward to protected JSP View
         request.setAttribute("health", health);
-        request.getRequestDispatcher("/WEB-INF/views/health.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     private String escapeJson(String input) {
@@ -88,3 +88,4 @@ public class HealthCheckServlet extends HttpServlet {
         return input.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 }
+

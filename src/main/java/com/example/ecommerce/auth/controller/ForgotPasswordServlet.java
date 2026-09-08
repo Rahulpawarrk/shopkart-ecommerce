@@ -41,7 +41,7 @@ public class ForgotPasswordServlet extends HttpServlet {
         if (error != null && !error.trim().isEmpty()) {
             request.setAttribute("error", error.trim());
         }
-        request.getRequestDispatcher("/WEB-INF/views/auth/forgot-password.jsp")
+        request.getRequestDispatcher("/index.html")
                .forward(request, response);
     }
 
@@ -84,7 +84,7 @@ public class ForgotPasswordServlet extends HttpServlet {
                 request.setAttribute("methodType", (identifier != null && identifier.contains("@")) ? "EMAIL" : "PHONE");
                 String destination = request.getParameter("destination");
                 request.setAttribute("destination", destination != null && !destination.isEmpty() ? destination : identifier);
-                request.getRequestDispatcher("/WEB-INF/views/auth/forgot-password.jsp")
+                request.getRequestDispatcher("/index.html")
                        .forward(request, response);
                 return;
             } catch (Exception e) {
@@ -94,7 +94,7 @@ public class ForgotPasswordServlet extends HttpServlet {
                 request.setAttribute("identifier", identifier);
                 request.setAttribute("rawIdentifier", identifier);
                 request.setAttribute("methodType", (identifier != null && identifier.contains("@")) ? "EMAIL" : "PHONE");
-                request.getRequestDispatcher("/WEB-INF/views/auth/forgot-password.jsp")
+                request.getRequestDispatcher("/index.html")
                        .forward(request, response);
                 return;
             }
@@ -121,7 +121,7 @@ public class ForgotPasswordServlet extends HttpServlet {
         } catch (com.example.ecommerce.exception.ValidationException ve) {
             request.setAttribute("error", ve.getMessage());
             request.setAttribute("identifier", identifier);
-            request.getRequestDispatcher("/WEB-INF/views/auth/forgot-password.jsp")
+            request.getRequestDispatcher("/index.html")
                    .forward(request, response);
             return;
         } catch (Exception e) {
@@ -144,7 +144,8 @@ public class ForgotPasswordServlet extends HttpServlet {
         request.setAttribute("rawIdentifier", result != null ? result.getRawDestination() : identifier);
         request.setAttribute("userFound", result != null && result.isUserFound());
 
-        request.getRequestDispatcher("/WEB-INF/views/auth/forgot-password.jsp")
+        request.getRequestDispatcher("/index.html")
                .forward(request, response);
     }
 }
+

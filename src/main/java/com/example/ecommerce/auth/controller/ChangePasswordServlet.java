@@ -39,7 +39,7 @@ public class ChangePasswordServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/auth/login");
             return;
         }
-        request.getRequestDispatcher("/WEB-INF/views/auth/change-password.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     @Override
@@ -60,15 +60,16 @@ public class ChangePasswordServlet extends HttpServlet {
         try {
             authService.changePassword(userSession.getUserId(), currentPassword, newPassword, confirmNewPassword);
             request.setAttribute("successMessage", "Your password has been changed successfully.");
-            request.getRequestDispatcher("/WEB-INF/views/auth/change-password.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
 
         } catch (ValidationException ve) {
             request.setAttribute("error", ve.getMessage());
-            request.getRequestDispatcher("/WEB-INF/views/auth/change-password.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
         } catch (Exception e) {
             logger.error("Error changing password for userId: {}", userSession.getUserId(), e);
             request.setAttribute("error", "An error occurred while changing password. Please try again.");
-            request.getRequestDispatcher("/WEB-INF/views/auth/change-password.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
         }
     }
 }
+

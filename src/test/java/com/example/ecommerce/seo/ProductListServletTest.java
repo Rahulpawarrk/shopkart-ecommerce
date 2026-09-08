@@ -77,7 +77,7 @@ class ProductListServletTest {
         when(request.getPathInfo()).thenReturn(null);
         when(request.getParameter("q")).thenReturn("macbook");
         when(request.getContextPath()).thenReturn("");
-        when(request.getRequestDispatcher("/WEB-INF/views/product/list.jsp")).thenReturn(requestDispatcher);
+        when(request.getRequestDispatcher("/index.html")).thenReturn(requestDispatcher);
 
         when(productService.searchCatalog(any(ProductSearchCriteria.class))).thenReturn(new Pagination<>(Collections.emptyList(), 1, 12, 0));
         when(categoryService.getAllCategories(true)).thenReturn(List.of());
@@ -97,3 +97,4 @@ class ProductListServletTest {
         assertEquals("https://shopkart-ecommerce-1m2n.onrender.com/products", capturedSeo.getCanonicalUrl());
     }
 }
+

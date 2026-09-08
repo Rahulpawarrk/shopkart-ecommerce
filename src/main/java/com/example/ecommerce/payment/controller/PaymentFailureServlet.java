@@ -88,7 +88,7 @@ public class PaymentFailureServlet extends HttpServlet {
             request.setAttribute("failureContext", failureContext);
             request.setAttribute("error", failureContext.getFailureReason());
 
-            request.getRequestDispatcher("/WEB-INF/views/payment/failure.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
         } catch (Exception e) {
             logger.error("Error loading payment failure page for user {}", user.getUserId(), e);
             response.sendRedirect(request.getContextPath() + "/orders");
@@ -163,3 +163,4 @@ public class PaymentFailureServlet extends HttpServlet {
         }
     }
 }
+

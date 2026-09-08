@@ -148,7 +148,7 @@ public class CartServlet extends HttpServlet {
         }
 
         request.setAttribute("cart", cart);
-        request.getRequestDispatcher("/WEB-INF/views/cart/cart.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     private void handleAdd(HttpServletRequest request, HttpServletResponse response)
@@ -299,7 +299,7 @@ public class CartServlet extends HttpServlet {
             }
             request.setAttribute("cart", cart);
             request.setAttribute("error", ve.getMessage());
-            request.getRequestDispatcher("/WEB-INF/views/cart/cart.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
         }
     }
 
@@ -372,7 +372,7 @@ public class CartServlet extends HttpServlet {
             }
             request.setAttribute("cart", cart);
             request.setAttribute("error", "Your cart is empty.");
-            request.getRequestDispatcher("/WEB-INF/views/cart/cart.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
             return;
         }
 
@@ -414,7 +414,7 @@ public class CartServlet extends HttpServlet {
             }
             request.setAttribute("cart", cart);
             request.setAttribute("error", ve.getMessage());
-            request.getRequestDispatcher("/WEB-INF/views/cart/cart.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
         }
     }
 

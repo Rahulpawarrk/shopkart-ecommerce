@@ -57,9 +57,9 @@ public class ProfileServlet extends HttpServlet {
             }
 
             if (userSession.isAdmin()) {
-                request.getRequestDispatcher("/WEB-INF/views/admin/profile.jsp").forward(request, response);
+                request.getRequestDispatcher("/index.html").forward(request, response);
             } else {
-                request.getRequestDispatcher("/WEB-INF/views/customer/profile.jsp").forward(request, response);
+                request.getRequestDispatcher("/index.html").forward(request, response);
             }
 
         } catch (Exception e) {
@@ -107,13 +107,14 @@ public class ProfileServlet extends HttpServlet {
             user.setPhone(phone);
             request.setAttribute("user", user);
             
-            String view = userSession.isAdmin() ? "/WEB-INF/views/admin/profile.jsp" : "/WEB-INF/views/customer/profile.jsp";
+            String view = userSession.isAdmin() ? "/index.html" : "/index.html";
             request.getRequestDispatcher(view).forward(request, response);
         } catch (Exception e) {
             logger.error("Error updating profile", e);
             request.setAttribute("error", "Failed to update profile. Please try again.");
-            String view = userSession.isAdmin() ? "/WEB-INF/views/admin/profile.jsp" : "/WEB-INF/views/customer/profile.jsp";
+            String view = userSession.isAdmin() ? "/index.html" : "/index.html";
             request.getRequestDispatcher(view).forward(request, response);
         }
     }
 }
+

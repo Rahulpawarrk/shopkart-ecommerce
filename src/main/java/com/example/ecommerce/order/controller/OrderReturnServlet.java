@@ -70,7 +70,7 @@ public class OrderReturnServlet extends HttpServlet {
             }
             Pagination<OrderReturn> returns = orderReturnService.getUserReturns(user.getUserId(), page, 10);
             request.setAttribute("returns", returns);
-            request.getRequestDispatcher("/WEB-INF/views/order/order-list.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
         } else {
             String orderIdStr = request.getParameter("orderId");
             if (orderIdStr != null && !orderIdStr.trim().isEmpty()) {
@@ -202,3 +202,4 @@ public class OrderReturnServlet extends HttpServlet {
         return false;
     }
 }
+

@@ -55,6 +55,7 @@ public class AdminDashboardServlet extends HttpServlet {
         request.setAttribute("recentOrders", recentOrders.getItems());
         request.setAttribute("topProducts", topProducts);
 
-        request.getRequestDispatcher("/WEB-INF/views/admin/dashboard.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 }
+

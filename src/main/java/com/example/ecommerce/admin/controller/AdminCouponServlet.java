@@ -87,14 +87,14 @@ public class AdminCouponServlet extends HttpServlet {
         request.setAttribute("stats", stats);
         request.setAttribute("keyword", keyword);
 
-        request.getRequestDispatcher("/WEB-INF/views/admin/coupon-list.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     private void showAddForm(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         request.setAttribute("isEdit", false);
         request.setAttribute("coupon", new Coupon());
-        request.getRequestDispatcher("/WEB-INF/views/admin/coupon-form.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response) 
@@ -107,7 +107,7 @@ public class AdminCouponServlet extends HttpServlet {
         Coupon coupon = couponService.getCouponById(couponId);
         request.setAttribute("isEdit", true);
         request.setAttribute("coupon", coupon);
-        request.getRequestDispatcher("/WEB-INF/views/admin/coupon-form.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     private void handleSaveCoupon(HttpServletRequest request, HttpServletResponse response, boolean isEdit) 
@@ -166,12 +166,12 @@ public class AdminCouponServlet extends HttpServlet {
             request.setAttribute("isEdit", isEdit);
             request.setAttribute("coupon", coupon);
             request.setAttribute("errors", ve.getErrorMessages());
-            request.getRequestDispatcher("/WEB-INF/views/admin/coupon-form.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
         } catch (IllegalArgumentException | java.time.format.DateTimeParseException e) {
             request.setAttribute("isEdit", isEdit);
             request.setAttribute("coupon", coupon);
             request.setAttribute("errors", java.util.List.of("Invalid input format: " + e.getMessage()));
-            request.getRequestDispatcher("/WEB-INF/views/admin/coupon-form.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
         }
     }
 
@@ -194,3 +194,4 @@ public class AdminCouponServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/admin/coupons?deleted=true");
     }
 }
+

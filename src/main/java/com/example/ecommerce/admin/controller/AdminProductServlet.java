@@ -93,7 +93,7 @@ public class AdminProductServlet extends HttpServlet {
 
         request.setAttribute("pagination", pagination);
         request.setAttribute("criteria", criteria);
-        request.getRequestDispatcher("/WEB-INF/views/admin/product-list.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     private void showAddForm(HttpServletRequest request, HttpServletResponse response) 
@@ -101,7 +101,7 @@ public class AdminProductServlet extends HttpServlet {
         List<Category> categories = categoryService.getAllCategories(true);
         request.setAttribute("categories", categories);
         request.setAttribute("isEdit", false);
-        request.getRequestDispatcher("/WEB-INF/views/admin/product-form.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     private void showEditForm(HttpServletRequest request, HttpServletResponse response) 
@@ -117,7 +117,7 @@ public class AdminProductServlet extends HttpServlet {
         request.setAttribute("product", product);
         request.setAttribute("categories", categories);
         request.setAttribute("isEdit", true);
-        request.getRequestDispatcher("/WEB-INF/views/admin/product-form.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     private void saveProduct(HttpServletRequest request, HttpServletResponse response, boolean isEdit) 
@@ -150,7 +150,7 @@ public class AdminProductServlet extends HttpServlet {
             request.setAttribute("product", product);
             request.setAttribute("categories", categoryService.getAllCategories(true));
             request.setAttribute("isEdit", isEdit);
-            request.getRequestDispatcher("/WEB-INF/views/admin/product-form.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
             return;
         }
         product.setPrice(price);
@@ -174,7 +174,7 @@ public class AdminProductServlet extends HttpServlet {
             request.setAttribute("product", product);
             request.setAttribute("categories", categoryService.getAllCategories(true));
             request.setAttribute("isEdit", isEdit);
-            request.getRequestDispatcher("/WEB-INF/views/admin/product-form.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
             return;
         }
         if (primaryImgUrl != null && !primaryImgUrl.trim().isEmpty()) {
@@ -200,7 +200,7 @@ public class AdminProductServlet extends HttpServlet {
             request.setAttribute("product", product);
             request.setAttribute("categories", categoryService.getAllCategories(true));
             request.setAttribute("isEdit", isEdit);
-            request.getRequestDispatcher("/WEB-INF/views/admin/product-form.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
         }
     }
 
@@ -226,3 +226,4 @@ public class AdminProductServlet extends HttpServlet {
         return lower.startsWith("https://") || lower.startsWith("http://");
     }
 }
+

@@ -77,6 +77,7 @@ public class AdminSalesReportServlet extends HttpServlet {
         request.setAttribute("totalUnitsSold", totalUnitsSold);
         request.setAttribute("avgOrderValue", avgOrderValue);
 
-        request.getRequestDispatcher("/WEB-INF/views/admin/sales-report.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 }
+

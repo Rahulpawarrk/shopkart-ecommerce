@@ -46,7 +46,7 @@ public class AdminUserManagementServlet extends HttpServlet {
         request.setAttribute("adminList", admins);
         request.setAttribute("adminCount", admins.size());
 
-        request.getRequestDispatcher("/WEB-INF/views/admin/admins.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     @Override
@@ -109,7 +109,7 @@ public class AdminUserManagementServlet extends HttpServlet {
             List<User> admins = authService.getAllAdmins();
             request.setAttribute("adminList", admins);
             request.setAttribute("adminCount", admins.size());
-            request.getRequestDispatcher("/WEB-INF/views/admin/admins.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
 
         } catch (Exception e) {
             logger.error("Unexpected error registering admin user: {}", email, e);
@@ -122,7 +122,8 @@ public class AdminUserManagementServlet extends HttpServlet {
             List<User> admins = authService.getAllAdmins();
             request.setAttribute("adminList", admins);
             request.setAttribute("adminCount", admins.size());
-            request.getRequestDispatcher("/WEB-INF/views/admin/admins.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
         }
     }
 }
+

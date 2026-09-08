@@ -47,6 +47,7 @@ public class AdminPaymentServlet extends HttpServlet {
         request.setAttribute("stats", stats);
         request.setAttribute("keyword", keyword);
 
-        request.getRequestDispatcher("/WEB-INF/views/admin/payment-list.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 }
+

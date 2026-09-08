@@ -73,7 +73,7 @@ public class LoginServlet extends HttpServlet {
         if (LoginRateLimiter.isBlocked(remoteIp, email)) {
             long remaining = LoginRateLimiter.getRemainingLockoutMinutes(remoteIp, email);
             request.setAttribute("error", "Too many failed login attempts. Please try again in " + remaining + " minute(s).");
-            request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
             return;
         }
 
@@ -166,13 +166,13 @@ public class LoginServlet extends HttpServlet {
             logger.warn("Authentication failed for {}: {}", email, ve.getMessage());
             request.setAttribute("error", ve.getMessage());
             request.setAttribute("email", email);
-            request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
 
         } catch (Exception e) {
             LoginRateLimiter.recordFailure(remoteIp, email);
             logger.error("Unexpected error during login", e);
             request.setAttribute("error", "An internal error occurred during login. Please try again.");
-            request.getRequestDispatcher("/WEB-INF/views/auth/login.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
         }
     }
 
@@ -192,3 +192,4 @@ public class LoginServlet extends HttpServlet {
                 && !url.contains("/register");
     }
 }
+

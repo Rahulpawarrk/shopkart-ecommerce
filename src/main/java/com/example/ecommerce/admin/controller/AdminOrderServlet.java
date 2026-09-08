@@ -89,7 +89,7 @@ public class AdminOrderServlet extends HttpServlet {
         request.setAttribute("keyword", keyword);
         request.setAttribute("status", status != null ? status.name() : "ALL");
 
-        request.getRequestDispatcher("/WEB-INF/views/admin/order-list.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     private void showOrderDetail(HttpServletRequest request, HttpServletResponse response) 
@@ -103,7 +103,7 @@ public class AdminOrderServlet extends HttpServlet {
         Order order = orderService.getAdminOrderById(orderId);
         request.setAttribute("order", order);
 
-        request.getRequestDispatcher("/WEB-INF/views/admin/order-detail.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     private void handleStatusUpdate(HttpServletRequest request, HttpServletResponse response) 
@@ -144,3 +144,4 @@ public class AdminOrderServlet extends HttpServlet {
         }
     }
 }
+

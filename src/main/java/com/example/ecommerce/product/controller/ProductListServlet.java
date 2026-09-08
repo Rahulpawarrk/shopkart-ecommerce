@@ -279,7 +279,7 @@ public class ProductListServlet extends HttpServlet {
         request.setAttribute("currentCategory", currentCategory);
         request.setAttribute("sortParam", sortParam != null ? sortParam : "newest");
 
-        request.getRequestDispatcher("/WEB-INF/views/product/list.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     private SeoMetadata buildCatalogSeoMetadata(Category currentCategory, ProductSearchCriteria criteria, int page, int totalCount) {
@@ -332,3 +332,4 @@ public class ProductListServlet extends HttpServlet {
         return seo;
     }
 }
+

@@ -216,7 +216,7 @@ public class CheckoutServlet extends HttpServlet {
         if (sessionAddressId != null) {
             request.setAttribute("selectedAddressId", sessionAddressId);
         }
-        request.getRequestDispatcher("/WEB-INF/views/order/checkout-address.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     private void handleSummaryStep(HttpServletRequest request, HttpServletResponse response, UserSession user,
@@ -234,7 +234,7 @@ public class CheckoutServlet extends HttpServlet {
         }
 
         request.setAttribute("selectedAddress", selectedAddress);
-        request.getRequestDispatcher("/WEB-INF/views/order/checkout-summary.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     private void handlePaymentStep(HttpServletRequest request, HttpServletResponse response, UserSession user,
@@ -261,7 +261,7 @@ public class CheckoutServlet extends HttpServlet {
         }
 
         request.setAttribute("selectedAddress", selectedAddress);
-        request.getRequestDispatcher("/WEB-INF/views/order/checkout-payment.jsp").forward(request, response);
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     private Address resolveSelectedAddress(HttpServletRequest request, UserSession user, List<Address> addresses) {

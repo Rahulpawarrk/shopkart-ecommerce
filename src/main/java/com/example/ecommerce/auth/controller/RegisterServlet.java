@@ -105,12 +105,13 @@ public class RegisterServlet extends HttpServlet {
             request.setAttribute("firstName", firstName);
             request.setAttribute("lastName", lastName);
             request.setAttribute("phone", phone);
-            request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
 
         } catch (Exception e) {
             logger.error("Unexpected error during customer registration", e);
             request.setAttribute("error", "An unexpected system error occurred during registration. Please try again.");
-            request.getRequestDispatcher("/WEB-INF/views/auth/register.jsp").forward(request, response);
+            request.getRequestDispatcher("/index.html").forward(request, response);
         }
     }
 }
+

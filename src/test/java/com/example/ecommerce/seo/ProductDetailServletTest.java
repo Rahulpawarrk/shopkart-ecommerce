@@ -70,7 +70,7 @@ class ProductDetailServletTest {
     void testCleanSlugRendersProductWithSeoMetadata() throws ServletException, IOException {
         when(request.getPathInfo()).thenReturn("/apple-macbook-pro-16");
         when(request.getContextPath()).thenReturn("");
-        when(request.getRequestDispatcher("/WEB-INF/views/product/detail.jsp")).thenReturn(requestDispatcher);
+        when(request.getRequestDispatcher("/index.html")).thenReturn(requestDispatcher);
 
         Product prod = new Product();
         prod.setProductId(1);
@@ -100,3 +100,4 @@ class ProductDetailServletTest {
         verify(requestDispatcher).forward(request, response);
     }
 }
+
