@@ -73,11 +73,12 @@ public class AuthRestController {
             logger.warn("Authentication failed for {}: {}", email, ve.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ApiResponse.error(ve.getMessage(), "INVALID_CREDENTIALS"));
-        } catch (Exception e) {
+        } catch (Throwable e) {
             LoginRateLimiter.recordFailure(remoteIp, email);
             logger.error("Error during REST login", e);
+            String msg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("Internal login error. Please try again.", "INTERNAL_ERROR"));
+                    .body(ApiResponse.error("Login failed: " + msg, "INTERNAL_ERROR"));
         }
     }
 
@@ -88,21 +89,32 @@ public class AuthRestController {
                     .body(ApiResponse.error("Passwords do not match", "PASSWORD_MISMATCH"));
         }
 
-        UserSession userSession = authService.registerCustomer(
-                req.getEmail().trim().toLowerCase(),
-                req.getPassword(),
-                req.getConfirmPassword(),
-                req.getFirstName().trim(),
-                req.getLastName().trim(),
-                req.getPhone() != null ? req.getPhone().trim() : ""
-        );
+        try {
+            UserSession userSession = authService.registerCustomer(
+                    req.getEmail().trim().toLowerCase(),
+                    req.getPassword(),
+                    req.getConfirmPassword(),
+                    req.getFirstName().trim(),
+                    req.getLastName().trim(),
+                    req.getPhone() != null ? req.getPhone().trim() : ""
+            );
 
-        HttpSession session = httpRequest.getSession(true);
-        session.setAttribute("currentUser", userSession);
+            HttpSession session = httpRequest.getSession(true);
+            session.setAttribute("currentUser", userSession);
 
-        logger.info("New user registered successfully: {}", userSession.getEmail());
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.created("Account created successfully", UserDto.fromSession(userSession)));
+            logger.info("New user registered successfully: {}", userSession.getEmail());
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiResponse.created("Account created successfully", UserDto.fromSession(userSession)));
+        } catch (ValidationException ve) {
+            logger.warn("Customer registration validation failed: {}", ve.getMessage());
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error(ve.getMessage(), "VALIDATION_FAILED"));
+        } catch (Throwable e) {
+            logger.error("Error during customer registration", e);
+            String msg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Registration failed: " + msg, "INTERNAL_ERROR"));
+        }
     }
 
     @GetMapping("/me")
