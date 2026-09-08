@@ -21,8 +21,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.regex.Pattern;
 
 import com.example.ecommerce.auth.model.ForgotPasswordResult;
 
@@ -115,8 +115,8 @@ public class AuthService {
             throw new ValidationException(errors);
         }
 
-        String normalizedEmail = email.trim().toLowerCase();
-        String normalizedPhone = phone.trim().replaceAll("[^0-9]", "");
+        String normalizedEmail = Objects.requireNonNull(email).trim().toLowerCase();
+        String normalizedPhone = Objects.requireNonNull(phone).trim().replaceAll("[^0-9]", "");
 
         // 2. Uniqueness Checks for BOTH Email and Phone
         if (userDAO.existsByEmail(normalizedEmail)) {
@@ -152,7 +152,8 @@ public class AuthService {
 
     /**
      * Registers a new customer using a pre-computed BCrypt password hash.
-     * Used after OTP verification to avoid retaining raw plaintext passwords in session.
+     * Used after OTP verification to avoid retaining raw plaintext passwords in
+     * session.
      */
     public UserSession registerCustomerWithPasswordHash(String email, String passwordHash,
             String firstName, String lastName, String phone) {
@@ -172,7 +173,8 @@ public class AuthService {
         Role customerRole = roleDAO.findByName("CUSTOMER")
                 .orElseThrow(() -> new AppException("System role 'CUSTOMER' not configured in database."));
 
-        // Transactional Execution: Create User -> Assign Role -> Provision Cart & Wishlist
+        // Transactional Execution: Create User -> Assign Role -> Provision Cart &
+        // Wishlist
         try (Connection conn = DBConnection.getConnection()) {
             conn.setAutoCommit(false); // Begin Transaction
             try {
@@ -272,7 +274,9 @@ public class AuthService {
             throw new ValidationException(errors);
         }
 
-        userDAO.updateProfile(userId, firstName.trim(), lastName.trim(), cleanPhone);
+        String cleanFirstName = Objects.requireNonNull(firstName).trim();
+        String cleanLastName = Objects.requireNonNull(lastName).trim();
+        userDAO.updateProfile(userId, cleanFirstName, cleanLastName, cleanPhone);
         logger.info("Updated profile for userId {}", userId);
     }
 
@@ -505,7 +509,8 @@ public class AuthService {
     /**
      * Verifies the 6-digit OTP code submitted on the forgot-password page.
      * If valid, generates a one-time UUID reset token, registers it in the DB,
-     * invalidates the OTP code, resets failed attempt counters, and returns the reset token.
+     * invalidates the OTP code, resets failed attempt counters, and returns the
+     * reset token.
      *
      * @param identifier email address or 10-digit mobile number
      * @param otpCode    6-digit OTP verification code
@@ -556,4 +561,3 @@ public class AuthService {
         return resetToken;
     }
 }
-

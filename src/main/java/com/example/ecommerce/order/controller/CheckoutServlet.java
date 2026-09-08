@@ -106,7 +106,7 @@ public class CheckoutServlet extends HttpServlet {
             } catch (NumberFormatException ignored) {}
         }
 
-        if (user == null) {
+        if (session == null || user == null) {
             if (session == null) {
                 session = request.getSession(true);
             }
@@ -126,11 +126,14 @@ public class CheckoutServlet extends HttpServlet {
         String path = request.getServletPath();
 
         Integer sessionBuyNowPid = (session != null) ? (Integer) session.getAttribute("directBuyProductId") : null;
-        boolean isDirectBuy = (sessionBuyNowPid != null && sessionBuyNowPid > 0);
-        int directProductId = isDirectBuy ? sessionBuyNowPid : 0;
+        int directProductId = (sessionBuyNowPid != null) ? sessionBuyNowPid.intValue() : 0;
+        boolean isDirectBuy = (directProductId > 0);
         int directQuantity = 1;
-        if (isDirectBuy && session.getAttribute("directBuyQuantity") != null) {
-            directQuantity = (Integer) session.getAttribute("directBuyQuantity");
+        if (isDirectBuy && session != null) {
+            Integer sessionQty = (Integer) session.getAttribute("directBuyQuantity");
+            if (sessionQty != null && sessionQty > 0) {
+                directQuantity = sessionQty;
+            }
         }
 
         // 2. Prepare Cart Object (Direct Buy vs Standard Cart)
@@ -161,16 +164,18 @@ public class CheckoutServlet extends HttpServlet {
         }
 
         // Apply coupon from session if present
-        Coupon sessionCoupon = (Coupon) session.getAttribute("appliedCoupon");
-        if (sessionCoupon != null) {
-            try {
-                couponService.validateAndApplyCoupon(sessionCoupon.getCode(), cart.getSubtotal());
-                BigDecimal discount = sessionCoupon.calculateDiscount(cart.getSubtotal());
-                cart.setCouponId(sessionCoupon.getCouponId());
-                cart.setAppliedCouponCode(sessionCoupon.getCode());
-                cart.setCouponDiscount(discount);
-            } catch (Exception e) {
-                session.removeAttribute("appliedCoupon");
+        if (session != null) {
+            Coupon sessionCoupon = (Coupon) session.getAttribute("appliedCoupon");
+            if (sessionCoupon != null) {
+                try {
+                    couponService.validateAndApplyCoupon(sessionCoupon.getCode(), cart.getSubtotal());
+                    BigDecimal discount = sessionCoupon.calculateDiscount(cart.getSubtotal());
+                    cart.setCouponId(sessionCoupon.getCouponId());
+                    cart.setAppliedCouponCode(sessionCoupon.getCode());
+                    cart.setCouponDiscount(discount);
+                } catch (Exception e) {
+                    session.removeAttribute("appliedCoupon");
+                }
             }
         }
 
@@ -336,7 +341,7 @@ public class CheckoutServlet extends HttpServlet {
             } catch (NumberFormatException ignored) {}
         }
 
-        if (user == null) {
+        if (session == null || user == null) {
             if (session == null) {
                 session = request.getSession(true);
             }
@@ -411,7 +416,8 @@ public class CheckoutServlet extends HttpServlet {
         }
 
         Integer sessionBuyNowPid = (session != null) ? (Integer) session.getAttribute("directBuyProductId") : null;
-        boolean isDirectBuy = (sessionBuyNowPid != null && sessionBuyNowPid > 0);
+        int directProductId = (sessionBuyNowPid != null) ? sessionBuyNowPid.intValue() : 0;
+        boolean isDirectBuy = (directProductId > 0);
 
         if (addressId <= 0) {
             try {
@@ -433,10 +439,13 @@ public class CheckoutServlet extends HttpServlet {
 
             Order confirmedOrder;
             if (isDirectBuy) {
-                int productId = sessionBuyNowPid;
+                int productId = directProductId;
                 int quantity = 1;
-                if (session != null && session.getAttribute("directBuyQuantity") != null) {
-                    quantity = (Integer) session.getAttribute("directBuyQuantity");
+                if (session != null) {
+                    Integer sessionQty = (Integer) session.getAttribute("directBuyQuantity");
+                    if (sessionQty != null && sessionQty > 0) {
+                        quantity = sessionQty;
+                    }
                 }
                 if (quantity <= 0) quantity = 1;
 

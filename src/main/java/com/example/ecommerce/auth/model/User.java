@@ -99,7 +99,15 @@ public class User implements Serializable {
     }
 
     public String getFullName() {
-        return (firstName != null ? firstName : "") + " " + (lastName != null ? lastName : "").trim();
+        String first = firstName != null ? firstName.trim() : "";
+        String last = lastName != null ? lastName.trim() : "";
+        if (first.isEmpty()) {
+            return last;
+        }
+        if (last.isEmpty()) {
+            return first;
+        }
+        return first + " " + last;
     }
 
     public String getPhone() {

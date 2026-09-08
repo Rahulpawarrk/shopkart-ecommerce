@@ -82,7 +82,11 @@ public class CustomerOrderServlet extends HttpServlet {
             throws ServletException, IOException {
         
         HttpSession session = request.getSession(false);
-        UserSession user = (UserSession) session.getAttribute("currentUser");
+        UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/login?error=auth_required");
+            return;
+        }
 
         int page = 1;
         String pageParam = request.getParameter("page");
@@ -101,12 +105,14 @@ public class CustomerOrderServlet extends HttpServlet {
         request.setAttribute("selectedSort", sortBy != null ? sortBy.trim() : "newest");
 
         // Flash attribute check for freshly placed order confirmation modal
-        com.example.ecommerce.order.model.OrderConfirmationContext confirmationContext = 
-                (session != null) ? (com.example.ecommerce.order.model.OrderConfirmationContext) session.getAttribute("orderConfirmationContext") : null;
-        if (confirmationContext != null) {
-            request.setAttribute("confirmationContext", confirmationContext);
-            request.setAttribute("showOrderSuccessModal", true);
-            session.removeAttribute("orderConfirmationContext");
+        if (session != null) {
+            com.example.ecommerce.order.model.OrderConfirmationContext confirmationContext = 
+                    (com.example.ecommerce.order.model.OrderConfirmationContext) session.getAttribute("orderConfirmationContext");
+            if (confirmationContext != null) {
+                request.setAttribute("confirmationContext", confirmationContext);
+                request.setAttribute("showOrderSuccessModal", true);
+                session.removeAttribute("orderConfirmationContext");
+            }
         }
 
         request.getRequestDispatcher("/WEB-INF/views/order/order-list.jsp").forward(request, response);
@@ -116,7 +122,11 @@ public class CustomerOrderServlet extends HttpServlet {
             throws ServletException, IOException {
         
         HttpSession session = request.getSession(false);
-        UserSession user = (UserSession) session.getAttribute("currentUser");
+        UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/login?error=auth_required");
+            return;
+        }
 
         String idParam = request.getParameter("id");
         if (idParam == null || idParam.trim().isEmpty()) {
@@ -158,7 +168,11 @@ public class CustomerOrderServlet extends HttpServlet {
             throws IOException {
         
         HttpSession session = request.getSession(false);
-        UserSession user = (UserSession) session.getAttribute("currentUser");
+        UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/login?error=auth_required");
+            return;
+        }
 
         String orderIdParam = request.getParameter("orderId");
         if (orderIdParam == null || orderIdParam.trim().isEmpty()) {

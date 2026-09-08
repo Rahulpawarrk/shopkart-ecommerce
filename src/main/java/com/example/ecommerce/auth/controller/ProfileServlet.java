@@ -36,7 +36,11 @@ public class ProfileServlet extends HttpServlet {
             throws ServletException, IOException {
         
         HttpSession session = request.getSession(false);
-        UserSession userSession = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+        if (session == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/login");
+            return;
+        }
+        UserSession userSession = (UserSession) session.getAttribute("currentUser");
         if (userSession == null) {
             response.sendRedirect(request.getContextPath() + "/auth/login");
             return;
@@ -69,7 +73,11 @@ public class ProfileServlet extends HttpServlet {
             throws ServletException, IOException {
         
         HttpSession session = request.getSession(false);
-        UserSession userSession = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+        if (session == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/login");
+            return;
+        }
+        UserSession userSession = (UserSession) session.getAttribute("currentUser");
         if (userSession == null) {
             response.sendRedirect(request.getContextPath() + "/auth/login");
             return;

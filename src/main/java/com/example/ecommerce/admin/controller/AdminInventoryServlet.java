@@ -123,7 +123,11 @@ public class AdminInventoryServlet extends HttpServlet {
             throws IOException {
         
         HttpSession session = request.getSession(false);
-        UserSession user = (UserSession) session.getAttribute("currentUser");
+        UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+        if (user == null || !user.isAdmin()) {
+            response.sendRedirect(request.getContextPath() + "/auth/login?error=session_expired");
+            return;
+        }
 
         int productId = ServletUtils.parseIntParam(request, "productId", -1);
         int qty = ServletUtils.parseIntParam(request, "quantity", -1);
@@ -149,7 +153,11 @@ public class AdminInventoryServlet extends HttpServlet {
             throws IOException {
         
         HttpSession session = request.getSession(false);
-        UserSession user = (UserSession) session.getAttribute("currentUser");
+        UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+        if (user == null || !user.isAdmin()) {
+            response.sendRedirect(request.getContextPath() + "/auth/login?error=session_expired");
+            return;
+        }
 
         int productId = ServletUtils.parseIntParam(request, "productId", -1);
         int newQty = ServletUtils.parseIntParam(request, "newQuantity", -1);

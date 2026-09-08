@@ -45,10 +45,12 @@ public class VerifyEmailServlet extends HttpServlet {
             throws ServletException, IOException {
 
         HttpSession session = request.getSession(false);
-        PendingRegistration pending = (session != null)
-                ? (PendingRegistration) session.getAttribute("pendingRegistration")
-                : null;
+        if (session == null) {
+            response.sendRedirect(request.getContextPath() + "/register");
+            return;
+        }
 
+        PendingRegistration pending = (PendingRegistration) session.getAttribute("pendingRegistration");
         if (pending == null) {
             response.sendRedirect(request.getContextPath() + "/register");
             return;
@@ -86,10 +88,12 @@ public class VerifyEmailServlet extends HttpServlet {
             throws ServletException, IOException {
 
         HttpSession session = request.getSession(false);
-        PendingRegistration pending = (session != null)
-                ? (PendingRegistration) session.getAttribute("pendingRegistration")
-                : null;
+        if (session == null) {
+            response.sendRedirect(request.getContextPath() + "/register");
+            return;
+        }
 
+        PendingRegistration pending = (PendingRegistration) session.getAttribute("pendingRegistration");
         if (pending == null) {
             response.sendRedirect(request.getContextPath() + "/register");
             return;

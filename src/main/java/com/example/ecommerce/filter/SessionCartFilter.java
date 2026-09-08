@@ -49,7 +49,7 @@ public class SessionCartFilter implements Filter {
         HttpSession session = httpRequest.getSession(false);
         if (session != null) {
             UserSession user = (UserSession) session.getAttribute("currentUser");
-            if (user != null && session.getAttribute("cart") == null) {
+            if (user != null && !user.isAdmin() && session.getAttribute("cart") == null) {
                 try {
                     Cart cart = cartService.getCart(user.getUserId());
                     session.setAttribute("cart", cart);

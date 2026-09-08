@@ -39,7 +39,11 @@ public class AdminDashboardServlet extends HttpServlet {
             throws ServletException, IOException {
         
         HttpSession session = request.getSession(false);
-        UserSession userSession = (UserSession) session.getAttribute("currentUser");
+        UserSession userSession = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+        if (userSession == null || !userSession.isAdmin()) {
+            response.sendRedirect(request.getContextPath() + "/auth/login?error=session_expired");
+            return;
+        }
 
         DashboardStats stats = dashboardService.getDashboardKPIs();
         Pagination<Order> recentOrders = orderDAO.findAll(null, null, 1, 5);

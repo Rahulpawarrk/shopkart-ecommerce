@@ -42,11 +42,16 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
-        String authMessage = (session != null) ? (String) session.getAttribute("authMessage") : null;
-        if (authMessage != null) {
-            request.setAttribute("warning", authMessage);
-            session.removeAttribute("authMessage");
-        } else {
+        String authMessage = null;
+        if (session != null) {
+            authMessage = (String) session.getAttribute("authMessage");
+            if (authMessage != null) {
+                request.setAttribute("warning", authMessage);
+                session.removeAttribute("authMessage");
+            }
+        }
+
+        if (authMessage == null) {
             String errorParam = request.getParameter("error");
             if ("auth_required".equalsIgnoreCase(errorParam)) {
                 request.setAttribute("warning", "Please sign in to access the requested page.");

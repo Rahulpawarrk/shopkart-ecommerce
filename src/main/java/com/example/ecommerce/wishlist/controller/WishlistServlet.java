@@ -89,7 +89,11 @@ public class WishlistServlet extends HttpServlet {
             throws ServletException, IOException {
         
         HttpSession session = request.getSession(false);
-        UserSession user = (UserSession) session.getAttribute("currentUser");
+        UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/login?error=auth_required");
+            return;
+        }
 
         Wishlist wishlist = wishlistService.getWishlist(user.getUserId());
         request.setAttribute("wishlist", wishlist);
@@ -101,7 +105,20 @@ public class WishlistServlet extends HttpServlet {
             throws IOException {
         
         HttpSession session = request.getSession(false);
-        UserSession user = (UserSession) session.getAttribute("currentUser");
+        UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+        boolean isAjax = "XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With")) 
+                      || "true".equalsIgnoreCase(request.getParameter("ajax"));
+        if (user == null) {
+            if (isAjax) {
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("{\"success\":false,\"message\":\"Please sign in to manage your wishlist.\"}");
+                return;
+            }
+            response.sendRedirect(request.getContextPath() + "/auth/login?error=auth_required");
+            return;
+        }
 
         int productId = ServletUtils.parseIntParam(request, "productId", -1);
         if (productId <= 0) {
@@ -109,8 +126,6 @@ public class WishlistServlet extends HttpServlet {
             return;
         }
         String returnUrl = request.getParameter("returnUrl");
-        boolean isAjax = "XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With")) 
-                      || "true".equalsIgnoreCase(request.getParameter("ajax"));
 
         try {
             wishlistService.addToWishlist(user.getUserId(), productId);
@@ -143,7 +158,11 @@ public class WishlistServlet extends HttpServlet {
             throws IOException {
         
         HttpSession session = request.getSession(false);
-        UserSession user = (UserSession) session.getAttribute("currentUser");
+        UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/login?error=auth_required");
+            return;
+        }
 
         int productId = ServletUtils.parseIntParam(request, "productId", -1);
         if (productId <= 0) {
@@ -159,7 +178,11 @@ public class WishlistServlet extends HttpServlet {
             throws IOException, ServletException {
         
         HttpSession session = request.getSession(false);
-        UserSession user = (UserSession) session.getAttribute("currentUser");
+        UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/login?error=auth_required");
+            return;
+        }
 
         int productId = ServletUtils.parseIntParam(request, "productId", -1);
         if (productId <= 0) {

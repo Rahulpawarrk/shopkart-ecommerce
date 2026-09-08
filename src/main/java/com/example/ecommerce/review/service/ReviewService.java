@@ -53,14 +53,16 @@ public class ReviewService {
         if (rating < 1 || rating > 5) {
             errors.add("Rating score must be between 1 and 5 stars.");
         }
-        if (title == null || title.trim().isEmpty()) {
+        String cleanTitle = (title != null) ? title.trim() : "";
+        if (cleanTitle.isEmpty()) {
             errors.add("Review headline / title is required.");
-        } else if (title.trim().length() < 3 || title.trim().length() > 150) {
+        } else if (cleanTitle.length() < 3 || cleanTitle.length() > 150) {
             errors.add("Review headline must be between 3 and 150 characters.");
         }
-        if (comment == null || comment.trim().isEmpty()) {
+        String cleanComment = (comment != null) ? comment.trim() : "";
+        if (cleanComment.isEmpty()) {
             errors.add("Review text / feedback is required.");
-        } else if (comment.trim().length() < 10 || comment.trim().length() > 2000) {
+        } else if (cleanComment.length() < 10 || cleanComment.length() > 2000) {
             errors.add("Review feedback must be between 10 and 2000 characters.");
         }
         if (!errors.isEmpty()) {
@@ -85,8 +87,8 @@ public class ReviewService {
         if (existing.isPresent()) {
             Review rev = existing.get();
             rev.setRating(rating);
-            rev.setTitle(title.trim());
-            rev.setComment(comment.trim());
+            rev.setTitle(cleanTitle);
+            rev.setComment(cleanComment);
             if (primaryImage != null) {
                 rev.setImageUrl(primaryImage);
                 rev.setImageUrls(imageUrls);
@@ -96,7 +98,7 @@ public class ReviewService {
                     rev.getReviewId(), productId, userId, imageUrls != null ? imageUrls.size() : 0);
             return rev;
         } else {
-            Review rev = new Review(productId, userId, rating, title.trim(), comment.trim(), primaryImage, true);
+            Review rev = new Review(productId, userId, rating, cleanTitle, cleanComment, primaryImage, true);
             if (imageUrls != null && !imageUrls.isEmpty()) {
                 rev.setImageUrls(imageUrls);
             }

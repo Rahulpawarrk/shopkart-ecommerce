@@ -49,12 +49,13 @@ public class OrderReturnService {
      */
     public OrderReturn requestReturn(int userId, int orderId, String reason, String resolutionType, String comments, String imageUrl) {
         List<String> errors = new ArrayList<>();
-        if (reason == null || reason.trim().isEmpty()) {
+        String cleanReason = reason != null ? reason.trim() : "";
+        if (cleanReason.isEmpty()) {
             errors.add("Please select a valid return reason.");
         }
-        if (resolutionType == null || resolutionType.trim().isEmpty()) {
-            resolutionType = "REFUND";
-        }
+        String cleanResolution = (resolutionType != null && !resolutionType.trim().isEmpty())
+                ? resolutionType.trim().toUpperCase()
+                : "REFUND";
         if (!errors.isEmpty()) {
             throw new ValidationException(errors);
         }
@@ -83,7 +84,7 @@ public class OrderReturnService {
         String randPart = UUID.randomUUID().toString().substring(0, 4).toUpperCase();
         String returnNumber = "RET-" + datePart + "-ORD" + orderId + "-" + randPart;
 
-        OrderReturn orderReturn = new OrderReturn(orderId, userId, returnNumber, reason.trim(), resolutionType.trim().toUpperCase(), comments != null ? comments.trim() : null, imageUrl);
+        OrderReturn orderReturn = new OrderReturn(orderId, userId, returnNumber, cleanReason, cleanResolution, comments != null ? comments.trim() : null, imageUrl);
         int returnId = orderReturnDAO.createReturn(orderReturn);
         orderReturn.setReturnId(returnId);
         orderReturn.setOrderNumber(order.getOrderNumber());

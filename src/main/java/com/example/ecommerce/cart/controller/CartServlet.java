@@ -378,7 +378,9 @@ public class CartServlet extends HttpServlet {
 
         try {
             Coupon coupon = couponService.validateAndApplyCoupon(couponCode, cart.getSubtotal());
-            session.setAttribute("appliedCoupon", coupon);
+            if (session != null) {
+                session.setAttribute("appliedCoupon", coupon);
+            }
 
             BigDecimal discount = coupon.calculateDiscount(cart.getSubtotal());
             cart.setCouponId(coupon.getCouponId());
@@ -399,7 +401,9 @@ public class CartServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/cart?couponApplied=true");
 
         } catch (ValidationException | ResourceNotFoundException ve) {
-            session.removeAttribute("appliedCoupon");
+            if (session != null) {
+                session.removeAttribute("appliedCoupon");
+            }
             if (isAjax) {
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");

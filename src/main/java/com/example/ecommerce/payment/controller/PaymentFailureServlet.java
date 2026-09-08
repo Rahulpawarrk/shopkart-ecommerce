@@ -102,7 +102,7 @@ public class PaymentFailureServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
 
-        if (user == null) {
+        if (session == null || user == null) {
             response.sendRedirect(request.getContextPath() + "/auth/login");
             return;
         }
@@ -111,9 +111,7 @@ public class PaymentFailureServlet extends HttpServlet {
         String orderIdParam = request.getParameter("orderId");
 
         int orderId = 0;
-        PaymentFailureContext failureContext = (session != null) 
-                ? (PaymentFailureContext) session.getAttribute("paymentFailureContext") 
-                : null;
+        PaymentFailureContext failureContext = (PaymentFailureContext) session.getAttribute("paymentFailureContext");
 
         if (failureContext != null) {
             orderId = failureContext.getOrderId();

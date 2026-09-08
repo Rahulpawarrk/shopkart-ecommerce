@@ -110,7 +110,11 @@ public class AdminOrderServlet extends HttpServlet {
             throws IOException {
         
         HttpSession session = request.getSession(false);
-        UserSession adminUser = (UserSession) session.getAttribute("currentUser");
+        UserSession adminUser = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
+        if (adminUser == null || !adminUser.isAdmin()) {
+            response.sendRedirect(request.getContextPath() + "/auth/login?error=session_expired");
+            return;
+        }
 
         int orderId = ServletUtils.parseIntParam(request, "orderId", -1);
         if (orderId <= 0) {

@@ -4,7 +4,6 @@ import com.example.ecommerce.category.model.Category;
 import com.example.ecommerce.category.service.CategoryService;
 import com.example.ecommerce.product.controller.ProductListServlet;
 import com.example.ecommerce.product.dto.ProductSearchCriteria;
-import com.example.ecommerce.product.model.Product;
 import com.example.ecommerce.product.service.ProductService;
 import com.example.ecommerce.seo.model.SeoMetadata;
 import com.example.ecommerce.util.Pagination;
