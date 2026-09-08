@@ -30,8 +30,12 @@ api.interceptors.response.use(
   (response) => response,
   (error: AxiosError<ApiResponse>) => {
     // If backend returned structured ApiResponse in error payload
-    if (error.response?.data?.message) {
-      return Promise.reject(new Error(error.response.data.message));
+    const data: any = error.response?.data;
+    if (data?.message && typeof data.message === 'string') {
+      return Promise.reject(new Error(data.message));
+    }
+    if (typeof data === 'string' && data.trim().length > 0 && !data.trim().startsWith('<')) {
+      return Promise.reject(new Error(data.trim()));
     }
     if (error.response?.status === 401) {
       return Promise.reject(new Error('Authentication required. Please login.'));

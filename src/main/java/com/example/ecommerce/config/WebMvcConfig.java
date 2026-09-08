@@ -22,13 +22,16 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addCorsMappings(@NonNull CorsRegistry registry) {
         registry.addMapping("/api/**")
                 .allowedOriginPatterns(
-                        "http://localhost:5173",
-                        "http://localhost:3000",
-                        "http://127.0.0.1:5173",
-                        "http://127.0.0.1:3000"
+                        "http://localhost:[*]",
+                        "http://localhost:*",
+                        "http://127.0.0.1:[*]",
+                        "http://127.0.0.1:*",
+                        "https://*.onrender.com",
+                        "*"
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                 .allowedHeaders("*")
+                .exposedHeaders("X-CSRF-TOKEN", "X-XSRF-TOKEN")
                 .allowCredentials(true)
                 .maxAge(3600);
     }
