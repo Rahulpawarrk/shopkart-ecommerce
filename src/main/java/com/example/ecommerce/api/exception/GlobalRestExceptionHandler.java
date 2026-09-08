@@ -57,11 +57,41 @@ public class GlobalRestExceptionHandler {
                 .body(ApiResponse.error(ex.getMessage(), "BAD_REQUEST"));
     }
 
+    /**
+     * Suppress noise for client disconnects / broken pipe exceptions (e.g. user closed tab or refreshed before response finished).
+     */
+    @ExceptionHandler({
+            org.springframework.web.context.request.async.AsyncRequestNotUsableException.class,
+            org.apache.catalina.connector.ClientAbortException.class
+    })
+    public void handleClientAbort(Exception ex) {
+        logger.debug("Client aborted/closed connection prematurely: {}", ex.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGeneralException(Exception ex) {
+        if (isClientAbort(ex)) {
+            logger.debug("Client aborted/closed connection prematurely: {}", ex.getMessage());
+            return null;
+        }
+
         logger.error("Unhandled API error", ex);
         String details = ex.getClass().getSimpleName() + (ex.getMessage() != null ? ": " + ex.getMessage() : "");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResponse.error("Server error: " + details, "INTERNAL_SERVER_ERROR"));
+    }
+
+    private boolean isClientAbort(Throwable t) {
+        while (t != null) {
+            String name = t.getClass().getName();
+            String msg = t.getMessage();
+            if ("org.apache.catalina.connector.ClientAbortException".equals(name)
+                    || "org.springframework.web.context.request.async.AsyncRequestNotUsableException".equals(name)
+                    || (t instanceof java.io.IOException && msg != null && (msg.contains("Broken pipe") || msg.contains("Connection reset")))) {
+                return true;
+            }
+            t = t.getCause();
+        }
+        return false;
     }
 }

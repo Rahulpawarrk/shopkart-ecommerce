@@ -40,8 +40,26 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public String handleGeneralException(Exception ex, Model model) {
+        if (isClientAbort(ex)) {
+            logger.debug("Client disconnected prematurely: {}", ex.getMessage());
+            return null;
+        }
         logger.error("Unhandled application exception", ex);
         model.addAttribute("errorMessage", "An unexpected error occurred. Please try again later.");
         return "error/500";
+    }
+
+    private boolean isClientAbort(Throwable t) {
+        while (t != null) {
+            String name = t.getClass().getName();
+            String msg = t.getMessage();
+            if ("org.apache.catalina.connector.ClientAbortException".equals(name)
+                    || "org.springframework.web.context.request.async.AsyncRequestNotUsableException".equals(name)
+                    || (t instanceof java.io.IOException && msg != null && (msg.contains("Broken pipe") || msg.contains("Connection reset")))) {
+                return true;
+            }
+            t = t.getCause();
+        }
+        return false;
     }
 }
