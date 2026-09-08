@@ -27,11 +27,10 @@ export const ProductDetailPage: React.FC = () => {
   const dispatch = useAppDispatch();
 
   const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const [product, setProduct] = useState<Product | null>(null);
   const isInWishlist = useAppSelector(
     (state) => (product ? !!state.wishlist.productIdMap[product.productId] : false)
   );
-
-  const [product, setProduct] = useState<Product | null>(null);
   const [selectedImage, setSelectedImage] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
