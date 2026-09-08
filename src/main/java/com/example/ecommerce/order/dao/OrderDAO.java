@@ -117,7 +117,7 @@ public class OrderDAO {
             stmt.setInt(1, history.getOrderId());
             stmt.setString(2, history.getPreviousStatus() != null ? history.getPreviousStatus().name() : null);
             stmt.setString(3, history.getNewStatus().name());
-            if (history.getChangedBy() != null) {
+            if (history.getChangedBy() != null && history.getChangedBy() > 0) {
                 stmt.setInt(4, history.getChangedBy());
             } else {
                 stmt.setNull(4, Types.INTEGER);

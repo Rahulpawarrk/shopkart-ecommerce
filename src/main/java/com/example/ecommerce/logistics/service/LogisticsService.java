@@ -125,7 +125,7 @@ public class LogisticsService {
                                 order.getOrderId(),
                                 currentStatus,
                                 carrierStatus,
-                                0, // Automated Carrier System ID
+                                null, // Automated Carrier System / Live Telemetry
                                 "Live Telemetry Sync ["
                                         + (result.getCourierPartner() != null
                                                 ? result.getCourierPartner().getDisplayName()
