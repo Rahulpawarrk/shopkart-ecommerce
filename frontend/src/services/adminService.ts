@@ -10,6 +10,8 @@ import type {
   Coupon,
   AuditLog,
   User,
+  PaymentReconciliation,
+  ReconciliationStats,
 } from '@/types';
 
 export const adminService = {
@@ -171,5 +173,33 @@ export const adminService = {
   async getAuditLogs(limit = 50): Promise<AuditLog[]> {
     const res = await api.get<ApiResponse<AuditLog[]>>('/admin/audit-logs', { params: { limit } });
     return res.data.data!;
+  },
+
+  async getReconciliationList(params: {
+    q?: string;
+    status?: string;
+    page?: number;
+    pageSize?: number;
+  }): Promise<CatalogPageResponse<PaymentReconciliation>> {
+    const res = await api.get<ApiResponse<CatalogPageResponse<PaymentReconciliation>>>(
+      '/admin/reconciliation',
+      { params }
+    );
+    return res.data.data!;
+  },
+
+  async getReconciliationStats(): Promise<ReconciliationStats> {
+    const res = await api.get<ApiResponse<ReconciliationStats>>('/admin/reconciliation/stats');
+    return res.data.data!;
+  },
+
+  async updateReconciliation(
+    id: number,
+    data: {
+      reconciliationStatus: string;
+      adminNotes?: string;
+    }
+  ): Promise<void> {
+    await api.put<ApiResponse<void>>(`/admin/reconciliation/${id}`, data);
   },
 };

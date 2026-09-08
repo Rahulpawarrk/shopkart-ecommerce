@@ -66,6 +66,7 @@ public class AdminRestController {
     private final OrderReturnService orderReturnService;
     private final AuthService authService;
     private final AuditLogService auditLogService;
+    private final com.example.ecommerce.payment.service.PaymentService paymentService;
 
     @Autowired
     public AdminRestController(DashboardService dashboardService,
@@ -76,7 +77,8 @@ public class AdminRestController {
                                CouponService couponService,
                                OrderReturnService orderReturnService,
                                AuthService authService,
-                               AuditLogService auditLogService) {
+                               AuditLogService auditLogService,
+                               com.example.ecommerce.payment.service.PaymentService paymentService) {
         this.dashboardService = dashboardService;
         this.productService = productService;
         this.categoryService = categoryService;
@@ -86,6 +88,7 @@ public class AdminRestController {
         this.orderReturnService = orderReturnService;
         this.authService = authService;
         this.auditLogService = auditLogService;
+        this.paymentService = paymentService;
     }
 
     private UserSession getAuthenticatedAdmin(HttpServletRequest request) {
@@ -562,5 +565,75 @@ public class AdminRestController {
         getAuthenticatedAdmin(request);
         Pagination<AuditLog> pagination = auditLogService.getAuditLogs(null, null, null, 1, Math.min(100, limit));
         return ResponseEntity.ok(ApiResponse.ok(pagination.getItems()));
+    }
+
+    // =========================================================================
+    // 9. PAYMENT RECONCILIATION
+    // =========================================================================
+
+    @GetMapping("/reconciliation")
+    public ResponseEntity<ApiResponse<CatalogPageResponse<com.example.ecommerce.payment.model.PaymentReconciliation>>> getReconciliationList(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false, defaultValue = "ALL") String status,
+            @RequestParam(required = false, defaultValue = "1") int page,
+            @RequestParam(required = false, defaultValue = "10") int pageSize,
+            HttpServletRequest request
+    ) {
+        getAuthenticatedAdmin(request);
+        Pagination<com.example.ecommerce.payment.model.PaymentReconciliation> pagination = paymentService.getReconciliationList(q, status, page, pageSize);
+        return ResponseEntity.ok(ApiResponse.ok(CatalogPageResponse.from(pagination)));
+    }
+
+    @GetMapping("/reconciliation/stats")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getReconciliationStats(HttpServletRequest request) {
+        getAuthenticatedAdmin(request);
+        Map<String, Object> stats = paymentService.getReconciliationStats();
+        return ResponseEntity.ok(ApiResponse.ok(stats));
+    }
+
+    @GetMapping("/reconciliation/{id}")
+    public ResponseEntity<ApiResponse<com.example.ecommerce.payment.model.PaymentReconciliation>> getReconciliationById(
+            @PathVariable int id,
+            HttpServletRequest request
+    ) {
+        getAuthenticatedAdmin(request);
+        com.example.ecommerce.payment.model.PaymentReconciliation recon = paymentService.getReconciliationById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Reconciliation record not found: " + id));
+        return ResponseEntity.ok(ApiResponse.ok(recon));
+    }
+
+    @PutMapping("/reconciliation/{id}")
+    public ResponseEntity<ApiResponse<Void>> updateReconciliationResolution(
+            @PathVariable int id,
+            @RequestBody Map<String, String> body,
+            HttpServletRequest request
+    ) {
+        UserSession admin = getAuthenticatedAdmin(request);
+        String status = body != null ? body.get("reconciliationStatus") : null;
+        if (status == null || status.trim().isEmpty()) {
+            status = body != null ? body.get("status") : null;
+        }
+        String adminNotes = body != null ? body.get("adminNotes") : null;
+
+        if (status == null || status.trim().isEmpty()) {
+            throw new ValidationException("Reconciliation status is required.");
+        }
+
+        boolean updated = paymentService.updateReconciliationResolution(id, status.trim().toUpperCase(), adminNotes, admin.getUserId());
+        if (!updated) {
+            throw new ResourceNotFoundException("Reconciliation record not found: " + id);
+        }
+
+        auditLogService.logAction(
+                admin.getUserId(),
+                "UPDATE_RECONCILIATION",
+                "PaymentReconciliation",
+                id,
+                null,
+                "Updated status to " + status + (adminNotes != null ? " with notes: " + adminNotes : ""),
+                request.getRemoteAddr()
+        );
+
+        return ResponseEntity.ok(ApiResponse.ok("Reconciliation resolution updated successfully", null));
     }
 }

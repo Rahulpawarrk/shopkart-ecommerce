@@ -18,6 +18,7 @@ import {
   X,
   ShieldAlert,
   Users,
+  Scale,
 } from 'lucide-react';
 
 export const AdminLayout: React.FC = () => {
@@ -35,6 +36,7 @@ export const AdminLayout: React.FC = () => {
   const navItems = [
     { label: 'Dashboard', to: '/admin/dashboard', icon: LayoutDashboard },
     { label: 'Orders', to: '/admin/orders', icon: Package },
+    { label: 'Reconciliation', to: '/admin/reconciliation', icon: Scale },
     { label: 'Products', to: '/admin/products', icon: ShoppingBag },
     { label: 'Categories', to: '/admin/categories', icon: Layers },
     { label: 'Inventory', to: '/admin/inventory', icon: Boxes },

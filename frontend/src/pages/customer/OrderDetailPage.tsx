@@ -205,7 +205,7 @@ export const OrderDetailPage: React.FC = () => {
   };
 
   const isEligibleForOnlinePayment = (order: Order) => {
-    const isPendingPayment = (order.paymentStatus || 'PENDING').toUpperCase() === 'PENDING' || (order.paymentStatus || '').toUpperCase() === 'FAILED';
+    const isPendingPayment = (order.paymentStatus || 'PENDING').toUpperCase() === 'PENDING';
     const isNotTerminated = !['CANCELLED', 'RETURNED'].includes(order.orderStatus.toUpperCase());
     return isPendingPayment && isNotTerminated;
   };

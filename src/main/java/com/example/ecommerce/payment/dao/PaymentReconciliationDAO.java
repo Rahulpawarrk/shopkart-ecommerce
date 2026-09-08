@@ -116,7 +116,31 @@ public class PaymentReconciliationDAO {
         return list;
     }
 
+    /**
+     * Ensures any orders marked with payment_status = 'FAILED' are recorded in payment_reconciliation table.
+     */
+    public void syncFailedOrders(Connection conn) {
+        String sql = "INSERT INTO dbo.payment_reconciliation " +
+                     "(order_id, user_id, transaction_reference, gateway_order_id, payment_method, " +
+                     " amount, failure_reason, gateway_response, reconciliation_status, admin_notes, created_at, updated_at) " +
+                     "SELECT o.order_id, o.user_id, CONCAT('TXN-FAILED-', o.order_id), CONCAT('ORDER-', o.order_number), " +
+                     "COALESCE(o.payment_method, 'ONLINE'), o.total_amount, 'Payment Failed / Incomplete', 'Gateway Failed', 'PENDING', " +
+                     "'Logged for admin reconciliation', o.updated_at, o.updated_at " +
+                     "FROM dbo.orders o " +
+                     "WHERE o.payment_status = 'FAILED' " +
+                     "AND NOT EXISTS (SELECT 1 FROM dbo.payment_reconciliation pr WHERE pr.order_id = o.order_id)";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            logger.debug("Reconciliation sync notice: {}", e.getMessage());
+        }
+    }
+
     public Pagination<PaymentReconciliation> findAll(String keyword, String status, int page, int pageSize) {
+        try (Connection conn = DBConnection.getConnection()) {
+            syncFailedOrders(conn);
+        } catch (Exception ignored) {}
+
         StringBuilder where = new StringBuilder(" WHERE 1=1 ");
         List<Object> params = new ArrayList<>();
 
@@ -220,16 +244,18 @@ public class PaymentReconciliationDAO {
                      "COALESCE(SUM(amount), 0) AS total_disputed_amount " +
                      "FROM dbo.payment_reconciliation";
 
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-            if (rs.next()) {
-                stats.put("totalFailed", rs.getInt("total_failed"));
-                stats.put("pendingAudit", rs.getInt("pending_audit"));
-                stats.put("verifiedDebited", rs.getInt("verified_debited"));
-                stats.put("refundInitiated", rs.getInt("refund_initiated"));
-                stats.put("resolvedCount", rs.getInt("resolved_count"));
-                stats.put("totalDisputedAmount", rs.getBigDecimal("total_disputed_amount"));
+        try (Connection conn = DBConnection.getConnection()) {
+            syncFailedOrders(conn);
+            try (PreparedStatement stmt = conn.prepareStatement(sql);
+                 ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    stats.put("totalFailed", rs.getInt("total_failed"));
+                    stats.put("pendingAudit", rs.getInt("pending_audit"));
+                    stats.put("verifiedDebited", rs.getInt("verified_debited"));
+                    stats.put("refundInitiated", rs.getInt("refund_initiated"));
+                    stats.put("resolvedCount", rs.getInt("resolved_count"));
+                    stats.put("totalDisputedAmount", rs.getBigDecimal("total_disputed_amount"));
+                }
             }
         } catch (SQLException e) {
             logger.error("Error calculating reconciliation statistics", e);

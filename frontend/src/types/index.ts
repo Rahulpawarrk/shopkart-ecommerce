@@ -284,3 +284,36 @@ export interface AdminDashboardStats {
   recentOrders: Order[];
   topSellingProducts: any[];
 }
+
+export interface PaymentReconciliation {
+  reconciliationId: number;
+  orderId: number;
+  orderNumber: string;
+  userId: number;
+  customerName?: string;
+  customerEmail?: string;
+  customerPhone?: string;
+  transactionReference: string;
+  gatewayOrderId?: string;
+  paymentMethod: string;
+  amount: number;
+  failureReason?: string;
+  gatewayResponse?: string;
+  reconciliationStatus: string;
+  adminNotes?: string;
+  resolvedBy?: number;
+  resolverName?: string;
+  resolvedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReconciliationStats {
+  totalFailed: number;
+  pendingAudit: number;
+  verifiedDebited: number;
+  refundInitiated: number;
+  resolvedCount: number;
+  totalDisputedAmount: number;
+}
+

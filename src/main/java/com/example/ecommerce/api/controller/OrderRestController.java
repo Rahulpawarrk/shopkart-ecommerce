@@ -176,7 +176,7 @@ public class OrderRestController {
         }
 
         Order order = orderService.getOrderById(orderId, user.getUserId());
-        if (order == null) {
+        if (order == null || order.getPaymentStatus() == com.example.ecommerce.order.model.PaymentStatus.FAILED) {
             throw new ResourceNotFoundException("Order not found or does not belong to your account: " + orderId);
         }
 

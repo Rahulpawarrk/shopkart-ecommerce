@@ -52,7 +52,10 @@ export const OrdersPage: React.FC = () => {
     orderService
       .getMyOrders(statusFilter || undefined, page, 10)
       .then((res) => {
-        setOrders(res.items);
+        const visibleOrders = (res.items || []).filter(
+          (o: Order) => (o.paymentStatus || '').toUpperCase() !== 'FAILED'
+        );
+        setOrders(visibleOrders);
         setTotalPages(res.totalPages || 1);
       })
       .catch(() => {})
@@ -230,7 +233,7 @@ export const OrdersPage: React.FC = () => {
   };
 
   const isEligibleForOnlinePayment = (order: Order) => {
-    const isPendingPayment = (order.paymentStatus || 'PENDING').toUpperCase() === 'PENDING' || (order.paymentStatus || '').toUpperCase() === 'FAILED';
+    const isPendingPayment = (order.paymentStatus || 'PENDING').toUpperCase() === 'PENDING';
     const isNotTerminated = !['CANCELLED', 'RETURNED'].includes(order.orderStatus.toUpperCase());
     return isPendingPayment && isNotTerminated;
   };
@@ -345,18 +348,9 @@ export const OrdersPage: React.FC = () => {
 
               {/* COD Pay Online Advisory Banner */}
               {order.paymentMethod === 'COD' && order.paymentStatus === 'PENDING' && !['CANCELLED', 'RETURNED'].includes(order.orderStatus.toUpperCase()) && (
-                <div className="bg-amber-50/90 px-6 py-2 border-b border-amber-200/60 flex flex-wrap items-center justify-between gap-2 text-xs text-amber-900">
-                  <span className="flex items-center gap-1.5 font-medium">
-                    <Clock className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
-                    <span>Scheduled for <strong>Cash on Delivery</strong>. Prefer contactless delivery? Pay online anytime via UPI / Card.</span>
-                  </span>
-                  <button
-                    onClick={() => handlePayOrder(order)}
-                    disabled={payingOrderId === order.orderId}
-                    className="text-xs font-bold text-blue-700 hover:text-blue-900 hover:underline inline-flex items-center gap-1 ml-auto"
-                  >
-                    Pay Online Now &rarr;
-                  </button>
+                <div className="bg-amber-50/90 px-6 py-2.5 border-b border-amber-200/60 flex items-center gap-2 text-xs text-amber-900">
+                  <Clock className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                  <span>Scheduled for <strong>Cash on Delivery</strong>. Prefer contactless delivery? Pay online anytime via UPI / Card using the button below.</span>
                 </div>
               )}
 
