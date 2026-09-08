@@ -17,6 +17,14 @@ import {
   Gift,
   CheckCircle2,
   Mail,
+  Laptop,
+  Smartphone,
+  Headphones,
+  Watch,
+  Shirt,
+  Footprints,
+  Home,
+  ShoppingBag,
 } from 'lucide-react';
 
 export const HomePage: React.FC = () => {
@@ -245,33 +253,56 @@ export const HomePage: React.FC = () => {
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
-            {categories.map((cat, idx) => {
-              const bgColors = [
-                'bg-blue-50 text-blue-600 group-hover:bg-blue-600',
-                'bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600',
-                'bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600',
-                'bg-rose-50 text-rose-600 group-hover:bg-rose-600',
-                'bg-amber-50 text-amber-600 group-hover:bg-amber-600',
-                'bg-purple-50 text-purple-600 group-hover:bg-purple-600',
-              ];
-              const colorClass = bgColors[idx % bgColors.length];
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4">
+            {categories.map((cat) => {
+              const nameLower = cat.categoryName.toLowerCase();
+              const slugLower = (cat.slug || '').toLowerCase();
+
+              // High-resolution photography mapping for each category
+              let catImage = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=400&q=80';
+
+              if (slugLower.includes('laptop') || nameLower.includes('laptop') || nameLower.includes('computer')) {
+                catImage = 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=400&q=80';
+              } else if (slugLower.includes('phone') || nameLower.includes('phone') || nameLower.includes('tablet')) {
+                catImage = 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=400&q=80';
+              } else if (slugLower.includes('audio') || nameLower.includes('audio') || nameLower.includes('headphone')) {
+                catImage = 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=400&q=80';
+              } else if (slugLower.includes('watch') || nameLower.includes('watch') || nameLower.includes('wearable')) {
+                catImage = 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=400&q=80';
+              } else if (slugLower.includes('men') || nameLower.includes('men')) {
+                catImage = 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=400&q=80';
+              } else if (slugLower.includes('women') || nameLower.includes('women')) {
+                catImage = 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=400&q=80';
+              } else if (slugLower.includes('footwear') || nameLower.includes('footwear') || nameLower.includes('shoe') || nameLower.includes('sneaker')) {
+                catImage = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=400&q=80';
+              } else if (slugLower.includes('home') || nameLower.includes('home') || nameLower.includes('kitchen')) {
+                catImage = 'https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?auto=format&fit=crop&w=400&q=80';
+              }
 
               return (
                 <Link
                   key={cat.categoryId}
                   to={`/products?categorySlug=${cat.slug}`}
-                  className="group flex flex-col items-center text-center p-5 bg-white rounded-2xl border border-gray-100 shadow-xs hover:border-blue-500 hover:shadow-md transition duration-200"
+                  className="group relative flex flex-col items-center text-center p-3 sm:p-4 bg-white rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-xl hover:border-blue-400 hover:-translate-y-1.5 transition-all duration-300 overflow-hidden"
                 >
-                  <div
-                    className={`w-16 h-16 rounded-2xl ${colorClass} group-hover:text-white flex items-center justify-center font-black text-2xl mb-3 shadow-inner transition duration-200`}
-                  >
-                    {cat.categoryName.charAt(0).toUpperCase()}
+                  {/* High Quality Category Image Container */}
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden bg-slate-50 border border-slate-200/70 p-1 mb-3 group-hover:scale-105 group-hover:border-blue-300 transition-all duration-300 relative shadow-2xs">
+                    <img
+                      src={catImage}
+                      alt={cat.categoryName}
+                      className="w-full h-full object-cover rounded-xl group-hover:scale-110 transition-transform duration-500"
+                      loading="lazy"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=400&q=80';
+                      }}
+                    />
                   </div>
-                  <span className="text-xs font-bold text-gray-800 group-hover:text-blue-600 transition line-clamp-1">
+                  <span className="text-xs sm:text-sm font-black text-slate-900 group-hover:text-blue-600 transition line-clamp-1 px-1">
                     {cat.categoryName}
                   </span>
-                  <span className="text-[10px] text-gray-400 mt-0.5">Explore &rarr;</span>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 mt-1 opacity-75 group-hover:opacity-100 group-hover:translate-x-0.5 transition">
+                    Explore <ArrowRight className="w-3 h-3" />
+                  </span>
                 </Link>
               );
             })}

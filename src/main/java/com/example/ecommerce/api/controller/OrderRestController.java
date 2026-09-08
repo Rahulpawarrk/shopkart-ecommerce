@@ -256,6 +256,23 @@ public class OrderRestController {
             tracking.setEstimatedDelivery(order.getFormattedEstimatedDeliveryDate());
         }
 
+        // First, add all internal status transition history records so customer sees admin updates immediately
+        if (order.getStatusHistory() != null && !order.getStatusHistory().isEmpty()) {
+            for (var sh : order.getStatusHistory()) {
+                String timestampStr = sh.getCreatedAt() != null ? sh.getCreatedAt().toString().replace('T', ' ') : "";
+                String statusName = sh.getNewStatus() != null ? sh.getNewStatus().name() : "UPDATE";
+                String remarks = sh.getRemarks() != null && !sh.getRemarks().trim().isEmpty()
+                        ? sh.getRemarks()
+                        : (sh.getNewStatus() != null ? "Order transitioned to " + sh.getNewStatus().getDisplayName() : "Order updated");
+                tracking.getEvents().add(new OrderTrackingResponse.TrackingEventDto(
+                        timestampStr,
+                        statusName,
+                        "Fulfillment Center",
+                        remarks
+                ));
+            }
+        }
+
         if (order.getTrackingNumber() != null && !order.getTrackingNumber().trim().isEmpty() && order.getCourierPartner() != null) {
             try {
                 TrackingResult tr = logisticsService.trackLiveShipment(order);
@@ -264,7 +281,7 @@ public class OrderRestController {
                     if (tr.getEstimatedDeliveryDate() != null) {
                         tracking.setEstimatedDelivery(tr.getFormattedEstimatedDeliveryDate());
                     }
-                    if (tr.getScanHistory() != null) {
+                    if (tr.getScanHistory() != null && !tr.getScanHistory().isEmpty()) {
                         for (var ev : tr.getScanHistory()) {
                             tracking.getEvents().add(new OrderTrackingResponse.TrackingEventDto(
                                     ev.getFormattedTimestamp(),
@@ -276,6 +293,17 @@ public class OrderRestController {
                     }
                 }
             } catch (Exception ignored) {}
+        }
+
+        // If no events exist yet, provide a baseline placed status event
+        if (tracking.getEvents().isEmpty()) {
+            String createdTime = order.getCreatedAt() != null ? order.getCreatedAt().toString().replace('T', ' ') : "Recently";
+            tracking.getEvents().add(new OrderTrackingResponse.TrackingEventDto(
+                    createdTime,
+                    order.getOrderStatus() != null ? order.getOrderStatus().name() : "CONFIRMED",
+                    "Online Order Gateway",
+                    "Order placed and confirmed. Preparing for fulfillment."
+            ));
         }
 
         return ResponseEntity.ok(ApiResponse.ok(tracking));

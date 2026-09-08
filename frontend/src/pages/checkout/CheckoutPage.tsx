@@ -4,7 +4,7 @@ import { customerService } from '@/services/customerService';
 import { orderService } from '@/services/orderService';
 import { productService } from '@/services/productService';
 import { useAppDispatch, useAppSelector } from '@/store';
-import { fetchCart } from '@/store/slices/cartSlice';
+import { fetchCart, applyCoupon, removeCoupon } from '@/store/slices/cartSlice';
 import { showToast } from '@/store/slices/uiSlice';
 import type { Address, Product } from '@/types';
 import {
@@ -17,6 +17,10 @@ import {
   ArrowRight,
   AlertCircle,
   Banknote,
+  Tag,
+  Percent,
+  Sparkles,
+  X,
 } from 'lucide-react';
 
 declare global {
@@ -46,6 +50,65 @@ export const CheckoutPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [placingOrder, setPlacingOrder] = useState(false);
   const [showAddressModal, setShowAddressModal] = useState(false);
+
+  // Coupon state
+  const [couponInput, setCouponInput] = useState('');
+  const [couponApplying, setCouponApplying] = useState(false);
+  const [directBuyCouponCode, setDirectBuyCouponCode] = useState<string | null>(null);
+
+  const appliedCoupon = buyNowProductId ? directBuyCouponCode : cart?.appliedCouponCode;
+
+  const handleApplyCoupon = async (codeToApply?: string) => {
+    const code = (codeToApply || couponInput).trim().toUpperCase();
+    if (!code) return;
+    setCouponApplying(true);
+    try {
+      if (buyNowProductId && directBuyProduct) {
+        const rawTotal = directBuyProduct.effectivePrice * buyNowQty;
+        if (code === 'WELCOME10' && rawTotal < 1000) {
+          throw new Error('Minimum order amount of ₹1,000 required for WELCOME10');
+        } else if (code === 'FLAT500' && rawTotal < 3000) {
+          throw new Error('Minimum order amount of ₹3,000 required for FLAT500');
+        } else if (code === 'SUPER20' && rawTotal < 10000) {
+          throw new Error('Minimum order amount of ₹10,000 required for SUPER20');
+        } else if (code === 'FREESHIP' && rawTotal < 500) {
+          throw new Error('Minimum order amount of ₹500 required for FREESHIP');
+        } else if (!['WELCOME10', 'FLAT500', 'SUPER20', 'FREESHIP'].includes(code)) {
+          throw new Error(`Invalid or expired coupon code: ${code}`);
+        }
+        setDirectBuyCouponCode(code);
+        setCouponInput('');
+        dispatch(showToast({ message: `Coupon ${code} applied successfully!`, type: 'success' }));
+      } else {
+        await dispatch(applyCoupon(code)).unwrap();
+        setCouponInput('');
+        dispatch(showToast({ message: `Coupon ${code} applied successfully!`, type: 'success' }));
+      }
+    } catch (err: any) {
+      const errMsg = typeof err === 'string' ? err : err?.message || 'Failed to apply coupon';
+      dispatch(showToast({ message: errMsg, type: 'error' }));
+    } finally {
+      setCouponApplying(false);
+    }
+  };
+
+  const handleRemoveCoupon = async () => {
+    setCouponApplying(true);
+    try {
+      if (buyNowProductId) {
+        setDirectBuyCouponCode(null);
+        dispatch(showToast({ message: 'Coupon removed', type: 'info' }));
+      } else {
+        await dispatch(removeCoupon()).unwrap();
+        dispatch(showToast({ message: 'Coupon removed', type: 'info' }));
+      }
+    } catch (err: any) {
+      const errMsg = typeof err === 'string' ? err : err?.message || 'Failed to remove coupon';
+      dispatch(showToast({ message: errMsg, type: 'error' }));
+    } finally {
+      setCouponApplying(false);
+    }
+  };
 
   // New address form state
   const [newAddr, setNewAddr] = useState({
@@ -120,18 +183,21 @@ export const CheckoutPage: React.FC = () => {
     setPlacingOrder(true);
     try {
       let confirmedOrder;
+      const activeCoupon = buyNowProductId ? directBuyCouponCode : cart?.appliedCouponCode;
       if (buyNowProductId && directBuyProduct) {
         confirmedOrder = await orderService.directBuy({
           addressId: selectedAddressId,
           productId: directBuyProduct.productId,
           quantity: buyNowQty,
           paymentMethod: paymentMethod === 'COD' ? 'COD' : 'UPI',
+          couponCode: activeCoupon || undefined,
           notes: notes.trim() || undefined,
         });
       } else {
         confirmedOrder = await orderService.checkout({
           addressId: selectedAddressId,
           paymentMethod: paymentMethod === 'COD' ? 'COD' : 'UPI',
+          couponCode: activeCoupon || undefined,
           notes: notes.trim() || undefined,
         });
       }
@@ -221,12 +287,27 @@ export const CheckoutPage: React.FC = () => {
   // Calculation for Direct Buy or Cart
   let totalPayable = 0;
   let itemsCount = 0;
+  let couponDiscountAmount = 0;
+  let rawSubtotal = 0;
+
   if (buyNowProductId && directBuyProduct) {
-    totalPayable = directBuyProduct.effectivePrice * buyNowQty;
+    rawSubtotal = directBuyProduct.effectivePrice * buyNowQty;
+    if (directBuyCouponCode === 'WELCOME10') {
+      couponDiscountAmount = Math.min(rawSubtotal * 0.10, 1500);
+    } else if (directBuyCouponCode === 'FLAT500') {
+      couponDiscountAmount = 500;
+    } else if (directBuyCouponCode === 'SUPER20') {
+      couponDiscountAmount = Math.min(rawSubtotal * 0.20, 4000);
+    } else if (directBuyCouponCode === 'FREESHIP') {
+      couponDiscountAmount = 100;
+    }
+    totalPayable = Math.max(0, rawSubtotal - couponDiscountAmount);
     itemsCount = buyNowQty;
   } else if (cart) {
     totalPayable = cart.finalTotal;
     itemsCount = cart.totalQuantity;
+    couponDiscountAmount = cart.couponDiscount || 0;
+    rawSubtotal = cart.subtotal;
   }
 
   if (loading) {
@@ -424,7 +505,110 @@ export const CheckoutPage: React.FC = () => {
             )}
           </div>
 
+          {/* Promo Coupon Section */}
+          <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                <Tag className="w-3.5 h-3.5 text-blue-600" />
+                <span>Apply Promo Coupon</span>
+              </span>
+              {appliedCoupon && (
+                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                  Applied
+                </span>
+              )}
+            </div>
+
+            {appliedCoupon ? (
+              <div className="flex items-center justify-between p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                  <div>
+                    <span className="font-mono font-bold text-emerald-900">{appliedCoupon}</span>
+                    <p className="text-[11px] text-emerald-700 font-medium">
+                      Saved ₹{couponDiscountAmount.toLocaleString('en-IN')} on this order!
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleRemoveCoupon}
+                  disabled={couponApplying}
+                  className="p-1 text-slate-400 hover:text-red-600 hover:bg-white rounded-lg transition"
+                  title="Remove coupon"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      placeholder="Coupon code (e.g. WELCOME10)"
+                      value={couponInput}
+                      onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleApplyCoupon();
+                        }
+                      }}
+                      className="w-full pl-8 pr-2.5 py-2 bg-white border border-slate-300 rounded-xl text-xs font-mono uppercase tracking-wider focus:outline-none focus:border-blue-600"
+                    />
+                    <Percent className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleApplyCoupon()}
+                    disabled={!couponInput.trim() || couponApplying}
+                    className="px-3.5 py-2 bg-slate-900 hover:bg-blue-600 text-white text-xs font-bold rounded-xl transition disabled:opacity-50 shadow-xs"
+                  >
+                    {couponApplying ? 'Applying...' : 'Apply'}
+                  </button>
+                </div>
+
+                {/* Quick select coupons */}
+                <div className="flex flex-wrap gap-1 pt-0.5">
+                  {[
+                    { code: 'WELCOME10', label: '10% OFF' },
+                    { code: 'FLAT500', label: '₹500 OFF' },
+                    { code: 'SUPER20', label: '20% OFF' },
+                  ].map((c) => (
+                    <button
+                      key={c.code}
+                      type="button"
+                      onClick={() => {
+                        setCouponInput(c.code);
+                        handleApplyCoupon(c.code);
+                      }}
+                      className="px-2 py-0.5 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-300 rounded-lg text-[10px] font-mono text-slate-700 transition flex items-center gap-1 shadow-2xs"
+                    >
+                      <Sparkles className="w-2.5 h-2.5 text-amber-500" />
+                      <span className="font-bold">{c.code}</span>
+                      <span className="text-slate-400">({c.label})</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="space-y-2 text-xs text-gray-600 border-t border-gray-100 pt-3">
+            <div className="flex justify-between">
+              <span>Subtotal</span>
+              <span>₹{rawSubtotal.toLocaleString('en-IN')}</span>
+            </div>
+            {couponDiscountAmount > 0 && (
+              <div className="flex justify-between text-emerald-600 font-bold">
+                <span className="flex items-center gap-1">
+                  <Tag className="w-3 h-3" />
+                  <span>Coupon Discount ({appliedCoupon})</span>
+                </span>
+                <span>-₹{couponDiscountAmount.toLocaleString('en-IN')}</span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span>Delivery Charges</span>
               <span className="text-emerald-600 font-bold">FREE</span>

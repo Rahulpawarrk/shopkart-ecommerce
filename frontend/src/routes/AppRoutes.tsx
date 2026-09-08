@@ -40,6 +40,7 @@ import { AdminInventoryPage } from '@/pages/admin/AdminInventoryPage';
 import { AdminCouponsPage } from '@/pages/admin/AdminCouponsPage';
 import { AdminReturnsPage } from '@/pages/admin/AdminReturnsPage';
 import { AdminAuditLogsPage } from '@/pages/admin/AdminAuditLogsPage';
+import { AdminUsersPage } from '@/pages/admin/AdminUsersPage';
 
 // Protected Route Wrapper (Requires Logged-In User)
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -279,6 +280,8 @@ export const AppRoutes: React.FC = () => {
         <Route path="inventory" element={<AdminInventoryPage />} />
         <Route path="coupons" element={<AdminCouponsPage />} />
         <Route path="returns" element={<AdminReturnsPage />} />
+        <Route path="admins" element={<AdminUsersPage />} />
+        <Route path="users" element={<AdminUsersPage />} />
         <Route path="audit-logs" element={<AdminAuditLogsPage />} />
       </Route>
     </Routes>

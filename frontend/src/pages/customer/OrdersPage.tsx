@@ -14,6 +14,11 @@ import {
   ExternalLink,
   ChevronRight,
   X,
+  Copy,
+  Check,
+  Navigation,
+  MapPin,
+  ShieldCheck,
 } from 'lucide-react';
 
 export const OrdersPage: React.FC = () => {
@@ -28,6 +33,7 @@ export const OrdersPage: React.FC = () => {
   const [trackingOrder, setTrackingOrder] = useState<Order | null>(null);
   const [trackingData, setTrackingData] = useState<OrderTracking | null>(null);
   const [trackingLoading, setTrackingLoading] = useState(false);
+  const [copiedAwb, setCopiedAwb] = useState(false);
 
   // Cancel Modal State
   const [cancellingOrderId, setCancellingOrderId] = useState<number | null>(null);
@@ -265,61 +271,219 @@ export const OrdersPage: React.FC = () => {
 
       {/* Live Tracking Modal */}
       {trackingOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b pb-3">
-              <div>
-                <h3 className="font-bold text-base text-gray-900 flex items-center gap-2">
-                  <Truck className="w-5 h-5 text-blue-600" />
-                  <span>Shipment Telemetry</span>
-                </h3>
-                <p className="text-xs text-gray-400">Order #{trackingOrder.orderNumber}</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-3 sm:p-4">
+          <div className="bg-white rounded-3xl p-5 sm:p-7 max-w-xl w-full space-y-6 shadow-2xl max-h-[90vh] overflow-y-auto border border-slate-100">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between border-b border-slate-100 pb-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <Truck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-black text-lg text-slate-900">Shipment Tracking</h3>
+                    <p className="text-xs text-slate-500 font-medium">Real-time carrier scans and transit telemetry</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 pt-1">
+                  <span className="text-xs font-mono font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg">
+                    #{trackingOrder.orderNumber}
+                  </span>
+                  <span
+                    className={`text-[11px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+                      trackingOrder.orderStatus === 'DELIVERED'
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : trackingOrder.orderStatus === 'CANCELLED'
+                        ? 'bg-red-100 text-red-800'
+                        : ['SHIPPED', 'DISPATCHED', 'IN_TRANSIT', 'OUT_FOR_DELIVERY'].includes(trackingOrder.orderStatus)
+                        ? 'bg-blue-100 text-blue-800'
+                        : 'bg-amber-100 text-amber-800'
+                    }`}
+                  >
+                    {trackingOrder.orderStatus?.replace(/_/g, ' ')}
+                  </span>
+                </div>
               </div>
-              <button onClick={() => setTrackingOrder(null)} className="p-1 text-gray-400 hover:text-gray-600">
+              <button
+                onClick={() => setTrackingOrder(null)}
+                className="p-2 text-slate-400 hover:text-slate-700 rounded-xl hover:bg-slate-100 transition"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {trackingLoading ? (
-              <p className="text-center py-6 text-xs text-gray-500">Querying carrier logistics network...</p>
+              <div className="py-12 text-center space-y-3">
+                <div className="w-10 h-10 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                <p className="text-xs text-slate-500 font-medium">Fetching real-time updates from fulfillment & carrier network...</p>
+              </div>
             ) : trackingData ? (
               <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-3 p-4 bg-gray-50 rounded-2xl text-xs">
-                  <div>
-                    <span className="text-gray-400 block font-medium">COURIER PARTNER</span>
-                    <span className="font-bold text-gray-900">{trackingData.courierPartner || 'BlueDart Express'}</span>
+                {/* Milestone Stepper */}
+                {trackingOrder.orderStatus !== 'CANCELLED' ? (
+                  <div className="bg-slate-50/80 p-4 sm:p-5 rounded-2xl border border-slate-100">
+                    <h4 className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-4">Delivery Milestone</h4>
+                    {(() => {
+                      const curStatus = (trackingData.status || trackingOrder.orderStatus || '').toUpperCase();
+                      let currentStep = 0;
+                      if (curStatus === 'DELIVERED') currentStep = 4;
+                      else if (curStatus === 'OUT_FOR_DELIVERY') currentStep = 3;
+                      else if (['SHIPPED', 'DISPATCHED', 'IN_TRANSIT'].includes(curStatus)) currentStep = 2;
+                      else if (['PROCESSING', 'PACKED'].includes(curStatus)) currentStep = 1;
+
+                      const steps = [
+                        { title: 'Confirmed', sub: 'Verified' },
+                        { title: 'Packed', sub: 'Warehouse' },
+                        { title: 'Shipped', sub: 'In Transit' },
+                        { title: 'Out For Delivery', sub: 'Nearby' },
+                        { title: 'Delivered', sub: 'Received' },
+                      ];
+
+                      return (
+                        <div className="relative flex items-center justify-between">
+                          {/* Connecting Bar */}
+                          <div className="absolute left-3 right-3 top-4 h-1 bg-slate-200 -z-0">
+                            <div
+                              className="h-full bg-blue-600 transition-all duration-500 rounded-full"
+                              style={{ width: `${(currentStep / (steps.length - 1)) * 100}%` }}
+                            ></div>
+                          </div>
+
+                          {steps.map((st, idx) => {
+                            const isDone = idx <= currentStep;
+                            const isCurrent = idx === currentStep;
+
+                            return (
+                              <div key={idx} className="relative z-10 flex flex-col items-center text-center">
+                                <div
+                                  className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-300 ${
+                                    isCurrent
+                                      ? 'bg-blue-600 text-white ring-4 ring-blue-100 shadow-md scale-110'
+                                      : isDone
+                                      ? 'bg-blue-600 text-white'
+                                      : 'bg-white border-2 border-slate-300 text-slate-400'
+                                  }`}
+                                >
+                                  {isDone ? <Check className="w-4 h-4 stroke-[3]" /> : idx + 1}
+                                </div>
+                                <span className={`text-[10px] sm:text-xs font-bold mt-2 whitespace-nowrap ${isDone ? 'text-slate-900' : 'text-slate-400'}`}>
+                                  {st.title}
+                                </span>
+                                <span className="text-[9px] text-slate-400 hidden sm:block">{st.sub}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
                   </div>
-                  <div>
-                    <span className="text-gray-400 block font-medium">AWB NUMBER</span>
-                    <span className="font-bold text-gray-900">{trackingData.trackingNumber || 'N/A'}</span>
+                ) : (
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-3 text-red-700">
+                    <XCircle className="w-5 h-5 flex-shrink-0" />
+                    <div>
+                      <p className="font-bold text-xs">Order Cancelled</p>
+                      <p className="text-[11px] text-red-600">This shipment was cancelled. Any refund has been credited to source.</p>
+                    </div>
                   </div>
-                  {trackingData.estimatedDelivery && (
-                    <div className="col-span-2 pt-2 border-t border-gray-200">
-                      <span className="text-gray-400 block font-medium">ESTIMATED ARRIVAL</span>
-                      <span className="font-bold text-emerald-700">{trackingData.estimatedDelivery}</span>
+                )}
+
+                {/* Carrier & AWB Details */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] text-slate-400 block font-bold uppercase tracking-wider">Courier Partner</span>
+                      <span className="font-bold text-sm text-slate-900 flex items-center gap-1.5 mt-0.5">
+                        <Truck className="w-4 h-4 text-blue-600" />
+                        {trackingData.courierPartner || trackingOrder.courierPartner || 'ShopKart Express Network'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] text-slate-400 block font-bold uppercase tracking-wider">Air Waybill (AWB)</span>
+                      <span className="font-mono font-bold text-sm text-slate-900 block mt-0.5">
+                        {trackingData.trackingNumber || trackingOrder.trackingNumber || 'Pending Courier Dispatch'}
+                      </span>
+                    </div>
+                    {(trackingData.trackingNumber || trackingOrder.trackingNumber) && (
+                      <button
+                        onClick={() => {
+                          const awb = trackingData.trackingNumber || trackingOrder.trackingNumber || '';
+                          navigator.clipboard.writeText(awb);
+                          setCopiedAwb(true);
+                          setTimeout(() => setCopiedAwb(false), 2000);
+                          dispatch(showToast({ message: 'AWB copied to clipboard', type: 'info' }));
+                        }}
+                        className="p-2 hover:bg-white rounded-xl text-slate-500 hover:text-blue-600 transition shadow-xs border border-transparent hover:border-slate-200"
+                        title="Copy AWB"
+                      >
+                        {copiedAwb ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                      </button>
+                    )}
+                  </div>
+
+                  {(trackingData.estimatedDelivery || trackingOrder.formattedEstimatedDeliveryDate) && (
+                    <div className="sm:col-span-2 p-3 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center justify-between text-xs">
+                      <span className="text-emerald-800 font-medium flex items-center gap-1.5">
+                        <Clock className="w-4 h-4 text-emerald-600" />
+                        Expected Delivery By:
+                      </span>
+                      <span className="font-black text-emerald-900">
+                        {trackingData.estimatedDelivery || trackingOrder.formattedEstimatedDeliveryDate}
+                      </span>
                     </div>
                   )}
                 </div>
 
-                {/* Tracking Milestones */}
+                {/* Checkpoint Scan Timeline */}
                 <div className="space-y-3">
-                  <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider">Checkpoint Scan History</h4>
-                  {trackingData.events?.length ? (
-                    <div className="space-y-3 border-l-2 border-blue-500 pl-4 ml-2">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                      <Navigation className="w-3.5 h-3.5 text-blue-600" />
+                      <span>Checkpoint Telemetry & Status Log</span>
+                    </h4>
+                    <span className="text-[10px] text-slate-400 font-semibold">
+                      {trackingData.events?.length || 0} scan checkpoints
+                    </span>
+                  </div>
+
+                  {trackingData.events && trackingData.events.length > 0 ? (
+                    <div className="space-y-4 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-blue-200 pl-7">
                       {trackingData.events.map((ev, idx) => (
-                        <div key={idx} className="relative text-xs space-y-0.5">
-                          <div className="w-2.5 h-2.5 rounded-full bg-blue-600 absolute -left-[21px] top-1"></div>
-                          <p className="font-bold text-gray-900">{ev.description || ev.status}</p>
-                          <p className="text-gray-500">{ev.location} &bull; {ev.timestamp}</p>
+                        <div key={idx} className="relative text-xs space-y-1">
+                          <div
+                            className={`w-3 h-3 rounded-full absolute -left-[23px] top-1 border-2 bg-white ${
+                              idx === 0 ? 'border-blue-600 bg-blue-600 ring-4 ring-blue-100' : 'border-slate-400'
+                            }`}
+                          ></div>
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                            <p className="font-bold text-slate-900">{ev.description || ev.status}</p>
+                            <span className="text-[10px] font-semibold text-slate-400 font-mono whitespace-nowrap">
+                              {ev.timestamp}
+                            </span>
+                          </div>
+                          {ev.location && (
+                            <p className="text-[11px] text-slate-500 flex items-center gap-1">
+                              <MapPin className="w-3 h-3 text-slate-400" />
+                              <span>{ev.location}</span>
+                            </p>
+                          )}
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-gray-500 italic">Package has been dispatched and telemetry scans are pending.</p>
+                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center text-xs text-slate-500">
+                      Order has been confirmed and scheduled for logistics pickup. Telemetry scans will populate as carrier processes the shipment.
+                    </div>
                   )}
                 </div>
               </div>
-            ) : null}
+            ) : (
+              <div className="text-center py-6 text-xs text-slate-500">
+                No tracking information is currently available for this order.
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -513,7 +513,7 @@ public class AdminRestController {
     // 8. USER MANAGEMENT & AUDIT LOGS
     // =========================================================================
 
-    @GetMapping("/users")
+    @GetMapping({"/users", "/admins"})
     public ResponseEntity<ApiResponse<List<UserDto>>> getUsers(HttpServletRequest request) {
         getAuthenticatedAdmin(request);
         List<User> admins = authService.getAllAdmins();
@@ -521,6 +521,37 @@ public class AdminRestController {
                 .map(u -> UserDto.fromSession(UserSession.fromUser(u)))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(ApiResponse.ok(dtos));
+    }
+
+    @PostMapping({"/users", "/admins"})
+    public ResponseEntity<ApiResponse<UserDto>> createAdminUser(
+            @Valid @RequestBody RegisterRequest req,
+            HttpServletRequest request
+    ) {
+        UserSession currentAdmin = getAuthenticatedAdmin(request);
+
+        User newAdmin = authService.registerAdmin(
+                req.getEmail().trim().toLowerCase(),
+                req.getPassword(),
+                req.getConfirmPassword(),
+                req.getFirstName().trim(),
+                req.getLastName().trim(),
+                req.getPhone() != null ? req.getPhone().trim() : "",
+                currentAdmin.getUserId()
+        );
+
+        auditLogService.logAction(
+                currentAdmin.getUserId(),
+                "CREATE_ADMIN",
+                "User",
+                newAdmin.getUserId(),
+                null,
+                "Created admin: " + newAdmin.getEmail(),
+                request.getRemoteAddr()
+        );
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.created("Administrator created successfully", UserDto.fromSession(UserSession.fromUser(newAdmin))));
     }
 
     @GetMapping("/audit-logs")

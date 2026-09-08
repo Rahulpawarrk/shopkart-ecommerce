@@ -16,6 +16,8 @@ export interface User {
   phone?: string;
   roles: string[];
   admin: boolean;
+  status?: string;
+  createdAt?: string;
 }
 
 export interface Category {
@@ -183,6 +185,8 @@ export interface Order {
   courierPartner?: string;
   trackingNumber?: string;
   trackingUrl?: string;
+  estimatedDeliveryDate?: string;
+  formattedEstimatedDeliveryDate?: string;
   canCancel: boolean;
   canReturn: boolean;
   createdAt: string;

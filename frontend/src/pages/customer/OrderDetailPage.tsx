@@ -423,7 +423,7 @@ export const OrderDetailPage: React.FC = () => {
                         {ev.location && <p className="text-[11px] text-slate-400">Location: {ev.location}</p>}
                         {ev.timestamp && (
                           <p className="text-[10px] text-slate-400 mt-1">
-                            {new Date(ev.timestamp).toLocaleString('en-IN')}
+                            {isNaN(Date.parse(ev.timestamp)) ? ev.timestamp : new Date(ev.timestamp).toLocaleString('en-IN')}
                           </p>
                         )}
                       </div>

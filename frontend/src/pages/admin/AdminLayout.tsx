@@ -17,6 +17,7 @@ import {
   Menu,
   X,
   ShieldAlert,
+  Users,
 } from 'lucide-react';
 
 export const AdminLayout: React.FC = () => {
@@ -39,6 +40,7 @@ export const AdminLayout: React.FC = () => {
     { label: 'Inventory', to: '/admin/inventory', icon: Boxes },
     { label: 'Coupons', to: '/admin/coupons', icon: Ticket },
     { label: 'Returns', to: '/admin/returns', icon: RotateCcw },
+    { label: 'Admin Users', to: '/admin/admins', icon: Users },
     { label: 'Audit Logs', to: '/admin/audit-logs', icon: ClipboardList },
   ];
 

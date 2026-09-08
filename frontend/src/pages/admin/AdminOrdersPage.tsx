@@ -12,6 +12,9 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
+  Truck,
+  AlertCircle,
+  CheckCircle2,
 } from 'lucide-react';
 
 export const AdminOrdersPage: React.FC = () => {
@@ -29,6 +32,7 @@ export const AdminOrdersPage: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [statusModalOpen, setStatusModalOpen] = useState(false);
   const [statusUpdating, setStatusUpdating] = useState(false);
+  const [modalError, setModalError] = useState<string | null>(null);
 
   const [statusForm, setStatusForm] = useState({
     status: 'PROCESSING',
@@ -75,6 +79,7 @@ export const AdminOrdersPage: React.FC = () => {
 
   const handleOpenStatusModal = (order: Order) => {
     setSelectedOrder(order);
+    setModalError(null);
     setStatusForm({
       status: order.orderStatus,
       courierPartner: order.courierPartner || '',
@@ -87,6 +92,7 @@ export const AdminOrdersPage: React.FC = () => {
   const handleUpdateStatus = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedOrder) return;
+    setModalError(null);
     setStatusUpdating(true);
     try {
       await adminService.updateOrderStatus(selectedOrder.orderId, {
@@ -102,7 +108,9 @@ export const AdminOrdersPage: React.FC = () => {
         adminService.getOrderById(selectedOrder.orderId).then(setSelectedOrder).catch(() => {});
       }
     } catch (err: any) {
-      dispatch(showToast({ message: err.message || 'Failed to update status', type: 'error' }));
+      const msg = err.message || 'Failed to update status';
+      setModalError(msg);
+      dispatch(showToast({ message: msg, type: 'error' }));
     } finally {
       setStatusUpdating(false);
     }
@@ -370,83 +378,150 @@ export const AdminOrdersPage: React.FC = () => {
 
       {/* Update Status Modal */}
       {statusModalOpen && selectedOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative text-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-150">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl relative text-xs border border-slate-200">
             <button
               onClick={() => setStatusModalOpen(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600"
+              className="absolute top-5 right-5 p-1 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
             >
               <X className="w-5 h-5" />
             </button>
 
-            <h3 className="text-base font-bold text-slate-900 mb-1">
-              Fulfillment Status — #{selectedOrder.orderNumber}
-            </h3>
-            <p className="text-slate-500 mb-4">Advance fulfillment state and assign logistics</p>
+            {/* Header */}
+            <div className="flex items-center gap-3.5 mb-5">
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 shadow-xs">
+                <Truck className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-black text-slate-900">
+                    Fulfillment Status
+                  </h3>
+                  <span className="px-2 py-0.5 rounded-md bg-slate-100 font-mono text-[11px] font-bold text-slate-700 border border-slate-200">
+                    #{selectedOrder.orderNumber}
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Current Status: <span className="font-bold text-slate-800">{selectedOrder.orderStatus}</span> &bull; Advance state and update courier
+                </p>
+              </div>
+            </div>
+
+            {/* Inline Error Alert */}
+            {modalError && (
+              <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-2xl text-rose-700 text-xs flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <span className="font-semibold">{modalError}</span>
+              </div>
+            )}
 
             <form onSubmit={handleUpdateStatus} className="space-y-4">
+              {/* Status Transition Selector */}
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">Status Transition *</label>
-                <select
-                  value={statusForm.status}
-                  onChange={(e) => setStatusForm({ ...statusForm, status: e.target.value })}
-                  className="w-full p-2.5 rounded-lg border border-slate-200 bg-white font-bold"
-                >
-                  <option value="CONFIRMED">CONFIRMED</option>
-                  <option value="PROCESSING">PROCESSING</option>
-                  <option value="SHIPPED">SHIPPED</option>
-                  <option value="OUT_FOR_DELIVERY">OUT FOR DELIVERY</option>
-                  <option value="DELIVERED">DELIVERED</option>
-                  <option value="CANCELLED">CANCELLED</option>
-                </select>
+                <label className="font-bold text-slate-700 block mb-1.5">
+                  Target Status Transition *
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {[
+                    { val: 'PROCESSING', label: 'Processing' },
+                    { val: 'SHIPPED', label: 'Shipped / In Transit' },
+                    { val: 'OUT_FOR_DELIVERY', label: 'Out for Delivery' },
+                    { val: 'DELIVERED', label: 'Delivered' },
+                    { val: 'CANCELLED', label: 'Cancelled' },
+                  ].map((s) => (
+                    <button
+                      key={s.val}
+                      type="button"
+                      onClick={() => setStatusForm({ ...statusForm, status: s.val })}
+                      className={`p-2.5 rounded-xl border text-[11px] font-bold text-center transition flex items-center justify-center gap-1.5 ${
+                        statusForm.status === s.val
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                          : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      {statusForm.status === s.val && <CheckCircle2 className="w-3.5 h-3.5" />}
+                      <span>{s.label}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
 
+              {/* Courier Partner Field with Quick Presets */}
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">Courier Partner</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="font-bold text-slate-700">Courier Partner</label>
+                  <span className="text-[10px] text-slate-400 font-medium">Click to prefill:</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5 mb-2">
+                  {['Shiprocket', 'BlueDart', 'Delhivery', 'DTDC', 'India Post', 'Ekart'].map((partner) => (
+                    <button
+                      key={partner}
+                      type="button"
+                      onClick={() => setStatusForm({ ...statusForm, courierPartner: partner })}
+                      className={`px-2 py-0.5 rounded-lg text-[10px] font-bold transition border ${
+                        statusForm.courierPartner.toLowerCase() === partner.toLowerCase()
+                          ? 'bg-primary text-white border-primary'
+                          : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
+                      }`}
+                    >
+                      {partner}
+                    </button>
+                  ))}
+                </div>
                 <input
                   type="text"
-                  placeholder="e.g. BlueDart, Delhivery, DTDC"
+                  placeholder="e.g. Shiprocket, BlueDart, Delhivery"
                   value={statusForm.courierPartner}
                   onChange={(e) => setStatusForm({ ...statusForm, courierPartner: e.target.value })}
-                  className="w-full p-2.5 rounded-lg border border-slate-200"
+                  className="w-full p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-primary font-medium"
                 />
               </div>
 
+              {/* Tracking Number (AWB) */}
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">Tracking Number (AWB)</label>
+                <label className="font-bold text-slate-700 block mb-1">Tracking Number (AWB)</label>
                 <input
                   type="text"
-                  placeholder="AWB12345678"
+                  placeholder="e.g. AWB348848393 or 12345678"
                   value={statusForm.trackingNumber}
                   onChange={(e) => setStatusForm({ ...statusForm, trackingNumber: e.target.value })}
-                  className="w-full p-2.5 rounded-lg border border-slate-200 font-mono"
+                  className="w-full p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-primary font-mono text-xs font-semibold uppercase tracking-wider"
                 />
               </div>
 
+              {/* Internal Remarks */}
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">Internal Notes</label>
+                <label className="font-bold text-slate-700 block mb-1">Fulfillment Remarks / Notes</label>
                 <textarea
-                  placeholder="Optional fulfillment remarks..."
+                  placeholder="Optional fulfillment remarks (e.g. Packed in box 2, handed over to courier)..."
                   value={statusForm.notes}
                   onChange={(e) => setStatusForm({ ...statusForm, notes: e.target.value })}
-                  className="w-full p-2.5 rounded-lg border border-slate-200 min-h-[60px]"
+                  className="w-full p-2.5 rounded-xl border border-slate-200 focus:outline-none focus:border-primary min-h-[65px] font-medium resize-none"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-4 border-t border-slate-100">
+              {/* Actions */}
+              <div className="flex justify-end gap-2.5 pt-4 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setStatusModalOpen(false)}
-                  className="px-4 py-2 font-semibold text-slate-600 hover:bg-slate-100 rounded-lg"
+                  className="px-4 py-2.5 font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={statusUpdating}
-                  className="px-5 py-2 font-bold text-white bg-primary hover:bg-primary/90 rounded-lg shadow disabled:opacity-50"
+                  className="px-6 py-2.5 font-bold text-white bg-primary hover:bg-primary/90 rounded-xl shadow-md transition disabled:opacity-50 flex items-center gap-2"
                 >
-                  {statusUpdating ? 'Updating...' : 'Save Status'}
+                  {statusUpdating ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Saving Status...</span>
+                    </>
+                  ) : (
+                    <span>Save Status</span>
+                  )}
                 </button>
               </div>
             </form>

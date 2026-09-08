@@ -82,11 +82,11 @@ export const Navbar: React.FC = () => {
             <span>⚡ Free Express Delivery on orders above ₹499 across India</span>
           </div>
           <div className="hidden sm:flex items-center gap-4 text-blue-200">
-            <span className="flex items-center gap-1">
-              <Zap className="w-3 h-3 text-amber-300" /> Use Code: <b className="text-white font-bold tracking-wider">WELCOME10</b> (10% OFF)
+            <span className="flex items-center gap-1.5 text-blue-100 font-medium">
+              <span>📞 24x7 Customer Support: 1800-SHOPKART</span>
             </span>
             <span className="text-white/40">|</span>
-            <span className="text-blue-100">24x7 Customer Support</span>
+            <span className="text-blue-100">100% Genuine & Verified Products</span>
           </div>
         </div>
       </div>

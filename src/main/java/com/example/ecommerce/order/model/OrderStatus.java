@@ -54,14 +54,14 @@ public enum OrderStatus {
         switch (this) {
             case PENDING:
             case CONFIRMED:
-                return target == PROCESSING || target == CANCELLED;
+                return target == PROCESSING || target == DISPATCHED || target == SHIPPED || target == IN_TRANSIT || target == CANCELLED;
             case PROCESSING:
-                return target == DISPATCHED || target == CANCELLED;
+                return target == DISPATCHED || target == SHIPPED || target == IN_TRANSIT || target == CANCELLED;
             case DISPATCHED:
-                return target == IN_TRANSIT || target == SHIPPED || target == CANCELLED;
+                return target == IN_TRANSIT || target == SHIPPED || target == OUT_FOR_DELIVERY || target == DELIVERED || target == CANCELLED;
             case IN_TRANSIT:
             case SHIPPED:
-                return target == OUT_FOR_DELIVERY || target == CANCELLED;
+                return target == OUT_FOR_DELIVERY || target == DELIVERED || target == CANCELLED;
             case OUT_FOR_DELIVERY:
                 return target == DELIVERED || target == CANCELLED;
             case DELIVERED:

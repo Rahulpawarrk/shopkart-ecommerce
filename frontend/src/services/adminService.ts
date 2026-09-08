@@ -151,6 +151,23 @@ export const adminService = {
     return res.data.data!;
   },
 
+  async getAdmins(): Promise<User[]> {
+    const res = await api.get<ApiResponse<User[]>>('/admin/admins');
+    return res.data.data!;
+  },
+
+  async createAdmin(data: {
+    email: string;
+    password: string;
+    confirmPassword: string;
+    firstName: string;
+    lastName: string;
+    phone: string;
+  }): Promise<User> {
+    const res = await api.post<ApiResponse<User>>('/admin/admins', data);
+    return res.data.data!;
+  },
+
   async getAuditLogs(limit = 50): Promise<AuditLog[]> {
     const res = await api.get<ApiResponse<AuditLog[]>>('/admin/audit-logs', { params: { limit } });
     return res.data.data!;
