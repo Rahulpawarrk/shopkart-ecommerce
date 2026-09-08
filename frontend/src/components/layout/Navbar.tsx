@@ -39,16 +39,20 @@ export const Navbar: React.FC = () => {
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const categoryMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     productService.getCategories().then(setCategories).catch(() => {});
   }, []);
 
-  // Close dropdown on click outside
+  // Close dropdowns on click outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (dropdownRef.current && !dropdownRef.current.contains(target)) {
         setUserDropdownOpen(false);
+      }
+      if (categoryMenuRef.current && !categoryMenuRef.current.contains(target)) {
         setCategoryMenuOpen(false);
       }
     }
@@ -182,17 +186,12 @@ export const Navbar: React.FC = () => {
                 <div>
                   <button
                     onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                    className="flex items-center gap-2 p-1.5 pr-3 rounded-2xl hover:bg-slate-800 transition text-xs font-bold text-white border border-slate-700/80 bg-slate-800/50 cursor-pointer"
+                    className="flex items-center gap-2 py-1 px-2.5 rounded-xl hover:bg-slate-800 transition text-xs font-bold text-white border border-slate-700/80 bg-slate-800/50 cursor-pointer"
                   >
-                    <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-black shadow-xs">
+                    <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center text-[11px] font-black shadow-xs">
                       {user.firstName ? user.firstName.charAt(0).toUpperCase() : 'U'}
                     </div>
-                    <div className="hidden lg:flex flex-col text-left">
-                      <span className="text-white leading-tight truncate max-w-[100px]">{user.firstName}</span>
-                      <span className="text-[10px] text-slate-400 font-normal">
-                        {user.admin ? 'Administrator' : 'Customer'}
-                      </span>
-                    </div>
+                    <span className="hidden lg:inline text-white leading-tight truncate max-w-[100px] font-bold text-xs">{user.firstName}</span>
                     <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
                   </button>
 
@@ -285,14 +284,14 @@ export const Navbar: React.FC = () => {
 
         {/* Secondary Category Navigation Bar */}
         <div className="hidden lg:flex items-center gap-8 py-2.5 border-t border-slate-800/80 text-xs font-bold text-slate-300">
-          <div className="relative">
+          <div className="relative" ref={categoryMenuRef}>
             <button
               onClick={() => setCategoryMenuOpen(!categoryMenuOpen)}
               className="flex items-center gap-2 font-black text-white hover:text-blue-400 transition cursor-pointer"
             >
               <Layers className="w-4 h-4 text-blue-400" />
               <span>All Categories</span>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${categoryMenuOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {categoryMenuOpen && (

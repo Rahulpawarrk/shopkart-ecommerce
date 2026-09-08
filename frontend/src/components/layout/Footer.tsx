@@ -141,12 +141,8 @@ export const Footer: React.FC = () => {
       </div>
 
       {/* Copyright */}
-      <div className="border-t border-slate-800 py-6 text-center text-xs text-gray-500 flex flex-col sm:flex-row items-center justify-center gap-2">
+      <div className="border-t border-slate-800 py-6 text-center text-xs text-gray-500 flex items-center justify-center">
         <p>&copy; {new Date().getFullYear()} ShopKart E-Commerce Pvt. Ltd. All rights reserved.</p>
-        <span className="hidden sm:inline">&bull;</span>
-        <p className="flex items-center justify-center gap-1">
-          Crafted with <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500" /> for modern digital shoppers in India
-        </p>
       </div>
     </footer>
   );

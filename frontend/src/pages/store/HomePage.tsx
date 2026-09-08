@@ -82,39 +82,39 @@ export const HomePage: React.FC = () => {
   const newArrivals = showcase?.newArrivals || [];
 
   return (
-    <div className="space-y-14 pb-16">
-      {/* Hero Banner with Modern Gradient & Glassmorphism */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 text-white py-16 md:py-24 px-4 sm:px-6 lg:px-8">
+    <div className="space-y-8 pb-12">
+      {/* Hero Banner with Modern Gradient & Glassmorphism (Vertically Compact) */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 text-white py-8 md:py-12 px-4 sm:px-6 lg:px-8">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(37,99,235,0.25),transparent_60%)] pointer-events-none" />
-        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="max-w-7xl mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        <div className="max-w-7xl mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           {/* Left Column: Headline & Action Buttons */}
-          <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-semibold shadow-inner">
-              <Sparkles className="w-4 h-4 text-blue-400 animate-pulse" />
-              <span>India's Mega Electronics & Lifestyle Carnival</span>
+          <div className="lg:col-span-7 space-y-3.5 text-center lg:text-left">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-[11px] font-semibold shadow-inner">
+              <Sparkles className="w-3.5 h-3.5 text-blue-400 animate-pulse" />
+              <span>India's Mega Electronics &amp; Lifestyle Carnival</span>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1] text-white">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-[1.15] text-white">
               Elevate Your World With <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-300">Next-Gen Tech</span>
             </h1>
 
-            <p className="text-gray-300 text-base sm:text-lg max-w-xl mx-auto lg:mx-0 leading-relaxed font-normal">
+            <p className="text-gray-300 text-xs sm:text-sm max-w-xl mx-auto lg:mx-0 leading-relaxed font-normal">
               Discover verified premium gadgets, trendy fashion, and daily essentials with up to 60% instant price drops, 0% EMI, and lightning-fast nationwide delivery.
             </p>
 
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 pt-1">
               <Link
                 to="/products"
-                className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl shadow-xl shadow-blue-600/30 transition transform hover:-translate-y-0.5 flex items-center gap-2 text-sm"
+                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-600/30 transition transform hover:-translate-y-0.5 flex items-center gap-2 text-xs sm:text-sm"
               >
                 <span>Explore Catalog</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
                 to="/products?sort=deals"
-                className="px-8 py-4 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold rounded-2xl transition backdrop-blur-md text-sm flex items-center gap-2"
+                className="px-6 py-2.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold rounded-xl transition backdrop-blur-md text-xs sm:text-sm flex items-center gap-2"
               >
                 <Zap className="w-4 h-4 text-amber-400" />
                 <span>Today's Flash Deals</span>
@@ -122,17 +122,17 @@ export const HomePage: React.FC = () => {
             </div>
 
             {/* Micro Highlights */}
-            <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-xs text-gray-300">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+            <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-5 text-[11px] text-gray-300">
+              <div className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                 <span>100% Original Products</span>
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <div className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                 <span>Razorpay Secured</span>
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <div className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                 <span>7-Day Easy Returns</span>
               </div>
             </div>
@@ -140,13 +140,13 @@ export const HomePage: React.FC = () => {
 
           {/* Right Column: Hero Visual Card with Deal Showcase */}
           <div className="lg:col-span-5 flex justify-center">
-            <div className="w-full max-w-md bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20 shadow-2xl space-y-5">
+            <div className="w-full max-w-sm bg-white/10 backdrop-blur-xl rounded-2xl p-4 border border-white/20 shadow-2xl space-y-3.5">
               <div className="flex items-center justify-between text-xs font-bold">
                 <span className="flex items-center gap-1.5 text-amber-300">
-                  <Zap className="w-4 h-4 fill-amber-300" />
-                  <span>FLASH SALE ENDS IN</span>
+                  <Zap className="w-3.5 h-3.5 fill-amber-300" />
+                  <span className="text-[11px]">FLASH SALE ENDS IN</span>
                 </span>
-                <div className="flex items-center gap-1 font-mono bg-black/40 px-2.5 py-1 rounded-lg text-white border border-white/10 text-xs">
+                <div className="flex items-center gap-1 font-mono bg-black/40 px-2 py-0.5 rounded-lg text-white border border-white/10 text-[11px]">
                   <span>{String(timeLeft.hours).padStart(2, '0')}h</span>:
                   <span>{String(timeLeft.minutes).padStart(2, '0')}m</span>:
                   <span className="text-amber-400">{String(timeLeft.seconds).padStart(2, '0')}s</span>
@@ -154,35 +154,35 @@ export const HomePage: React.FC = () => {
               </div>
 
               {/* Product Teaser Visual */}
-              <div className="relative aspect-video rounded-2xl overflow-hidden bg-gradient-to-tr from-blue-700 via-indigo-600 to-purple-700 p-6 flex flex-col justify-end shadow-inner">
-                <div className="absolute top-3 right-3 bg-red-500 text-white text-[11px] font-black px-2.5 py-0.5 rounded-full shadow">
+              <div className="relative aspect-[16/8] rounded-xl overflow-hidden bg-gradient-to-tr from-blue-700 via-indigo-600 to-purple-700 p-4 flex flex-col justify-end shadow-inner">
+                <div className="absolute top-2.5 right-2.5 bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow">
                   UP TO 60% OFF
                 </div>
                 <div className="relative z-10">
-                  <span className="text-xs font-bold text-blue-200 tracking-wider uppercase">Hot Pick</span>
-                  <h3 className="text-2xl font-black text-white leading-tight">Pro Wireless Noise-Cancelling Headphones</h3>
-                  <div className="flex items-baseline gap-2 mt-1">
-                    <span className="text-xl font-extrabold text-white">₹2,499</span>
-                    <span className="text-xs text-blue-200 line-through">₹4,999</span>
+                  <span className="text-[10px] font-bold text-blue-200 tracking-wider uppercase">Hot Pick</span>
+                  <h3 className="text-lg font-black text-white leading-snug">Pro Wireless Noise-Cancelling Headphones</h3>
+                  <div className="flex items-baseline gap-2 mt-0.5">
+                    <span className="text-base font-extrabold text-white">₹2,499</span>
+                    <span className="text-[11px] text-blue-200 line-through">₹4,999</span>
                   </div>
                 </div>
               </div>
 
               {/* Trust Metric Badges */}
-              <div className="grid grid-cols-2 gap-3 text-center">
-                <div className="bg-white/5 rounded-xl p-3 border border-white/10">
-                  <span className="block font-black text-lg text-white">4.9 / 5.0</span>
-                  <span className="text-[11px] text-gray-300">Over 50K+ Happy Shoppers</span>
+              <div className="grid grid-cols-2 gap-2 text-center">
+                <div className="bg-white/5 rounded-xl p-2 border border-white/10">
+                  <span className="block font-black text-base text-white">4.9 / 5.0</span>
+                  <span className="text-[10px] text-gray-300">50K+ Happy Shoppers</span>
                 </div>
-                <div className="bg-white/5 rounded-xl p-3 border border-white/10">
-                  <span className="block font-black text-lg text-emerald-400">Zero Cost</span>
-                  <span className="text-[11px] text-gray-300">Free Express Delivery</span>
+                <div className="bg-white/5 rounded-xl p-2 border border-white/10">
+                  <span className="block font-black text-base text-emerald-400">Zero Cost</span>
+                  <span className="text-[10px] text-gray-300">Free Express Delivery</span>
                 </div>
               </div>
 
               <Link
                 to="/products"
-                className="w-full py-3 bg-white text-gray-900 font-bold text-xs rounded-xl hover:bg-gray-100 transition flex items-center justify-center gap-2 shadow"
+                className="w-full py-2 bg-white text-gray-900 font-bold text-xs rounded-xl hover:bg-gray-100 transition flex items-center justify-center gap-1.5 shadow"
               >
                 <span>Browse Exclusive Collections</span>
                 <ArrowRight className="w-3.5 h-3.5" />
