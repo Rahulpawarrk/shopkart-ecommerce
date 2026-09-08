@@ -110,15 +110,18 @@ export interface Cart {
 
 export interface WishlistItem {
   wishlistItemId: number;
+  wishlistId?: number;
   productId: number;
   productName: string;
   productSlug: string;
   brand?: string;
-  primaryImageUrl: string;
+  sku?: string;
+  primaryImageUrl?: string;
   unitPrice: number;
   discountPercentage: number;
   effectivePrice: number;
   inStock: boolean;
+  addedAt?: string;
 }
 
 export interface Wishlist {

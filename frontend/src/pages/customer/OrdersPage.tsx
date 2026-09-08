@@ -205,9 +205,12 @@ export const OrdersPage: React.FC = () => {
                   {order.items.map((item) => (
                     <div key={item.orderItemId} className="flex items-center gap-4">
                       <img
-                        src={item.primaryImageUrl || '/assets/images/products/placeholder.png'}
+                        src={item.primaryImageUrl || '/placeholder.svg'}
                         alt={item.productName}
                         className="w-16 h-16 object-contain rounded-xl border p-1 bg-gray-50"
+                        onError={(e) => {
+                          (e.target as HTMLElement).setAttribute('src', '/placeholder.svg');
+                        }}
                       />
                       <div>
                         <Link

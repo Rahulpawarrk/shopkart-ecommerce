@@ -93,11 +93,11 @@ export const CartPage: React.FC = () => {
               className="p-4 sm:p-6 bg-white rounded-2xl border border-gray-200 shadow-xs flex flex-col sm:flex-row items-center gap-4 sm:gap-6"
             >
               <img
-                src={item.primaryImageUrl || '/assets/images/products/placeholder.png'}
+                src={item.primaryImageUrl || '/placeholder.svg'}
                 alt={item.productName}
                 className="w-24 h-24 object-contain rounded-xl bg-gray-50 p-2 border border-gray-100 flex-shrink-0"
                 onError={(e) => {
-                  (e.target as HTMLElement).setAttribute('src', '/assets/images/products/placeholder.png');
+                  (e.target as HTMLElement).setAttribute('src', '/placeholder.svg');
                 }}
               />
 

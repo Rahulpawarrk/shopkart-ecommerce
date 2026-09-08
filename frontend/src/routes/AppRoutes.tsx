@@ -126,23 +126,39 @@ export const AppRoutes: React.FC = () => {
         <Route path="/products/:id" element={<ProductDetailPage />} />
         <Route path="/cart" element={<CartPage />} />
 
-        {/* Authentication */}
+        {/* Authentication Routes & Aliases */}
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/auth/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/auth/register" element={<RegisterPage />} />
+        <Route path="/signup" element={<RegisterPage />} />
+        <Route path="/auth/signup" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-        {/* Customer Protected Routes */}
+        {/* Wishlist (Accessible to all with guest support) */}
+        <Route path="/wishlist" element={<WishlistPage />} />
+        <Route path="/customer/wishlist" element={<WishlistPage />} />
+
+        {/* Customer Protected Checkout & Direct Buy Routes */}
         <Route
-          path="/wishlist"
+          path="/checkout"
           element={
             <ProtectedRoute>
-              <WishlistPage />
+              <CheckoutPage />
             </ProtectedRoute>
           }
         />
         <Route
-          path="/checkout"
+          path="/buy"
+          element={
+            <ProtectedRoute>
+              <CheckoutPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/buy-now"
           element={
             <ProtectedRoute>
               <CheckoutPage />
@@ -157,8 +173,18 @@ export const AppRoutes: React.FC = () => {
             </ProtectedRoute>
           }
         />
+
+        {/* Customer Orders & Order Details */}
         <Route
           path="/orders"
+          element={
+            <ProtectedRoute>
+              <OrdersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/customer/orders"
           element={
             <ProtectedRoute>
               <OrdersPage />
@@ -174,6 +200,14 @@ export const AppRoutes: React.FC = () => {
           }
         />
         <Route
+          path="/customer/orders/:id"
+          element={
+            <ProtectedRoute>
+              <OrderDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/orders/:id/track"
           element={
             <ProtectedRoute>
@@ -181,6 +215,16 @@ export const AppRoutes: React.FC = () => {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/customer/orders/:id/track"
+          element={
+            <ProtectedRoute>
+              <TrackOrderPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Customer Profile & Address Book */}
         <Route
           path="/profile"
           element={
@@ -190,7 +234,23 @@ export const AppRoutes: React.FC = () => {
           }
         />
         <Route
+          path="/customer/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/addresses"
+          element={
+            <ProtectedRoute>
+              <AddressBookPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/customer/addresses"
           element={
             <ProtectedRoute>
               <AddressBookPage />

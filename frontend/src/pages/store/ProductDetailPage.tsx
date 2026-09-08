@@ -55,7 +55,7 @@ export const ProductDetailPage: React.FC = () => {
       .getProduct(slugOrId)
       .then((p) => {
         setProduct(p);
-        setSelectedImage(p.primaryImageUrl || '/assets/images/products/placeholder.png');
+        setSelectedImage(p.primaryImageUrl || '/placeholder.svg');
         return productService.getProductReviews(p.productId);
       })
       .then((revData) => {
@@ -81,13 +81,31 @@ export const ProductDetailPage: React.FC = () => {
 
   const handleBuyNow = () => {
     if (!product || !product.inStock) return;
+    const checkoutUrl = `/checkout?buyNowProductId=${product.productId}&quantity=${quantity}`;
     if (!isAuthenticated) {
       dispatch(showToast({ message: 'Please login to checkout directly', type: 'info' }));
-      navigate(`/auth/login?redirect=/products/${slugOrId}`);
+      navigate(`/login?redirect=${encodeURIComponent(checkoutUrl)}`);
       return;
     }
     // Navigate to checkout with direct buy query params
-    navigate(`/checkout?buyNowProductId=${product.productId}&quantity=${quantity}`);
+    navigate(checkoutUrl);
+  };
+
+  const handleToggleWishlist = async () => {
+    if (!product) return;
+    try {
+      await dispatch(toggleWishlist(product)).unwrap();
+      dispatch(
+        showToast({
+          message: isInWishlist
+            ? `Removed ${product.productName} from wishlist`
+            : `Added ${product.productName} to wishlist!`,
+          type: isInWishlist ? 'info' : 'success',
+        })
+      );
+    } catch {
+      dispatch(showToast({ message: 'Failed to update wishlist', type: 'error' }));
+    }
   };
 
   const handleCheckPincode = (e: React.FormEvent) => {
@@ -191,7 +209,7 @@ export const ProductDetailPage: React.FC = () => {
               alt={product.productName}
               className="max-h-full max-w-full object-contain transition-transform duration-300 hover:scale-105"
               onError={(e) => {
-                (e.target as HTMLElement).setAttribute('src', '/assets/images/products/placeholder.png');
+                (e.target as HTMLElement).setAttribute('src', '/placeholder.svg');
               }}
             />
             {product.discountPercentage > 0 && (
@@ -315,7 +333,7 @@ export const ProductDetailPage: React.FC = () => {
               </button>
 
               <button
-                onClick={() => dispatch(toggleWishlist(product.productId))}
+                onClick={handleToggleWishlist}
                 className={`p-3.5 rounded-xl border transition shadow-xs flex items-center justify-center ${
                   isInWishlist
                     ? 'border-red-200 bg-red-50 text-red-600'

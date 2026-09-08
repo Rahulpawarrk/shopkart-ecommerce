@@ -3,11 +3,30 @@ import { Link } from 'react-router-dom';
 import { productService } from '@/services/productService';
 import { ProductCard } from '@/components/product/ProductCard';
 import type { HomeShowcase } from '@/types';
-import { Sparkles, ArrowRight, Zap, TrendingUp, Layers } from 'lucide-react';
+import {
+  Sparkles,
+  ArrowRight,
+  Zap,
+  TrendingUp,
+  Layers,
+  Clock,
+  ShieldCheck,
+  Truck,
+  RotateCcw,
+  Award,
+  Gift,
+  CheckCircle2,
+  Mail,
+} from 'lucide-react';
 
 export const HomePage: React.FC = () => {
   const [showcase, setShowcase] = useState<HomeShowcase | null>(null);
   const [loading, setLoading] = useState(true);
+  const [emailInput, setEmailInput] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
+
+  // Dynamic Flash Deal Countdown Timer (ticks to midnight)
+  const [timeLeft, setTimeLeft] = useState({ hours: 7, minutes: 42, seconds: 19 });
 
   useEffect(() => {
     productService
@@ -15,7 +34,26 @@ export const HomePage: React.FC = () => {
       .then(setShowcase)
       .catch(() => {})
       .finally(() => setLoading(false));
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
+        if (prev.minutes > 0) return { ...prev, minutes: 59, seconds: 59 };
+        if (prev.hours > 0) return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
+        return { hours: 11, minutes: 59, seconds: 59 };
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
   }, []);
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (emailInput.trim()) {
+      setSubscribed(true);
+      setEmailInput('');
+    }
+  };
 
   if (loading) {
     return (
@@ -37,61 +75,155 @@ export const HomePage: React.FC = () => {
 
   return (
     <div className="space-y-14 pb-16">
-      {/* Hero Banner */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 text-white py-16 md:py-24 px-4 sm:px-6 lg:px-8">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(59,130,246,0.2),transparent_70%)] pointer-events-none" />
-        <div className="max-w-7xl mx-auto relative z-10 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-          <div className="space-y-6 text-center md:text-left">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-semibold">
-              <Sparkles className="w-4 h-4 text-blue-400" />
-              <span>India's Mega Electronic & Fashion Carnival</span>
+      {/* Hero Banner with Modern Gradient & Glassmorphism */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 text-white py-16 md:py-24 px-4 sm:px-6 lg:px-8">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(37,99,235,0.25),transparent_60%)] pointer-events-none" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          {/* Left Column: Headline & Action Buttons */}
+          <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-semibold shadow-inner">
+              <Sparkles className="w-4 h-4 text-blue-400 animate-pulse" />
+              <span>India's Mega Electronics & Lifestyle Carnival</span>
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight">
-              Upgrade Your Tech & Style Today.
+
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1] text-white">
+              Elevate Your World With <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-300">Next-Gen Tech</span>
             </h1>
-            <p className="text-gray-300 text-sm sm:text-base max-w-lg leading-relaxed">
-              Explore thousands of handpicked top-rated products with up to 60% instant discounts, genuine brand warranties, and lightning-fast delivery.
+
+            <p className="text-gray-300 text-base sm:text-lg max-w-xl mx-auto lg:mx-0 leading-relaxed font-normal">
+              Discover verified premium gadgets, trendy fashion, and daily essentials with up to 60% instant price drops, 0% EMI, and lightning-fast nationwide delivery.
             </p>
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 pt-2">
+
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-2">
               <Link
                 to="/products"
-                className="px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-full shadow-lg shadow-blue-600/30 transition duration-200 flex items-center gap-2 text-sm"
+                className="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl shadow-xl shadow-blue-600/30 transition transform hover:-translate-y-0.5 flex items-center gap-2 text-sm"
               >
-                <span>Shop Catalog</span>
+                <span>Explore Catalog</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
                 to="/products?sort=deals"
-                className="px-8 py-3.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold rounded-full transition duration-200 text-sm backdrop-blur-xs"
+                className="px-8 py-4 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold rounded-2xl transition backdrop-blur-md text-sm flex items-center gap-2"
               >
-                View Top Deals
+                <Zap className="w-4 h-4 text-amber-400" />
+                <span>Today's Flash Deals</span>
               </Link>
+            </div>
+
+            {/* Micro Highlights */}
+            <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-xs text-gray-300">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <span>100% Original Products</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <span>Razorpay Secured</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <span>7-Day Easy Returns</span>
+              </div>
             </div>
           </div>
 
-          {/* Hero Visual Card */}
-          <div className="relative flex justify-center">
-            <div className="w-full max-w-md bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/20 shadow-2xl space-y-4">
-              <div className="flex items-center justify-between text-xs font-bold text-blue-300">
-                <span>LIMITED TIME OFFER</span>
-                <span className="bg-red-500 text-white px-2 py-0.5 rounded-full">UP TO 50% OFF</span>
-              </div>
-              <div className="aspect-video bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-2xl flex items-center justify-center p-6 text-center">
-                <div>
-                  <h3 className="text-2xl font-black text-white">Smart Electronics Hub</h3>
-                  <p className="text-xs text-blue-100 mt-1">Noise Cancelling Audio, Laptops, Wearables</p>
+          {/* Right Column: Hero Visual Card with Deal Showcase */}
+          <div className="lg:col-span-5 flex justify-center">
+            <div className="w-full max-w-md bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20 shadow-2xl space-y-5">
+              <div className="flex items-center justify-between text-xs font-bold">
+                <span className="flex items-center gap-1.5 text-amber-300">
+                  <Zap className="w-4 h-4 fill-amber-300" />
+                  <span>FLASH SALE ENDS IN</span>
+                </span>
+                <div className="flex items-center gap-1 font-mono bg-black/40 px-2.5 py-1 rounded-lg text-white border border-white/10 text-xs">
+                  <span>{String(timeLeft.hours).padStart(2, '0')}h</span>:
+                  <span>{String(timeLeft.minutes).padStart(2, '0')}m</span>:
+                  <span className="text-amber-400">{String(timeLeft.seconds).padStart(2, '0')}s</span>
                 </div>
               </div>
+
+              {/* Product Teaser Visual */}
+              <div className="relative aspect-video rounded-2xl overflow-hidden bg-gradient-to-tr from-blue-700 via-indigo-600 to-purple-700 p-6 flex flex-col justify-end shadow-inner">
+                <div className="absolute top-3 right-3 bg-red-500 text-white text-[11px] font-black px-2.5 py-0.5 rounded-full shadow">
+                  UP TO 60% OFF
+                </div>
+                <div className="relative z-10">
+                  <span className="text-xs font-bold text-blue-200 tracking-wider uppercase">Hot Pick</span>
+                  <h3 className="text-2xl font-black text-white leading-tight">Pro Wireless Noise-Cancelling Headphones</h3>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <span className="text-xl font-extrabold text-white">₹2,499</span>
+                    <span className="text-xs text-blue-200 line-through">₹4,999</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Trust Metric Badges */}
               <div className="grid grid-cols-2 gap-3 text-center">
                 <div className="bg-white/5 rounded-xl p-3 border border-white/10">
-                  <span className="block font-black text-lg text-white">100%</span>
-                  <span className="text-[11px] text-gray-300">Genuine Guarantee</span>
+                  <span className="block font-black text-lg text-white">4.9 / 5.0</span>
+                  <span className="text-[11px] text-gray-300">Over 50K+ Happy Shoppers</span>
                 </div>
                 <div className="bg-white/5 rounded-xl p-3 border border-white/10">
-                  <span className="block font-black text-lg text-white">Razorpay</span>
-                  <span className="text-[11px] text-gray-300">Safe Instant Payments</span>
+                  <span className="block font-black text-lg text-emerald-400">Zero Cost</span>
+                  <span className="text-[11px] text-gray-300">Free Express Delivery</span>
                 </div>
               </div>
+
+              <Link
+                to="/products"
+                className="w-full py-3 bg-white text-gray-900 font-bold text-xs rounded-xl hover:bg-gray-100 transition flex items-center justify-center gap-2 shadow"
+              >
+                <span>Browse Exclusive Collections</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Value Pillars Strip */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+          <div className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 hover:shadow-md transition">
+            <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
+              <Truck className="w-6 h-6" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-gray-900">Free Nationwide Delivery</h4>
+              <p className="text-xs text-gray-500">Orders above ₹499 qualify</p>
+            </div>
+          </div>
+
+          <div className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 hover:shadow-md transition">
+            <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-gray-900">100% Genuine Guaranteed</h4>
+              <p className="text-xs text-gray-500">Authorized brand partners</p>
+            </div>
+          </div>
+
+          <div className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 hover:shadow-md transition">
+            <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center flex-shrink-0">
+              <RotateCcw className="w-6 h-6" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-gray-900">7-Day Free Replacement</h4>
+              <p className="text-xs text-gray-500">No-questions-asked pickups</p>
+            </div>
+          </div>
+
+          <div className="p-5 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4 hover:shadow-md transition">
+            <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
+              <Award className="w-6 h-6" />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-gray-900">Razorpay Verified</h4>
+              <p className="text-xs text-gray-500">256-bit encrypted checkout</p>
             </div>
           </div>
         </div>
@@ -102,29 +234,47 @@ export const HomePage: React.FC = () => {
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
-              <Layers className="w-5 h-5 text-blue-600" />
-              <h2 className="text-xl font-bold text-gray-900">Explore by Category</h2>
+              <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+                <Layers className="w-4 h-4" />
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black text-gray-900">Shop by Category</h2>
             </div>
             <Link to="/products" className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
-              All Categories <ArrowRight className="w-3.5 h-3.5" />
+              <span>View All Categories</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
-            {categories.map((cat) => (
-              <Link
-                key={cat.categoryId}
-                to={`/products?categorySlug=${cat.slug}`}
-                className="group flex flex-col items-center text-center p-4 bg-white rounded-2xl border border-gray-200 hover:border-blue-500 hover:shadow-md transition duration-200"
-              >
-                <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xl mb-3 group-hover:bg-blue-600 group-hover:text-white transition duration-200">
-                  {cat.categoryName.charAt(0).toUpperCase()}
-                </div>
-                <span className="text-xs font-bold text-gray-800 group-hover:text-blue-600 transition line-clamp-1">
-                  {cat.categoryName}
-                </span>
-              </Link>
-            ))}
+            {categories.map((cat, idx) => {
+              const bgColors = [
+                'bg-blue-50 text-blue-600 group-hover:bg-blue-600',
+                'bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600',
+                'bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600',
+                'bg-rose-50 text-rose-600 group-hover:bg-rose-600',
+                'bg-amber-50 text-amber-600 group-hover:bg-amber-600',
+                'bg-purple-50 text-purple-600 group-hover:bg-purple-600',
+              ];
+              const colorClass = bgColors[idx % bgColors.length];
+
+              return (
+                <Link
+                  key={cat.categoryId}
+                  to={`/products?categorySlug=${cat.slug}`}
+                  className="group flex flex-col items-center text-center p-5 bg-white rounded-2xl border border-gray-100 shadow-xs hover:border-blue-500 hover:shadow-md transition duration-200"
+                >
+                  <div
+                    className={`w-16 h-16 rounded-2xl ${colorClass} group-hover:text-white flex items-center justify-center font-black text-2xl mb-3 shadow-inner transition duration-200`}
+                  >
+                    {cat.categoryName.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="text-xs font-bold text-gray-800 group-hover:text-blue-600 transition line-clamp-1">
+                    {cat.categoryName}
+                  </span>
+                  <span className="text-[10px] text-gray-400 mt-0.5">Explore &rarr;</span>
+                </Link>
+              );
+            })}
           </div>
         </section>
       )}
@@ -132,22 +282,36 @@ export const HomePage: React.FC = () => {
       {/* Deals of the Day */}
       {deals.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-gradient-to-r from-red-500 via-rose-600 to-pink-600 rounded-3xl p-6 md:p-8 text-white mb-8 shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-white text-red-600 flex items-center justify-center shadow-md">
-                <Zap className="w-6 h-6 fill-red-600" />
+          <div className="bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 rounded-3xl p-6 md:p-8 text-white mb-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-white text-red-600 flex items-center justify-center shadow-md flex-shrink-0">
+                <Zap className="w-7 h-7 fill-red-600 animate-bounce" />
               </div>
               <div>
-                <h2 className="text-2xl font-black">Deals of the Day</h2>
-                <p className="text-xs text-red-100">Handpicked bargains with the highest verified price drops</p>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-2xl sm:text-3xl font-black tracking-tight">Deals of the Day</h2>
+                  <span className="px-2.5 py-0.5 bg-yellow-400 text-gray-950 font-black text-[10px] rounded-full uppercase tracking-wider">
+                    Limited Stock
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-red-100 mt-1">
+                  Handpicked bargains with the highest verified price drops and free delivery
+                </p>
               </div>
             </div>
-            <Link
-              to="/products?sort=deals"
-              className="px-6 py-2.5 bg-white text-red-600 font-bold text-xs rounded-full hover:bg-red-50 transition shadow-md whitespace-nowrap"
-            >
-              See All Deals
-            </Link>
+
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1.5 bg-black/30 backdrop-blur-xs px-4 py-2 rounded-xl text-white font-mono text-sm border border-white/20">
+                <Clock className="w-4 h-4 text-yellow-300" />
+                <span>{String(timeLeft.hours).padStart(2, '0')}:{String(timeLeft.minutes).padStart(2, '0')}:{String(timeLeft.seconds).padStart(2, '0')}</span>
+              </div>
+              <Link
+                to="/products?sort=deals"
+                className="px-6 py-2.5 bg-white text-red-600 font-bold text-xs rounded-full hover:bg-red-50 transition shadow-md whitespace-nowrap"
+              >
+                See All Deals &rarr;
+              </Link>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -163,11 +327,14 @@ export const HomePage: React.FC = () => {
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-blue-600" />
-              <h2 className="text-xl font-bold text-gray-900">Most Popular Bestsellers</h2>
+              <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                <TrendingUp className="w-4 h-4" />
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black text-gray-900">Trending Bestsellers</h2>
             </div>
             <Link to="/products?sort=bestsellers" className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
-              View All <ArrowRight className="w-3.5 h-3.5" />
+              <span>View All</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
@@ -179,16 +346,19 @@ export const HomePage: React.FC = () => {
         </section>
       )}
 
-      {/* New Arrivals */}
+      {/* New Arrivals Showcase */}
       {newArrivals.length > 0 && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-indigo-600" />
-              <h2 className="text-xl font-bold text-gray-900">Just Dropped: New Arrivals</h2>
+              <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black text-gray-900">Just Dropped: New Arrivals</h2>
             </div>
             <Link to="/products?sort=newest" className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
-              View All <ArrowRight className="w-3.5 h-3.5" />
+              <span>View All</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
@@ -199,6 +369,52 @@ export const HomePage: React.FC = () => {
           </div>
         </section>
       )}
+
+      {/* Newsletter / Discount Callout */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 rounded-3xl p-8 sm:p-12 text-white relative overflow-hidden shadow-2xl">
+          <div className="absolute -right-12 -bottom-12 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="max-w-2xl space-y-4">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/10 border border-white/20 text-blue-200 text-xs font-semibold">
+              <Gift className="w-3.5 h-3.5 text-amber-300" />
+              <span>Special Welcome Offer</span>
+            </div>
+            <h3 className="text-2xl sm:text-4xl font-black tracking-tight leading-tight">
+              Get ₹200 OFF on Your First Order!
+            </h3>
+            <p className="text-xs sm:text-sm text-gray-300 leading-relaxed">
+              Subscribe to the ShopKart VIP dispatch for exclusive member-only early sale access, secret coupon codes, and tech launches.
+            </p>
+
+            {subscribed ? (
+              <div className="p-4 bg-emerald-500/20 border border-emerald-400/30 rounded-2xl flex items-center gap-3 text-emerald-300 text-xs font-bold">
+                <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
+                <span>You're in! Use coupon code <strong className="text-white bg-emerald-600/40 px-2 py-0.5 rounded">SHOPKART200</strong> at checkout.</span>
+              </div>
+            ) : (
+              <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 pt-2 max-w-md">
+                <div className="relative flex-1">
+                  <Mail className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="email"
+                    required
+                    value={emailInput}
+                    onChange={(e) => setEmailInput(e.target.value)}
+                    placeholder="Enter your email address..."
+                    className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 text-xs focus:outline-hidden focus:ring-2 focus:ring-blue-400 transition"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg transition whitespace-nowrap cursor-pointer"
+                >
+                  Claim ₹200 OFF
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

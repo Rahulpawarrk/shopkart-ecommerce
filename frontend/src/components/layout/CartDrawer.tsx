@@ -85,11 +85,11 @@ export const CartDrawer: React.FC = () => {
                   className="flex gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 relative group"
                 >
                   <img
-                    src={item.primaryImageUrl}
+                    src={item.primaryImageUrl || '/placeholder.svg'}
                     alt={item.productName}
                     className="w-18 h-18 object-cover rounded-lg bg-white border border-gray-200 flex-shrink-0"
                     onError={(e) => {
-                      (e.target as HTMLElement).setAttribute('src', '/assets/images/products/placeholder.png');
+                      (e.target as HTMLElement).setAttribute('src', '/placeholder.svg');
                     }}
                   />
 

@@ -219,11 +219,11 @@ export const AdminProductsPage: React.FC = () => {
                   <tr key={p.productId} className="hover:bg-slate-50/50 transition">
                     <td className="px-6 py-3 flex items-center gap-3">
                       <img
-                        src={p.primaryImageUrl || '/placeholder.png'}
+                        src={p.primaryImageUrl || '/placeholder.svg'}
                         alt={p.productName}
-                        className="w-10 h-10 rounded-lg object-cover bg-slate-50 border border-slate-200 flex-shrink-0"
+                        className="w-10 h-10 rounded-lg object-contain bg-slate-50 border border-slate-200 flex-shrink-0 p-0.5"
                         onError={(e) => {
-                          (e.target as HTMLImageElement).src = 'https://placehold.co/100x100?text=Product';
+                          (e.target as HTMLImageElement).src = '/placeholder.svg';
                         }}
                       />
                       <div className="min-w-0">

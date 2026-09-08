@@ -324,9 +324,12 @@ export const AdminOrdersPage: React.FC = () => {
                 <div key={item.orderItemId} className="p-3 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <img
-                      src={item.primaryImageUrl || '/placeholder.png'}
+                      src={item.primaryImageUrl || '/placeholder.svg'}
                       alt={item.productName}
-                      className="w-10 h-10 object-cover rounded bg-slate-50 border border-slate-200"
+                      className="w-10 h-10 object-contain rounded bg-slate-50 border border-slate-200 p-0.5"
+                      onError={(e) => {
+                        (e.target as HTMLElement).setAttribute('src', '/placeholder.svg');
+                      }}
                     />
                     <div>
                       <p className="font-bold text-slate-900">{item.productName}</p>

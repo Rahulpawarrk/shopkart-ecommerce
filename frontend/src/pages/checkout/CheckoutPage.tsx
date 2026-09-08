@@ -63,7 +63,7 @@ export const CheckoutPage: React.FC = () => {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate('/auth/login?redirect=/checkout');
+      navigate('/login?redirect=/checkout');
       return;
     }
 
@@ -159,7 +159,7 @@ export const CheckoutPage: React.FC = () => {
       }
 
       const options = {
-        key: payIntent.keyId,
+        key: (payIntent as any).razorpayKeyId || payIntent.keyId,
         amount: payIntent.amountInPaise,
         currency: payIntent.currency || 'INR',
         name: 'ShopKart E-Commerce',
@@ -195,7 +195,7 @@ export const CheckoutPage: React.FC = () => {
               razorpayOrderId: payIntent.razorpayOrderId,
             });
             dispatch(showToast({ message: 'Payment cancelled. Order remains pending in My Orders.', type: 'info' }));
-            navigate(`/customer/orders`);
+            navigate(`/orders`);
           },
         },
       };
