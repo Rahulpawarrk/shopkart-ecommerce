@@ -29,7 +29,12 @@ import java.io.IOException;
         "/wishlist", "/wishlist/*",
         "/orders", "/orders/*",
         "/order", "/order/*",
-        "/product/review", "/order/review"
+        "/product/review", "/order/review",
+        "/api/admin", "/api/admin/*",
+        "/api/cart", "/api/cart/*",
+        "/api/orders", "/api/orders/*",
+        "/api/customer", "/api/customer/*",
+        "/api/wishlist", "/api/wishlist/*"
 })
 public class RoleFilter implements Filter {
 
@@ -47,18 +52,32 @@ public class RoleFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
+        if ("OPTIONS".equalsIgnoreCase(httpRequest.getMethod())) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         HttpSession session = httpRequest.getSession(false);
         UserSession userSession = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
         String uri = httpRequest.getRequestURI();
         String path = httpRequest.getServletPath();
 
-        // 1. Admin Routes Protection (/admin/*)
-        if (path.startsWith("/admin")) {
+        boolean isApi = uri.contains("/api/") ||
+                "XMLHttpRequest".equalsIgnoreCase(httpRequest.getHeader("X-Requested-With")) ||
+                (httpRequest.getHeader("Accept") != null && httpRequest.getHeader("Accept").contains("application/json"));
+
+        // 1. Admin Routes Protection (/admin/* or /api/admin/*)
+        if (path.startsWith("/admin") || path.startsWith("/api/admin")) {
             if (userSession == null || !userSession.isAdmin()) {
                 logger.warn("Access denied to [{}]. User '{}' lacks ADMIN role.",
                         uri, (userSession != null ? userSession.getEmail() : "ANONYMOUS"));
 
                 httpResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                if (isApi) {
+                    httpResponse.setContentType("application/json;charset=UTF-8");
+                    httpResponse.getWriter().write("{\"success\":false,\"message\":\"Access denied. Admin privileges required.\",\"code\":\"FORBIDDEN\"}");
+                    return;
+                }
                 httpRequest.getRequestDispatcher("/WEB-INF/views/error/403.jsp").forward(request, response);
                 return;
             }
@@ -70,14 +89,10 @@ public class RoleFilter implements Filter {
         if (userSession != null && userSession.isAdmin()) {
             logger.info("Admin user '{}' blocked from accessing customer module: {}", userSession.getEmail(), uri);
 
-            boolean isAjax = "XMLHttpRequest".equalsIgnoreCase(httpRequest.getHeader("X-Requested-With"))
-                    || "true".equalsIgnoreCase(httpRequest.getParameter("ajax"));
-
-            if (isAjax) {
-                httpResponse.setContentType("application/json");
-                httpResponse.setCharacterEncoding("UTF-8");
+            if (isApi) {
+                httpResponse.setContentType("application/json;charset=UTF-8");
                 httpResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                httpResponse.getWriter().write("{\"success\":false,\"message\":\"Admin accounts are restricted from customer shopping, cart, wishlist, and address modules.\"}");
+                httpResponse.getWriter().write("{\"success\":false,\"message\":\"Admin accounts are restricted from customer shopping, cart, wishlist, and address modules.\",\"code\":\"FORBIDDEN\"}");
                 return;
             }
 

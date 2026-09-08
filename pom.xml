@@ -28,9 +28,6 @@
         <bcrypt.version>0.4</bcrypt.version>
         <razorpay.version>1.4.6</razorpay.version>
         <org.json.version>20240303</org.json.version>
-        <tomcat-embed-jasper.version>10.1.36</tomcat-embed-jasper.version>
-        <jakarta.jstl-api.version>3.0.0</jakarta.jstl-api.version>
-        <glassfish.jstl.version>3.0.1</glassfish.jstl.version>
     </properties>
 
     <dependencies>
@@ -76,24 +73,6 @@
             <artifactId>spring-boot-starter-tomcat</artifactId>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>org.apache.tomcat.embed</groupId>
-            <artifactId>tomcat-embed-jasper</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
-        <!-- Jakarta JSTL API & Implementation for JSP Rendering -->
-        <dependency>
-            <groupId>jakarta.servlet.jsp.jstl</groupId>
-            <artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
-            <version>${jakarta.jstl-api.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.web</groupId>
-            <artifactId>jakarta.servlet.jsp.jstl</artifactId>
-            <version>${glassfish.jstl.version}</version>
-        </dependency>
-
         <!-- PostgreSQL JDBC Driver for Cloud / Neon Database -->
         <dependency>
             <groupId>org.postgresql</groupId>

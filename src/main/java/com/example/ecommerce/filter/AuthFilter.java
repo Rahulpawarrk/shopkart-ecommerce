@@ -34,7 +34,13 @@ import java.io.IOException;
         "/checkout", "/checkout/*",
         "/cart", "/cart/*",
         "/wishlist", "/wishlist/*",
-        "/admin", "/admin/*"
+        "/admin", "/admin/*",
+        "/api/customer/*",
+        "/api/orders/*",
+        "/api/cart/*",
+        "/api/wishlist/*",
+        "/api/admin/*",
+        "/api/payments/*"
 })
 public class AuthFilter implements Filter {
 
@@ -52,10 +58,27 @@ public class AuthFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
+        if ("OPTIONS".equalsIgnoreCase(httpRequest.getMethod())) {
+            chain.doFilter(request, response);
+            return;
+        }
+
         HttpSession session = httpRequest.getSession(false);
         UserSession userSession = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
 
         if (userSession == null) {
+            String uri = httpRequest.getRequestURI();
+            boolean isApi = uri.contains("/api/") ||
+                    "XMLHttpRequest".equalsIgnoreCase(httpRequest.getHeader("X-Requested-With")) ||
+                    (httpRequest.getHeader("Accept") != null && httpRequest.getHeader("Accept").contains("application/json"));
+
+            if (isApi) {
+                httpResponse.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                httpResponse.setContentType("application/json;charset=UTF-8");
+                httpResponse.getWriter().write("{\"success\":false,\"message\":\"Authentication required. Please log in.\",\"code\":\"UNAUTHORIZED\"}");
+                return;
+            }
+
             String targetUrl = httpRequest.getRequestURI();
             String query = httpRequest.getQueryString();
             if (query != null && !query.isEmpty()) {
