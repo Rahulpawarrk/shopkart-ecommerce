@@ -49,7 +49,7 @@ export const LoginPage: React.FC = () => {
         navigate(redirectTarget, { replace: true });
       }
     } catch (err: any) {
-      dispatch(showToast({ message: err || 'Invalid email or password', type: 'error' }));
+      dispatch(showToast({ message: err?.message || String(err) || 'Invalid email or password', type: 'error' }));
     }
   };
 
@@ -126,7 +126,7 @@ export const LoginPage: React.FC = () => {
 
           {error && (
             <div className="mb-5 p-3.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-2xl">
-              {error}
+              {typeof error === 'string' ? error : 'An error occurred. Please try again.'}
             </div>
           )}
 

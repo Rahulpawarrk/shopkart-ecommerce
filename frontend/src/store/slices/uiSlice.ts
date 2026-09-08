@@ -33,10 +33,20 @@ export const uiSlice = createSlice({
     toggleSearchDrawer(state, action: PayloadAction<boolean | undefined>) {
       state.searchDrawerOpen = action.payload !== undefined ? action.payload : !state.searchDrawerOpen;
     },
-    showToast(state, action: PayloadAction<{ message: string; type?: 'success' | 'error' | 'info' }>) {
+    showToast(state, action: PayloadAction<{ message: any; type?: 'success' | 'error' | 'info' }>) {
+      // Always coerce message to string to prevent React error #31 (objects not valid as React children)
+      const rawMsg = action.payload.message;
+      const safeMsg: string =
+        typeof rawMsg === 'string'
+          ? rawMsg
+          : rawMsg instanceof Error
+          ? rawMsg.message || 'An error occurred'
+          : rawMsg != null
+          ? String(rawMsg)
+          : 'An error occurred';
       const toast: ToastMessage = {
         id: Date.now(),
-        message: action.payload.message,
+        message: safeMsg,
         type: action.payload.type || 'info',
       };
       state.toasts.push(toast);

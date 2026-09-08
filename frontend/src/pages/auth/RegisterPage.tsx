@@ -70,7 +70,7 @@ export const RegisterPage: React.FC = () => {
       dispatch(showToast({ message: `Welcome to ShopKart, ${user.firstName}!`, type: 'success' }));
       navigate(redirectTarget, { replace: true });
     } catch (err: any) {
-      dispatch(showToast({ message: err || 'Registration failed', type: 'error' }));
+      dispatch(showToast({ message: err?.message || String(err) || 'Registration failed', type: 'error' }));
     }
   };
 
@@ -142,7 +142,10 @@ export const RegisterPage: React.FC = () => {
 
           {(formError || error) && (
             <div className="mb-5 p-3.5 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-2xl">
-              {formError || error}
+              {(() => {
+                const msg = formError || error;
+                return typeof msg === 'string' ? msg : 'An error occurred. Please try again.';
+              })()}
             </div>
           )}
 

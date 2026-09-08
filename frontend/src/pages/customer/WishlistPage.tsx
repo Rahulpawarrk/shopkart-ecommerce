@@ -31,7 +31,7 @@ export const WishlistPage: React.FC = () => {
       await dispatch(toggleWishlist(productId)).unwrap();
       dispatch(showToast({ message: 'Removed from wishlist', type: 'info' }));
     } catch (err: any) {
-      dispatch(showToast({ message: err || 'Failed to update wishlist', type: 'error' }));
+      dispatch(showToast({ message: err?.message || 'Failed to update wishlist', type: 'error' }));
     }
   };
 
@@ -47,7 +47,7 @@ export const WishlistPage: React.FC = () => {
       dispatch(showToast({ message: `Added ${productName} to your cart!`, type: 'success' }));
       dispatch(toggleCartDrawer(true));
     } catch (err: any) {
-      dispatch(showToast({ message: err || 'Failed to move item to cart', type: 'error' }));
+      dispatch(showToast({ message: err?.message || 'Failed to move item to cart', type: 'error' }));
     }
   };
 
