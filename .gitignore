@@ -24,7 +24,7 @@ setenv.bat
 setenv.sh
 .env
 *.env
-!.env.example
+*.env.example
 *.properties.local
 *.secret
 *.secrets
