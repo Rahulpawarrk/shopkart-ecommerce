@@ -7,6 +7,7 @@ import com.example.ecommerce.order.dao.OrderReturnDAO;
 import com.example.ecommerce.order.model.Order;
 import com.example.ecommerce.order.model.OrderReturn;
 import com.example.ecommerce.order.model.OrderStatus;
+import com.example.ecommerce.util.EmailService;
 import com.example.ecommerce.util.Pagination;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,15 +34,20 @@ public class OrderReturnService {
 
     private final OrderReturnDAO orderReturnDAO;
     private final OrderDAO orderDAO;
+    private final EmailService emailService;
 
     public OrderReturnService() {
-        this.orderReturnDAO = new OrderReturnDAO();
-        this.orderDAO = new OrderDAO();
+        this(new OrderReturnDAO(), new OrderDAO(), new EmailService());
     }
 
     public OrderReturnService(OrderReturnDAO orderReturnDAO, OrderDAO orderDAO) {
+        this(orderReturnDAO, orderDAO, new EmailService());
+    }
+
+    public OrderReturnService(OrderReturnDAO orderReturnDAO, OrderDAO orderDAO, EmailService emailService) {
         this.orderReturnDAO = orderReturnDAO;
         this.orderDAO = orderDAO;
+        this.emailService = emailService != null ? emailService : new EmailService();
     }
 
     /**
@@ -91,6 +97,26 @@ public class OrderReturnService {
 
         logger.info("Created return request [returnId={}, returnNumber={}] for orderId [{}] by userId [{}]", 
                 returnId, returnNumber, orderId, userId);
+
+        // Dispatch Customer Return Request Email Notification
+        try {
+            String custEmail = (order.getCustomerEmail() != null && !order.getCustomerEmail().trim().isEmpty())
+                    ? order.getCustomerEmail()
+                    : orderReturn.getCustomerEmail();
+            String custName = (order.getCustomerName() != null && !order.getCustomerName().trim().isEmpty())
+                    ? order.getCustomerName()
+                    : orderReturn.getCustomerName();
+            if (custEmail != null && !custEmail.trim().isEmpty()) {
+                emailService.sendOrderReturnEmail(
+                        custEmail,
+                        custName,
+                        orderReturn,
+                        "Return request submitted by customer."
+                );
+            }
+        } catch (Exception ex) {
+            logger.warn("Non-fatal: Failed to send return request confirmation email for returnId: {}", returnId, ex);
+        }
 
         return orderReturn;
     }
@@ -169,6 +195,24 @@ public class OrderReturnService {
                 }
             }
             logger.info("Admin updated returnId [{}] status to: {}", returnId, newStatus);
+
+            // Dispatch Customer Return Status Update Email Notification
+            try {
+                orderReturnDAO.findById(returnId).ifPresent(ret -> {
+                    String custEmail = ret.getCustomerEmail();
+                    String custName = ret.getCustomerName();
+                    if (custEmail != null && !custEmail.trim().isEmpty()) {
+                        emailService.sendOrderReturnEmail(
+                                custEmail,
+                                custName,
+                                ret,
+                                adminNotes != null && !adminNotes.trim().isEmpty() ? adminNotes.trim() : "Return status updated to " + normStatus
+                        );
+                    }
+                });
+            } catch (Exception ex) {
+                logger.warn("Non-fatal: Failed to send return status update email for returnId: {}", returnId, ex);
+            }
         }
         return updated;
     }
