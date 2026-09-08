@@ -6,13 +6,15 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isCheckingAuth: boolean;
   error: string | null;
 }
 
 const initialState: AuthState = {
   user: null,
   isAuthenticated: false,
-  isLoading: true,
+  isLoading: false,
+  isCheckingAuth: true,
   error: null,
 };
 
@@ -65,17 +67,17 @@ export const authSlice = createSlice({
     builder
       // checkAuth
       .addCase(checkAuth.pending, (state) => {
-        state.isLoading = true;
+        state.isCheckingAuth = true;
       })
       .addCase(checkAuth.fulfilled, (state, action) => {
         state.user = action.payload;
         state.isAuthenticated = !!action.payload;
-        state.isLoading = false;
+        state.isCheckingAuth = false;
       })
       .addCase(checkAuth.rejected, (state) => {
         state.user = null;
         state.isAuthenticated = false;
-        state.isLoading = false;
+        state.isCheckingAuth = false;
       })
       // login
       .addCase(loginUser.pending, (state) => {

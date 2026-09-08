@@ -12,8 +12,20 @@ export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const { isLoading, error } = useAppSelector((state) => state.auth);
-  const redirectTarget = searchParams.get('redirect') || '/';
+  const { user, isAuthenticated, isLoading, error } = useAppSelector((state) => state.auth);
+  const rawRedirect = searchParams.get('redirect') || '/';
+  const redirectTarget = (rawRedirect.startsWith('/login') || rawRedirect.startsWith('/register') || rawRedirect.startsWith('/signup')) ? '/' : rawRedirect;
+
+  // If already authenticated, redirect to destination
+  React.useEffect(() => {
+    if (isAuthenticated && user) {
+      if (user.admin || user.roles?.includes('ADMIN') || user.roles?.includes('ROLE_ADMIN')) {
+        navigate('/admin/dashboard', { replace: true });
+      } else {
+        navigate(redirectTarget, { replace: true });
+      }
+    }
+  }, [isAuthenticated, user, navigate, redirectTarget]);
 
   const [formData, setFormData] = useState({
     firstName: '',

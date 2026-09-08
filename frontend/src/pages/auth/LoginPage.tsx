@@ -13,14 +13,26 @@ export const LoginPage: React.FC = () => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
 
-  const { isLoading, error } = useAppSelector((state) => state.auth);
+  const { user, isAuthenticated, isLoading, error } = useAppSelector((state) => state.auth);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   // Read target URL from query param (e.g. ?redirect=/checkout) or router state
-  const redirectTarget = searchParams.get('redirect') || (location.state as any)?.from?.pathname || '/';
+  const rawRedirect = searchParams.get('redirect') || (location.state as any)?.from?.pathname || '/';
+  const redirectTarget = (rawRedirect.startsWith('/login') || rawRedirect.startsWith('/register') || rawRedirect.startsWith('/signup')) ? '/' : rawRedirect;
+
+  // If already authenticated, redirect to destination
+  React.useEffect(() => {
+    if (isAuthenticated && user) {
+      if (user.admin || user.roles?.includes('ADMIN') || user.roles?.includes('ROLE_ADMIN')) {
+        navigate('/admin/dashboard', { replace: true });
+      } else {
+        navigate(redirectTarget, { replace: true });
+      }
+    }
+  }, [isAuthenticated, user, navigate, redirectTarget]);
 
   const handleLoginSubmit = async (loginEmail: string, loginPass: string) => {
     if (!loginEmail.trim() || !loginPass) return;

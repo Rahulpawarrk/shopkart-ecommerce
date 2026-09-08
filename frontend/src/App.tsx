@@ -6,6 +6,7 @@ import { checkAuth } from './store/slices/authSlice';
 import { fetchCart } from './store/slices/cartSlice';
 import { fetchWishlist } from './store/slices/wishlistSlice';
 import { AppRoutes } from './routes/AppRoutes';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 
 const AppInitializer: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -28,16 +29,22 @@ const AppInitializer: React.FC = () => {
       });
   }, [dispatch]);
 
-  return <AppRoutes />;
+  return (
+    <ErrorBoundary>
+      <AppRoutes />
+    </ErrorBoundary>
+  );
 };
 
 export function App() {
   return (
-    <Provider store={store}>
-      <BrowserRouter>
-        <AppInitializer />
-      </BrowserRouter>
-    </Provider>
+    <ErrorBoundary>
+      <Provider store={store}>
+        <BrowserRouter>
+          <AppInitializer />
+        </BrowserRouter>
+      </Provider>
+    </ErrorBoundary>
   );
 }
 
