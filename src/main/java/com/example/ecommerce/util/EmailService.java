@@ -236,17 +236,28 @@ public class EmailService {
         });
     }
 
+    private static final com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
     private void sendViaBrevoHttps(String apiKey, String toEmail, String toName, String subject, String htmlContent) {
         try {
             HttpClient client = HttpClient.newHttpClient();
-            String jsonPayload = String.format(
-                    "{\"sender\":{\"name\":\"%s\",\"email\":\"%s\"},\"to\":[{\"email\":\"%s\",\"name\":\"%s\"}],\"subject\":\"%s\",\"htmlContent\":%s}",
-                    fromName,
-                    (!smtpEmail.isEmpty() ? smtpEmail : "shopkart.support@gmail.com"),
-                    escapeJson(toEmail),
-                    toName != null ? escapeJson(toName.replace("\"", "")) : "\"\"",
-                    subject.replace("\"", ""),
-                    escapeJson(htmlContent));
+            java.util.Map<String, Object> sender = new java.util.HashMap<>();
+            sender.put("name", fromName);
+            sender.put("email", (!smtpEmail.isEmpty() ? smtpEmail : "shopkart.support@gmail.com"));
+
+            java.util.Map<String, Object> recipient = new java.util.HashMap<>();
+            recipient.put("email", toEmail);
+            if (toName != null && !toName.trim().isEmpty()) {
+                recipient.put("name", toName.trim());
+            }
+
+            java.util.Map<String, Object> payload = new java.util.HashMap<>();
+            payload.put("sender", sender);
+            payload.put("to", java.util.Collections.singletonList(recipient));
+            payload.put("subject", subject != null ? subject : "ShopKart Notification");
+            payload.put("htmlContent", htmlContent != null ? htmlContent : "");
+
+            String jsonPayload = objectMapper.writeValueAsString(payload);
 
             HttpRequest req = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.brevo.com/v3/smtp/email"))
@@ -270,13 +281,15 @@ public class EmailService {
     private void sendViaResendHttps(String apiKey, String toEmail, String subject, String htmlContent) {
         try {
             HttpClient client = HttpClient.newHttpClient();
-            String jsonPayload = String.format(
-                    "{\"from\":\"%s <%s>\",\"to\":[\"%s\"],\"subject\":\"%s\",\"html\":%s}",
-                    fromName,
-                    (!smtpEmail.isEmpty() ? smtpEmail : "onboarding@resend.dev"),
-                    escapeJson(toEmail),
-                    subject.replace("\"", ""),
-                    escapeJson(htmlContent));
+            String from = String.format("%s <%s>", fromName, (!smtpEmail.isEmpty() ? smtpEmail : "onboarding@resend.dev"));
+
+            java.util.Map<String, Object> payload = new java.util.HashMap<>();
+            payload.put("from", from);
+            payload.put("to", java.util.Collections.singletonList(toEmail));
+            payload.put("subject", subject != null ? subject : "ShopKart Notification");
+            payload.put("html", htmlContent != null ? htmlContent : "");
+
+            String jsonPayload = objectMapper.writeValueAsString(payload);
 
             HttpRequest req = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.resend.com/emails"))

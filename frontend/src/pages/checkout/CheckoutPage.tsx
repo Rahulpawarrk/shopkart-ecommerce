@@ -205,7 +205,7 @@ export const CheckoutPage: React.FC = () => {
       // If Cash on Delivery, done!
       if (paymentMethod === 'COD') {
         dispatch(fetchCart());
-        navigate(`/order-confirmation/${confirmedOrder.orderId}`);
+        navigate(`/order-confirmation/${confirmedOrder.orderId}`, { state: { order: confirmedOrder } });
         return;
       }
 
@@ -220,7 +220,7 @@ export const CheckoutPage: React.FC = () => {
           transactionReference: 'DEV-SIM-' + Date.now(),
         });
         dispatch(fetchCart());
-        navigate(`/order-confirmation/${confirmedOrder.orderId}`);
+        navigate(`/order-confirmation/${confirmedOrder.orderId}`, { state: { order: confirmedOrder } });
         return;
       }
 
@@ -248,7 +248,7 @@ export const CheckoutPage: React.FC = () => {
               razorpaySignature: response.razorpay_signature,
             });
             dispatch(fetchCart());
-            navigate(`/order-confirmation/${confirmedOrder.orderId}`);
+            navigate(`/order-confirmation/${confirmedOrder.orderId}`, { state: { order: confirmedOrder } });
           } catch (verErr: any) {
             dispatch(showToast({ message: verErr.message || 'Payment signature mismatch', type: 'error' }));
           }

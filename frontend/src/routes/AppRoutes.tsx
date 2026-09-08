@@ -167,6 +167,14 @@ export const AppRoutes: React.FC = () => {
           }
         />
         <Route
+          path="/order-confirmation/:orderId"
+          element={
+            <ProtectedRoute>
+              <OrderConfirmationPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/order-confirmation/:id"
           element={
             <ProtectedRoute>
