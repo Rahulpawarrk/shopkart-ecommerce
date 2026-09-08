@@ -74,7 +74,9 @@ public class PaymentRestController {
             throw new ValidationException("Order #" + order.getOrderNumber() + " has already been paid.");
         }
 
-        paymentService.initiatePayment(order, order.getPaymentMethod());
+        String payMethod = (order.getPaymentMethod() != null && !"COD".equalsIgnoreCase(order.getPaymentMethod()))
+                ? order.getPaymentMethod() : "ONLINE";
+        paymentService.initiatePayment(order, payMethod);
 
         InitiatePaymentResponse resp = new InitiatePaymentResponse();
         resp.setOrderId(order.getOrderId());

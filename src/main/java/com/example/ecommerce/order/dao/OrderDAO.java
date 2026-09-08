@@ -488,11 +488,25 @@ public class OrderDAO {
     }
 
     public void updatePaymentStatus(int orderId, PaymentStatus newStatus, Connection conn) throws SQLException {
-        String sql = "UPDATE dbo.orders SET payment_status = ?, updated_at = CURRENT_TIMESTAMP WHERE order_id = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, newStatus.name());
-            stmt.setInt(2, orderId);
-            stmt.executeUpdate();
+        updatePaymentStatusAndMethod(orderId, newStatus, null, conn);
+    }
+
+    public void updatePaymentStatusAndMethod(int orderId, PaymentStatus newStatus, String paymentMethod, Connection conn) throws SQLException {
+        if (paymentMethod != null && !paymentMethod.trim().isEmpty()) {
+            String sql = "UPDATE dbo.orders SET payment_status = ?, payment_method = ?, updated_at = CURRENT_TIMESTAMP WHERE order_id = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, newStatus.name());
+                stmt.setString(2, paymentMethod.trim().toUpperCase());
+                stmt.setInt(3, orderId);
+                stmt.executeUpdate();
+            }
+        } else {
+            String sql = "UPDATE dbo.orders SET payment_status = ?, updated_at = CURRENT_TIMESTAMP WHERE order_id = ?";
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setString(1, newStatus.name());
+                stmt.setInt(2, orderId);
+                stmt.executeUpdate();
+            }
         }
 
         if (newStatus == PaymentStatus.PAID) {

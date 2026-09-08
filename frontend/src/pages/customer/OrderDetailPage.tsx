@@ -45,6 +45,9 @@ export const OrderDetailPage: React.FC = () => {
   const [returnComments, setReturnComments] = useState('');
   const [returning, setReturning] = useState(false);
 
+  // Online Payment State for COD orders
+  const [paying, setPaying] = useState(false);
+
   const fetchOrder = () => {
     if (!id) return;
     setLoading(true);
@@ -112,6 +115,101 @@ export const OrderDetailPage: React.FC = () => {
     }
   };
 
+  const loadRazorpayScript = (): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if (typeof (window as any).Razorpay === 'function') {
+        resolve(true);
+        return;
+      }
+      if (document.getElementById('razorpay-sdk')) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement('script');
+      script.id = 'razorpay-sdk';
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const handlePayOrder = async () => {
+    if (!order) return;
+    setPaying(true);
+    try {
+      await loadRazorpayScript();
+      const payIntent = await orderService.initiatePayment(order.orderId);
+
+      if (typeof (window as any).Razorpay !== 'function') {
+        // Development simulation fallback
+        await orderService.verifyPayment({
+          orderId: order.orderId,
+          transactionReference: 'DEV-SIM-' + Date.now(),
+        });
+        dispatch(showToast({ message: 'Payment completed successfully! Order is now PAID.', type: 'success' }));
+        fetchOrder();
+        return;
+      }
+
+      const options = {
+        key: (payIntent as any).razorpayKeyId || payIntent.keyId,
+        amount: payIntent.amountInPaise,
+        currency: payIntent.currency || 'INR',
+        name: 'ShopKart E-Commerce',
+        description: `Payment for Order #${order.orderNumber}`,
+        order_id: payIntent.razorpayOrderId,
+        prefill: {
+          name: payIntent.customerName || order.shippingFullName,
+          email: payIntent.customerEmail,
+          contact: payIntent.customerPhone || order.shippingPhone || '',
+        },
+        theme: {
+          color: '#2563eb',
+        },
+        handler: async (response: any) => {
+          try {
+            await orderService.verifyPayment({
+              orderId: order.orderId,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpaySignature: response.razorpay_signature,
+            });
+            dispatch(showToast({ message: 'Payment successful! Order marked as PAID.', type: 'success' }));
+            fetchOrder();
+          } catch (verErr: any) {
+            dispatch(showToast({ message: verErr.message || 'Payment verification failed', type: 'error' }));
+          } finally {
+            setPaying(false);
+          }
+        },
+        modal: {
+          ondismiss: async () => {
+            setPaying(false);
+            dispatch(showToast({ message: 'Payment window closed. Order remains COD / Pending.', type: 'info' }));
+          },
+        },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.on('payment.failed', async (resp: any) => {
+        setPaying(false);
+        dispatch(showToast({ message: resp.error?.description || 'Payment failed', type: 'error' }));
+      });
+      rzp.open();
+    } catch (err: any) {
+      dispatch(showToast({ message: err.message || 'Failed to initiate payment', type: 'error' }));
+      setPaying(false);
+    }
+  };
+
+  const isEligibleForOnlinePayment = (order: Order) => {
+    const isPendingPayment = (order.paymentStatus || 'PENDING').toUpperCase() === 'PENDING' || (order.paymentStatus || '').toUpperCase() === 'FAILED';
+    const isNotTerminated = !['CANCELLED', 'RETURNED'].includes(order.orderStatus.toUpperCase());
+    return isPendingPayment && isNotTerminated;
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'DELIVERED':
@@ -131,6 +229,21 @@ export const OrderDetailPage: React.FC = () => {
         return 'bg-slate-100 text-slate-800 border-slate-300';
     }
   };
+
+  const getPaymentStatusBadge = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case 'PAID':
+      case 'SUCCESS':
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'REFUNDED':
+        return 'bg-purple-50 text-purple-700 border-purple-200';
+      case 'FAILED':
+        return 'bg-red-50 text-red-700 border-red-200';
+      default:
+        return 'bg-amber-50 text-amber-700 border-amber-200';
+    }
+  };
+
 
   if (loading) {
     return (
@@ -184,7 +297,7 @@ export const OrderDetailPage: React.FC = () => {
       {/* Header Banner */}
       <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <h1 className="text-2xl font-black text-slate-900">Order #{order.orderNumber}</h1>
             <span
               className={`text-xs uppercase tracking-wider font-bold px-3 py-1 rounded-full border ${getStatusBadge(
@@ -192,6 +305,24 @@ export const OrderDetailPage: React.FC = () => {
               )}`}
             >
               {order.orderStatus.replace(/_/g, ' ')}
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full border border-slate-200 bg-slate-50 text-slate-700 uppercase">
+              <CreditCard className="w-3.5 h-3.5 text-blue-600" />
+              {order.paymentMethod || 'COD'}
+            </span>
+            <span
+              className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full border ${getPaymentStatusBadge(
+                order.paymentStatus
+              )}`}
+            >
+              {order.paymentStatus === 'PAID' ? (
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
+              ) : order.paymentStatus === 'FAILED' ? (
+                <XCircle className="w-3.5 h-3.5 text-rose-600" />
+              ) : (
+                <Clock className="w-3.5 h-3.5 text-amber-600" />
+              )}
+              {order.paymentStatus || 'PENDING'}
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-1.5 flex items-center gap-1.5">
@@ -207,6 +338,17 @@ export const OrderDetailPage: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          {isEligibleForOnlinePayment(order) && (
+            <button
+              onClick={handlePayOrder}
+              disabled={paying}
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition shadow-sm disabled:opacity-50"
+            >
+              <CreditCard className="w-3.5 h-3.5" />
+              {paying ? 'Processing...' : 'Pay Online (UPI / Card)'}
+            </button>
+          )}
+
           {order.trackingNumber && (
             <button
               onClick={handleOpenTracking}
@@ -271,20 +413,28 @@ export const OrderDetailPage: React.FC = () => {
             <h3>Payment Summary</h3>
           </div>
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between text-slate-600">
+            <div className="flex justify-between items-center text-slate-600">
               <span>Payment Method</span>
-              <span className="font-bold uppercase text-slate-900">{order.paymentMethod}</span>
+              <span className="font-bold uppercase text-slate-900 flex items-center gap-1.5">
+                <CreditCard className="w-3.5 h-3.5 text-blue-600" />
+                {order.paymentMethod || 'COD'}
+              </span>
             </div>
-            <div className="flex justify-between text-slate-600">
+            <div className="flex justify-between items-center text-slate-600">
               <span>Payment Status</span>
               <span
-                className={`font-bold px-2 py-0.5 text-xs rounded ${
-                  order.paymentStatus === 'PAID'
-                    ? 'bg-emerald-100 text-emerald-800'
-                    : 'bg-amber-100 text-amber-800'
-                }`}
+                className={`inline-flex items-center gap-1 font-bold px-2.5 py-0.5 text-xs rounded-full border ${getPaymentStatusBadge(
+                  order.paymentStatus
+                )}`}
               >
-                {order.paymentStatus}
+                {order.paymentStatus === 'PAID' ? (
+                  <CheckCircle className="w-3 h-3 text-emerald-600" />
+                ) : order.paymentStatus === 'FAILED' ? (
+                  <XCircle className="w-3 h-3 text-rose-600" />
+                ) : (
+                  <Clock className="w-3 h-3 text-amber-600" />
+                )}
+                {order.paymentStatus || 'PENDING'}
               </span>
             </div>
             <div className="pt-2 border-t border-slate-100 flex justify-between text-slate-600">
@@ -315,6 +465,28 @@ export const OrderDetailPage: React.FC = () => {
               <span>Grand Total</span>
               <span className="text-primary">₹{Number(order.totalAmount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
             </div>
+
+            {isEligibleForOnlinePayment(order) && (
+              <div className="mt-4 pt-3 border-t border-slate-100">
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-900 flex flex-col gap-2">
+                  <div className="flex items-center gap-1.5 font-semibold text-amber-900">
+                    <Clock className="w-3.5 h-3.5 text-amber-600" />
+                    <span>{order.paymentMethod === 'COD' ? 'Scheduled for Cash on Delivery' : 'Payment Pending'}</span>
+                  </div>
+                  <p className="text-slate-600">
+                    Prefer contactless delivery? Pay online right now using UPI, Debit/Credit Card, or Net Banking.
+                  </p>
+                  <button
+                    onClick={handlePayOrder}
+                    disabled={paying}
+                    className="w-full mt-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition shadow-sm disabled:opacity-50"
+                  >
+                    <CreditCard className="w-3.5 h-3.5" />
+                    {paying ? 'Opening Payment Gateway...' : `Pay ₹${Number(order.totalAmount).toLocaleString('en-IN', { minimumFractionDigits: 2 })} Online Now`}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

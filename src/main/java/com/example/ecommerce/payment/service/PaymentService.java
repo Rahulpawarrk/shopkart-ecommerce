@@ -131,7 +131,8 @@ public class PaymentService {
             try {
                 if (isSuccess) {
                     paymentDAO.updatePaymentStatusByOrderId(orderId, PaymentTransactionStatus.SUCCESS, gatewayResponse, conn);
-                    orderDAO.updatePaymentStatus(orderId, PaymentStatus.PAID, conn);
+                    String updatedMethod = (order.getPaymentMethod() != null && "COD".equalsIgnoreCase(order.getPaymentMethod())) ? "ONLINE" : order.getPaymentMethod();
+                    orderDAO.updatePaymentStatusAndMethod(orderId, PaymentStatus.PAID, updatedMethod, conn);
 
                     // Transition to CONFIRMED if in PENDING state
                     OrderStatus currentStatus = order.getOrderStatus();
