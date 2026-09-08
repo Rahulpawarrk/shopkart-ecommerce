@@ -1,87 +1,89 @@
-# Deployment & Environment Setup Guide
+# ShopKart — Deployment & Environment Setup Guide
 
 ## 1. Prerequisites
 
 - **Operating System**: Windows 10/11, Linux, or macOS
-- **JDK**: Java 21 LTS or Java 25 (Set `JAVA_HOME`)
-- **Web Server**: Apache Tomcat 11.0.x (Jakarta EE 11 compatible)
-- **Database**: Microsoft SQL Server 2019 / 2022 / Azure SQL Database
-- **Build Tool**: Apache Maven 3.9+
+- **JDK**: Java 21 LTS (`JAVA_HOME` configured)
+- **Node.js**: Node 20 LTS or later with `npm`
+- **Database**: PostgreSQL 15+ (Local or Cloud PostgreSQL like Neon/Render)
+- **Build Tools**: Apache Maven 3.9+
 
 ---
 
-## 2. Microsoft SQL Server Setup
+## 2. PostgreSQL Database Setup
 
-1. Open **SQL Server Management Studio (SSMS)** or `sqlcmd`.
-2. Execute the schema generation script:
+1. Connect to your PostgreSQL instance using `psql` or **pgAdmin**:
    ```bash
-   sqlcmd -S localhost -U <db-user> -P <db-password> -i src/main/resources/db/schema.sql
+   psql -U postgres
    ```
-3. Execute the seed data script:
-   ```bash
-   sqlcmd -S localhost -U <db-user> -P <db-password> -i src/main/resources/db/seed.sql
-   ```
-4. Verify database creation:
+2. Create the database:
    ```sql
-   USE ecommerce_db;
-   SELECT COUNT(*) FROM dbo.products;
-   SELECT COUNT(*) FROM dbo.users;
+   CREATE DATABASE ecommerce_db;
+   ```
+3. Run the schema and seed scripts:
+   ```bash
+   psql -U postgres -d ecommerce_db -f src/main/resources/db/schema.sql
+   psql -U postgres -d ecommerce_db -f src/main/resources/db/seed.sql
    ```
 
 ---
 
-## 3. Database Connection Configuration
+## 3. Environment Configuration
 
-Configure your database connection credentials via environment variables (`DB_URL`, `DB_USER`, `DB_PASSWORD`) or `src/main/resources/db.properties`:
+Spring Boot reads externalized configuration from environment variables or `application.properties`:
 
-```properties
-db.driver=com.microsoft.sqlserver.jdbc.SQLServerDriver
-db.url=jdbc:sqlserver://localhost:1433;databaseName=ecommerce_db;encrypt=true;trustServerCertificate=true;sendStringParametersAsUnicode=true;
-db.user=<db-user>
-db.password=<db-password>
-
-hikaricp.poolName=EcommerceHikariPool
-hikaricp.maximumPoolSize=20
-hikaricp.minimumIdle=5
-```
+| Variable | Description | Default |
+|---|---|---|
+| `PORT` | HTTP server port | `8080` |
+| `DB_URL` | JDBC Connection URL | `jdbc:postgresql://localhost:5432/ecommerce_db` |
+| `DB_USER` | PostgreSQL Username | `postgres` |
+| `DB_PASSWORD` | PostgreSQL Password | *(blank)* |
+| `RAZORPAY_KEY_ID` | Razorpay Public Key ID | `rzp_test_...` |
+| `RAZORPAY_KEY_SECRET` | Razorpay Secret Key | `...` |
 
 ---
 
-## 4. Building the Application (WAR Package)
+## 4. Local Development Execution
 
-Run the Maven clean package command in the root project directory:
-
+### Backend (Spring Boot)
 ```bash
-mvn clean package
+# In the repository root
+mvn clean test
+mvn spring-boot:run
 ```
+Backend will start on `http://localhost:8080`.
 
-This compiles all Java source files, executes the 52 unit tests, and packages the application as a standalone WAR file located at:
+### Frontend (React + Vite)
+```bash
+cd frontend
+npm install
+npm run dev
 ```
-target/ecommerce-web.war
-```
+Frontend development server will start on `http://localhost:5173` with automatic API proxying to port `8080`.
 
 ---
 
-## 5. Deploying to Apache Tomcat 11
+## 5. Production Deployment on Render
 
-### Manual Deployment:
-1. Copy `target/ecommerce-web.war` to the Tomcat `webapps/` folder:
-   ```bash
-   copy target\ecommerce-web.war %CATALINA_HOME%\webapps\ROOT.war
-   ```
-   *(Renaming to `ROOT.war` serves the app directly at `http://localhost:8080/`)*.
-2. Start Tomcat:
-   ```bash
-   %CATALINA_HOME%\bin\startup.bat
-   ```
-3. Open your browser and navigate to:
-   - Storefront: `http://localhost:8080/`
-   - Health Diagnostic: `http://localhost:8080/health`
-   - Admin Console: `http://localhost:8080/admin/dashboard`
+### Architecture on Render
+1. **Managed PostgreSQL**:
+   - Create a **PostgreSQL** database on Render (Name: `ecommerce-db`).
+   - Copy the Internal Database URL.
+2. **Spring Boot Web Service**:
+   - Create a **Web Service** on Render connected to this GitHub repo.
+   - Build Command: `mvn clean package -DskipTests`
+   - Start Command: `java -Xmx384m -jar target/ecommerce-web.war` (or Docker)
+   - Add Environment Variables: `DB_URL`, `DB_USER`, `DB_PASSWORD`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`.
+3. **React Static Site**:
+   - Create a **Static Site** on Render connected to this GitHub repo.
+   - Root Directory: `frontend`
+   - Build Command: `npm install && npm run build`
+   - Publish Directory: `dist`
+   - Add Rewrite Rule: Source `/*` -> Destination `/index.html` (for SPA routing).
 
 ---
 
-## 6. Default Seed Credentials
+## 6. Default Credentials
 
 | Role | Email | Default Password | Access Scope |
 |---|---|---|---|

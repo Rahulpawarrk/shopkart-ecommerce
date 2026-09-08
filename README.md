@@ -1,59 +1,57 @@
-# Enterprise E-Commerce Web Application
+# ShopKart — Enterprise E-Commerce Platform
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
-[![Java](https://img.shields.io/badge/Java-21%20%2F%2025-blue.svg)]()
-[![Jakarta EE](https://img.shields.io/badge/Jakarta%20EE-11%20(Servlets%206.0)-orange.svg)]()
-[![Tomcat](https://img.shields.io/badge/Tomcat-11.0-yellow.svg)]()
-[![Database](https://img.shields.io/badge/Database-Microsoft%20SQL%20Server-red.svg)]()
-[![Tests](https://img.shields.io/badge/Tests-52%20Passed-success.svg)]()
+[![Java](https://img.shields.io/badge/Java-21-blue.svg)]()
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.3-green.svg)]()
+[![Frontend](https://img.shields.io/badge/React%2019-TypeScript%20%2B%20Vite%20%2B%20Tailwind-blueviolet.svg)]()
+[![Database](https://img.shields.io/badge/Database-PostgreSQL-blue.svg)]()
+[![Payment](https://img.shields.io/badge/Payment-Razorpay%20HMAC--SHA256-blue.svg)]()
+[![Tests](https://img.shields.io/badge/Tests-133%20Passed-success.svg)]()
 
-> A robust, production-style, multi-tier E-Commerce platform engineered with **pure Java, Jakarta Servlets, JSP, JSTL, JDBC, and Microsoft SQL Server**. Designed to master enterprise software patterns without heavy frameworks before transitioning to Spring Boot.
+> An enterprise-grade, high-performance E-Commerce web application engineered with **Spring Boot 3, Hibernate 6 / Spring Data JPA, PostgreSQL, Razorpay payment gateway**, and a modern decoupled frontend built with **React 19, TypeScript, Vite, Tailwind CSS, and Redux Toolkit**.
 
 ---
 
 ## 🌟 Key Capabilities & Highlights
 
-- **Pure Jakarta EE 11 on Tomcat 11**: Fully compatible with `jakarta.servlet.*` and modern standard container specifications.
-- **Strict MVC Architecture**: Clear separation of responsibilities between **View (JSP)**, **Controller (Servlets)**, **Business Service Layer**, **DAO Data Access Layer**, and **Domain Models**.
-- **Robust Database Engine**: MS SQL Server relational schema with ACID transaction isolation, foreign key constraints, indexes, and **HikariCP** connection pooling.
-- **Enterprise Inventory Ledger**: Immutable inventory audit log (`dbo.inventory_transactions`) tracking all stock movements (`PURCHASE`, `SALE`, `RETURN`, `ADJUSTMENT`) with explicit row-level locking (`UPDLOCK`) against negative stock race conditions.
-- **Atomic Checkout & Historical Snapshots**: Transaction-protected multi-step order placement preserving historic price and tax rates in `dbo.order_items`.
-- **Defensive Security Suite**:
-  - **BCrypt** password hashing (No plaintext credentials).
-  - Parameterized `PreparedStatement` everywhere (Zero SQL injection).
-  - Context-aware XSS output escaping.
-  - Role-Based Access Control (`AuthFilter`, `RoleFilter`).
-  - Session hijacking protection with `HttpOnly`, `SameSite=Lax`, and inactivity timeouts.
-- **Customer & Admin Experience**:
-  - Storefront catalog with multi-criteria dynamic search, category tree, brand filtering, sorting, and pagination.
-  - Shopping cart, wishlist, address book, coupon discount engine, and verified purchase reviews.
-  - Full Admin Console with KPI analytics, product/category/coupon CRUD, order fulfillment timeline, and audit logging.
-- **Comprehensive Testing Suite**: 52 unit and mock tests with **JUnit 5** and **Mockito**.
+- **Decoupled Modern Architecture**: Decoupled single-page application (SPA) communicating over clean, type-safe REST APIs (`/api/**`) with CORS and CSRF protection.
+- **Modern React 19 & TypeScript Frontend**:
+  - Storefront catalog with real-time search, category hierarchy, price filtering, and pagination.
+  - Slide-over shopping cart drawer, coupon code application, and interactive wishlist.
+  - Multi-step checkout with address selection, Cash on Delivery (COD), and dynamic Razorpay payment modal invocation (`checkout.js`).
+  - Customer order management with live milestone tracking, printable invoices, cancel dialog, and verified-purchase returns.
+  - Complete **Admin Console** (`/admin`) with executive KPI analytics, sales velocity bar charts, product/category/inventory CRUD, order dispatch workflows, coupon management, return request approvals, and immutable security audit logs.
+- **Defensive Backend & Security**:
+  - **Spring Boot 3.4.3** on Java 21 with Spring Data JPA & Hibernate 6.
+  - Role-Based Access Control (`AuthFilter`, `RoleFilter`) returning structured JSON `401 Unauthorized` / `403 Forbidden` for API requests.
+  - BCrypt password hashing, session hijacking protection (`HttpOnly`, `SameSite=Lax`), and parameterized queries.
+  - Production-ready **Razorpay Payment Gateway** integration with server-side HMAC-SHA256 signature verification.
+- **Relational Data & Concurrency**:
+  - **PostgreSQL** relational database with HikariCP connection pooling.
+  - Concurrency safeguards and row-level locking protecting inventory transactions from overselling.
+- **Test Suite**: **133 unit and integration tests** passing with **JUnit 5** and **Mockito**.
 
 ---
 
 ## 📐 High-Level Architecture Flow
 
 ```
-[ Browser Client ]
-        │
-        ▼ (HTTP GET / POST)
+[ React SPA Client (Vite + TS + Redux) ]
+                │
+                ▼  (REST API calls: /api/** with Credentials & CSRF)
 [ Servlet Filters (AuthFilter, RoleFilter, UTF-8) ]
-        │
-        ▼
-[ Jakarta Servlets (Controllers) ]
-        │
-        ▼
+                │
+                ▼
+[ Spring REST Controllers (com.example.ecommerce.api.*) ]
+                │  (DTO Validation via Jakarta Bean Validation)
+                ▼
 [ Service Layer (Transactions, Validations, Pricing Calculations) ]
-        │
-        ▼
-[ Data Access Objects (DAO Layer via JDBC PreparedStatements) ]
-        │
-        ▼
+                │  (Spring Data JPA / Hibernate 6)
+                ▼
 [ HikariCP Connection Pool ]
-        │
-        ▼
-[ Microsoft SQL Server Database (ecommerce_db) ]
+                │
+                ▼
+[ PostgreSQL Database (ecommerce_db) ]
 ```
 
 ---
@@ -62,103 +60,102 @@
 
 ```text
 ecommerce-web/
-├── docs/                                # Detailed Architectural Documentation
-│   ├── architecture.md                  # MVC Flow, Service/DAO Layers & Request Lifecycles
-│   ├── database-design.md               # SQL Server Schema, Table Specifications & ER Model
-│   ├── modules.md                       # Deep Dive into all 12 Business Modules
-│   ├── api-routes.md                    # Complete Routing and Endpoint Table
+├── docs/                                # Technical Architectural Documentation
+│   ├── architecture.md                  # Decoupled SPA & Spring Boot Architecture
+│   ├── database-design.md               # PostgreSQL Schema, Table Specifications & ER Model
+│   ├── modules.md                       # Business Modules Specification
+│   ├── api-routes.md                    # Complete Spring REST API Catalog
 │   ├── security.md                      # BCrypt, RBAC, XSS, CSRF, and SQLi Defenses
 │   ├── business-rules.md                # Pricing Formulas, Concurrency Locking & Coupon Rules
-│   └── deployment.md                    # Tomcat 11, SQL Server & Build Instructions
+│   └── deployment.md                    # Render, Docker & Production Setup
+│
+├── frontend/                            # React 19 + TypeScript + Vite Single-Page Application
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── common/                  # ToastContainer, RatingStars, Modals
+│   │   │   ├── layout/                  # Navbar, Footer, CartDrawer
+│   │   │   └── product/                 # ProductCard, ReviewSection
+│   │   ├── pages/
+│   │   │   ├── admin/                   # AdminLayout, Dashboard, Products, Orders, Inventory, Coupons, Returns, AuditLogs
+│   │   │   ├── auth/                    # LoginPage, RegisterPage, ForgotPasswordPage, ResetPasswordPage
+│   │   │   ├── cart/                    # CartPage
+│   │   │   ├── checkout/                # CheckoutPage (Razorpay Integration), OrderConfirmationPage
+│   │   │   ├── customer/                # OrdersPage, OrderDetailPage, TrackOrderPage, ProfilePage, AddressBookPage, WishlistPage
+│   │   │   └── store/                   # HomePage, ProductListingPage, ProductDetailPage
+│   │   ├── routes/                      # AppRoutes (ProtectedRoute, AdminRoute)
+│   │   ├── services/                    # Axios API Client, AuthService, ProductService, OrderService, AdminService
+│   │   ├── store/                       # Redux Toolkit Store (authSlice, cartSlice, wishlistSlice, uiSlice)
+│   │   └── types/                       # Comprehensive TypeScript Type Definitions
+│   ├── tailwind.config.js               # Tailwind CSS styling configuration
+│   └── vite.config.ts                   # Vite proxy configuration (/api -> http://localhost:8080)
 │
 ├── src/
 │   ├── main/
 │   │   ├── java/com/example/ecommerce/
-│   │   │   ├── admin/                   # Admin Controllers, Services, DAOs
+│   │   │   ├── api/                     # 11 Spring REST Controllers & 28 Request/Response DTOs
+│   │   │   ├── admin/                   # Admin Services & DAOs
 │   │   │   ├── audit/                   # Audit Logging Engine
-│   │   │   ├── auth/                    # Registration, Login, Sessions, Security
-│   │   │   ├── cart/                    # Cart Management & Subtotal Calculations
-│   │   │   ├── category/                # Hierarchical Categories
-│   │   │   ├── config/                  # DBConnection (HikariCP) & AppContextListener
-│   │   │   ├── coupon/                  # Discount Engine
-│   │   │   ├── customer/                # Address Management & Profiles
-│   │   │   ├── exception/               # Centralized Custom Exceptions
+│   │   │   ├── auth/                    # User Authentication & Security Services
+│   │   │   ├── cart/                    # Cart Management & Pricing Engine
+│   │   │   ├── category/                # Category Services
+│   │   │   ├── config/                  # DBConnection (HikariCP), WebMvcConfig (CORS & SPA routing)
+│   │   │   ├── coupon/                  # Coupon & Discount Engine
+│   │   │   ├── customer/                # Customer Profile & Address Book Services
 │   │   │   ├── filter/                  # AuthFilter & RoleFilter
-│   │   │   ├── health/                  # System Health & Diagnostic Endpoints
 │   │   │   ├── inventory/               # Stock Protection & Transactions
-│   │   │   ├── order/                   # Atomic Checkout & Orders
-│   │   │   ├── payment/                 # Payment Simulation & Gateway
-│   │   │   ├── product/                 # Products, Images, Search & Pagination
-│   │   │   ├── review/                  # Verified Reviews & Ratings
-│   │   │   ├── util/                    # PasswordUtil, Pagination Helper
-│   │   │   └── wishlist/                # Wishlist & Move-to-Cart
-│   │   │
-│   │   ├── resources/
-│   │   │   ├── db.properties            # Externalized Database & Pool Config
-│   │   │   ├── logback.xml              # Logging Configuration
-│   │   │   └── db/
-│   │   │       ├── schema.sql           # SQL Server Schema Definition Script
-│   │   │       └── seed.sql             # Default Admin, Products & Demo Data
-│   │   │
-│   │   └── webapp/
-│   │       ├── assets/                  # CSS Stylesheet & Static Assets
-│   │       ├── WEB-INF/
-│   │       │   ├── web.xml              # Web Deployment Descriptor
-│   │       │   └── views/               # Protected JSP Views
-│   │       │       ├── admin/           # Dashboard, Products, Orders, Reports, Audit
-│   │       │       ├── auth/            # Login, Register, Password
-│   │       │       ├── cart/            # Cart View
-│   │       │       ├── customer/        # Profile, Address Book
-│   │       │       ├── error/           # 403, 404, 500 Pages
-│   │       │       ├── order/           # Checkout, Confirmation, Order History
-│   │       │       ├── payment/         # Gateway & Callbacks
-│   │       │       ├── product/         # Catalog Search & Product Details
-│   │       │       └── wishlist/        # Wishlist View
-│   │       └── index.jsp                # Storefront Landing Page
-│   │
-│   └── test/java/com/example/ecommerce/ # 52 JUnit 5 + Mockito Unit Tests
-│
-└── pom.xml                              # Maven Configuration
+│   │   │   ├── order/                   # Atomic Checkout & Fulfillment Services
+│   │   │   ├── payment/                 # Razorpay Gateway & Signature Verification
+│   │   │   ├── product/                 # Product Catalog & Search
+│   │   │   └── review/                  # Reviews & Ratings
+│   │   └── resources/
+│   │       ├── application.properties   # Spring Boot & HikariCP Configuration
+│   │       └── logback.xml              # Structured Logging Configuration
+│   └── test/java/                       # 133 Unit & Integration Tests (JUnit 5 & Mockito)
+└── pom.xml                              # Maven Configuration (Java 21, Spring Boot 3.4.3)
 ```
 
 ---
 
-## ⚡ Quick Start Guide
+## 🚀 Quick Start Guide
 
-### 1. Database Setup
-Create and seed the SQL Server database:
+### Prerequisites
+- **Java 21** or later
+- **Maven 3.9+**
+- **Node.js 20+** and **npm**
+- **PostgreSQL** running on port `5432` with database `ecommerce_db`
+
+### 1. Run the Spring Boot Backend
 ```bash
-sqlcmd -S localhost  -i src/main/resources/db/schema.sql
-sqlcmd -S localhost  -i src/main/resources/db/seed.sql
+# Clone the repository
+git clone https://github.com/Rahulpawarrk/shopkart-ecommerce.git
+cd shopkart-ecommerce
+
+# Run tests
+mvn test
+
+# Start the Spring Boot server (port 8080)
+mvn spring-boot:run
 ```
 
-### 2. Build & Test
+### 2. Run the React Frontend
 ```bash
-mvn clean test
-mvn package
+cd frontend
+
+# Install frontend dependencies
+npm install
+
+# Start the Vite development server (port 5173 with proxy to 8080)
+npm run dev
 ```
 
-### 3. Deploy to Tomcat 11
-Copy `target/ecommerce-web.war` to Tomcat's `webapps/` folder as `ROOT.war` and start Tomcat:
-```bash
-%CATALINA_HOME%\bin\startup.bat
-```
-
-### 4. Access the Application
-- **Storefront**: `http://localhost:8080/`
-- **Product Catalog**: `http://localhost:8080/products`
-- **System Health Diagnostic**: `http://localhost:8080/health`
-- **Admin Console**: `http://localhost:8080/admin/dashboard`
+Visit **`http://localhost:5173`** in your browser.
 
 ---
 
-## 📚 In-Depth Documentation
+## 🛡️ Payment Gateway Integration (Razorpay)
 
-For thorough explanations of design decisions, SQL optimization, and architecture rationale, consult the [`docs/`](file:///docs/) directory:
-- [Architecture & MVC Flow](file:///docs/architecture.md)
-- [Database Design & Schema](file:///docs/database-design.md)
-- [Module Catalog](file:///docs/modules.md)
-- [URL Routes & Endpoints](file:///docs/api-routes.md)
-- [Security Architecture](file:///docs/security.md)
-- [Business Rules & Concurrency](file:///docs/business-rules.md)
-- [Deployment Guide](file:///docs/deployment.md)
+1. Client checkout requests payment initiation via `POST /api/payments/initiate/{orderId}`.
+2. Server calls Razorpay API to generate a server-side `razorpay_order_id` and returns the public `keyId`.
+3. Client opens the official Razorpay Checkout modal via injected `checkout.js`.
+4. Upon successful payment authorization, client sends `razorpay_payment_id`, `razorpay_order_id`, and `razorpay_signature` to `POST /api/payments/verify`.
+5. Server verifies signature strictly using HMAC-SHA256 (`RAZORPAY_KEY_SECRET`). Only upon valid signature is the order marked `PAID` and inventory finalized.

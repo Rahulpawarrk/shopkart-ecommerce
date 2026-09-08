@@ -1,70 +1,74 @@
-# Enterprise E-Commerce Platform Architecture
+# ShopKart — System Architecture & Design
 
 ## 1. Architectural Overview
 
-This application is built with a **strict Multi-Tiered MVC (Model-View-Controller) Architecture**, incorporating dedicated **Service** and **Data Access Object (DAO)** layers. It runs on **Jakarta EE 11** on top of **Apache Tomcat 11**, persisting data to **Microsoft SQL Server** via standard **JDBC** and connection pooling with **HikariCP**.
+ShopKart is architected as a **Decoupled Modern E-Commerce Platform** comprising a **React Single-Page Application (SPA)** frontend and a **Spring Boot REST API** backend powered by **Hibernate / Spring Data JPA** and **PostgreSQL**.
 
 ```
-[ Web Browser ]
-      │
-      ▼  (HTTP Request: GET / POST)
-[ Servlet Filters ] (AuthFilter, RoleFilter, UTF-8 Encoding)
-      │
-      ▼
-[ Jakarta Servlets (Controllers) ]
-      │  (Delegates business logic, parameter extraction, view forwarding)
-      ▼
-[ Service Layer ]
-      │  (Business rules, transactions, stock validations, coupon discounts)
-      ▼
-[ Data Access Object (DAO) Layer ]
-      │  (PreparedStatements, SQL Server queries, ResultSet mapping)
-      ▼
-[ HikariCP Connection Pool / JDBC ]
-      │
-      ▼
-[ Microsoft SQL Server (ecommerce_db) ]
+[ React SPA Client (TypeScript + Vite + Redux) ]
+                       │
+                       ▼  (HTTP REST over /api/** with credentials: true)
+         [ Cross-Origin & Security Layer ]
+    (WebMvcConfig CORS + AuthFilter + RoleFilter)
+                       │
+                       ▼
+       [ Spring REST Controllers (@RestController) ]
+            (Jakarta Bean Validation DTOs)
+                       │
+                       ▼
+       [ Business Service Layer (@Service) ]
+ (Transaction Management, Concurrency Locks, Pricing & Discounts)
+                       │
+                       ▼
+       [ Data Access Layer (Spring Data JPA / DAOs) ]
+                       │
+                       ▼
+          [ HikariCP Connection Pool ]
+                       │
+                       ▼
+         [ PostgreSQL Database (ecommerce_db) ]
 ```
 
 ---
 
 ## 2. Layer Responsibilities & Strict Boundaries
 
-| Layer | Component | Core Responsibilities | Strict Prohibitions |
+| Layer | Technology | Responsibilities | Strict Prohibitions |
 |---|---|---|---|
-| **View** | JSP, JSTL, EL, HTML5, CSS3, JS | Displaying UI, form rendering, formatting currency/dates, submitting HTTP actions. | ❌ No direct SQL queries, No database connections, No business calculations. |
-| **Controller** | Jakarta Servlets (`HttpServlet`) | Intercepting requests, parsing/sanitizing parameters, invoking services, binding model attributes, session management, forwarding/redirecting. | ❌ No direct SQL, No business calculations, No transaction management. |
-| **Service** | POJO Business Services | Business rules, calculations (totals, discounts, taxes), multi-DAO orchestration, ACID transaction management (`commit`/`rollback`), concurrency safeguards. | ❌ No `HttpServletRequest`/`HttpServletResponse` dependencies, No UI rendering. |
-| **Data Access** | DAO Classes | Executing SQL via `PreparedStatement`, handling `ResultSet` extraction, managing CRUD operations. | ❌ No business validation, No UI code, No session handling. |
-| **Model** | POJO Domain Models & DTOs | Encapsulating relational state and data transfer payloads. | ❌ No database or business operations. |
+| **Client SPA** | React 19, TypeScript, Vite, Tailwind CSS, Redux Toolkit | Rendering UI views, client routing, user input validation, global UI state (auth, cart, wishlist, notifications). | ❌ Never store private secrets (`RAZORPAY_KEY_SECRET`), no direct DB calls. |
+| **REST API Layer** | Spring Boot `@RestController` | HTTP endpoint exposure, JSON serialization, parameter sanitization, Jakarta Bean Validation (`@Valid`). | ❌ No business calculations or direct SQL queries. |
+| **Security & Filters** | `AuthFilter`, `RoleFilter`, `WebMvcConfig` | CORS header evaluation, preflight `OPTIONS` handling, role authorization (`ROLE_ADMIN`), structured 401/403 responses. | ❌ No business logic or state modification. |
+| **Business Service Layer** | Spring `@Service` POJOs | ACID transaction management (`@Transactional`), authoritative inventory reservation, order placement, Razorpay HMAC-SHA256 signature verification. | ❌ No UI dependencies, no raw HTTP response writing. |
+| **Data Access Layer** | Spring Data JPA / JDBC DAOs | Query execution, PostgreSQL connection acquisition via HikariCP, entity mapping. | ❌ No business rule validation. |
+| **Database** | PostgreSQL 16+ | ACID transactional state, foreign key integrity, row-level locks on stock movements. | — |
 
 ---
 
-## 3. Request & Response Lifecycle Flow
+## 3. End-to-End Order Placement & Payment Flow
 
-### Step-by-Step Flow for an Order Placement Request:
-1. **Client Action**: Customer reviews cart and clicks "Place Order" (`POST /checkout/place-order`).
-2. **Filter Interception**: `AuthFilter` verifies the `UserSession` exists in the active `HttpSession`. If not logged in, redirects to `/login`.
-3. **Controller Handling**: `CheckoutServlet` reads address ID, payment method, customer notes, and CSRF token. It extracts the authenticated `userId`.
-4. **Service Execution**: `OrderService.placeOrder()` begins a database transaction (`connection.setAutoCommit(false)`):
-   - Validates user and active shipping address.
-   - Fetches active cart items and computes authoritative server-side prices.
-   - Verifies stock levels with SQL Server row-level locking (`WITH (UPDLOCK, ROWLOCK)`).
-   - Validates and applies coupon discount if supplied.
-   - Inserts order record into `dbo.orders`.
-   - Inserts line items snapshot into `dbo.order_items`.
-   - Decrements stock in `dbo.inventory` and writes audit log to `dbo.inventory_transactions`.
-   - Generates initial payment record in `dbo.payments`.
-   - Clears cart in `dbo.cart_items`.
-   - Commits transaction (`connection.commit()`).
-5. **Controller Response**: `CheckoutServlet` puts order confirmation into session/request and redirects to `/order/confirmation?orderId=...`.
-6. **View Rendering**: `confirmation.jsp` renders order summary and tracking ID via JSTL `<c:out>` and `<fmt:formatNumber>`.
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Customer as User
+    participant React as React SPA (CheckoutPage)
+    participant API as Spring Boot (/api/orders & /api/payments)
+    participant Razorpay as Razorpay Gateway
+    participant DB as PostgreSQL
 
----
-
-## 4. Why This Architecture?
-
-1. **Testability**: Decoupled Services and DAOs can be unit-tested in isolation using **JUnit 5** and **Mockito** without booting Tomcat or maintaining live database state.
-2. **Security**: Centralized Filter chain enforces role-based authorization before any controller code executes. PreparedStatements prevent SQL injection.
-3. **Maintainability**: Clear separation of concerns means UI changes (JSP/CSS) never jeopardize business logic or data integrity.
-4. **Resilience**: HikariCP handles database connection pooling, auto-reconnects, and prevents connection leaks through automatic timeout closures.
+    Customer->>React: Selects address, clicks "Pay with Razorpay"
+    React->>API: POST /api/orders/checkout {addressId, paymentMethod: 'RAZORPAY'}
+    API->>DB: Atomically reserve stock, save Order (status: PENDING)
+    API-->>React: 200 OK (Order ID, Order Number)
+    React->>API: POST /api/payments/initiate/{orderId}
+    API->>Razorpay: Create Order (amountInPaise, currency: INR)
+    Razorpay-->>API: razorpay_order_id
+    API-->>React: 200 OK {razorpayOrderId, keyId, amount}
+    React->>Customer: Opens Razorpay Checkout Modal
+    Customer->>Razorpay: Authorizes Payment (Card / UPI / NetBanking)
+    Razorpay-->>React: payment_id, order_id, signature
+    React->>API: POST /api/payments/verify {orderId, razorpayPaymentId, razorpaySignature}
+    API->>API: Verify HMAC-SHA256 signature with RAZORPAY_KEY_SECRET
+    API->>DB: Update Payment (PAID) & Order (CONFIRMED), finalize stock
+    API-->>React: 200 OK {success: true}
+    React->>Customer: Redirects to /order-confirmation/:id
+```
