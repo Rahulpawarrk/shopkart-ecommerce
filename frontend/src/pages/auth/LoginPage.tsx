@@ -5,7 +5,7 @@ import { loginUser } from '@/store/slices/authSlice';
 import { fetchCart } from '@/store/slices/cartSlice';
 import { fetchWishlist } from '@/store/slices/wishlistSlice';
 import { showToast } from '@/store/slices/uiSlice';
-import { Mail, Lock, LogIn, Eye, EyeOff, ShieldCheck, Zap, Truck, CheckCircle2, Sparkles, ArrowRight } from 'lucide-react';
+import { Mail, Lock, LogIn, Eye, EyeOff, ShieldCheck, Truck, Zap, Sparkles, ArrowRight } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -44,12 +44,6 @@ export const LoginPage: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     handleLoginSubmit(email, password);
-  };
-
-  const handleQuickLogin = (demoEmail: string, demoPass: string) => {
-    setEmail(demoEmail);
-    setPassword(demoPass);
-    handleLoginSubmit(demoEmail, demoPass);
   };
 
   return (
@@ -114,33 +108,8 @@ export const LoginPage: React.FC = () => {
               <span className="text-xs text-slate-400 font-medium">Step into ShopKart</span>
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              Enter your registered credentials or select 1-click demo login below.
+              Enter your registered email and password to access your account.
             </p>
-          </div>
-
-          {/* Quick Demo Access Bar */}
-          <div className="mb-6 p-3.5 bg-blue-50/70 rounded-2xl border border-blue-100">
-            <p className="text-[11px] font-bold text-blue-900 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-              <Zap className="w-3.5 h-3.5 text-amber-500" /> Quick 1-Click Demo Login
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('customer@ecommerce.com', 'Admin@123')}
-                className="px-3 py-2 bg-white text-slate-800 hover:text-blue-600 border border-blue-200 rounded-xl text-xs font-bold transition shadow-xs hover:border-blue-400 flex items-center justify-center gap-1.5"
-              >
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                <span>Demo Customer</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('admin@ecommerce.com', 'Admin@123')}
-                className="px-3 py-2 bg-white text-slate-800 hover:text-purple-600 border border-purple-200 rounded-xl text-xs font-bold transition shadow-xs hover:border-purple-400 flex items-center justify-center gap-1.5"
-              >
-                <CheckCircle2 className="w-3.5 h-3.5 text-purple-500" />
-                <span>Demo Admin</span>
-              </button>
-            </div>
           </div>
 
           {error && (

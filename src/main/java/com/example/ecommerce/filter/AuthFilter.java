@@ -32,13 +32,9 @@ import java.io.IOException;
         "/payment", "/payment/*",
         "/product/review", "/order/review",
         "/checkout", "/checkout/*",
-        "/cart", "/cart/*",
-        "/wishlist", "/wishlist/*",
         "/admin", "/admin/*",
         "/api/customer/*",
         "/api/orders/*",
-        "/api/cart/*",
-        "/api/wishlist/*",
         "/api/admin/*",
         "/api/payments/*"
 })

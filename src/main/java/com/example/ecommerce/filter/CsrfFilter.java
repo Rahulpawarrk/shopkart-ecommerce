@@ -32,10 +32,15 @@ public class CsrfFilter implements Filter {
     private static final String CSRF_REQ_ATTR = "csrfToken";
     private static final SecureRandom secureRandom = new SecureRandom();
 
-    // Paths exempted from CSRF (External Webhooks / Payment Gateways)
+    // Paths exempted from CSRF (External Webhooks / Payment Gateways / Authentication APIs)
     private static final Set<String> EXEMPT_PREFIXES = Set.of(
+            "/api/auth",
+            "/auth",
+            "/login",
+            "/register",
             "/api/logistics/webhook",
-            "/payment/callback");
+            "/payment/callback",
+            "/api/payment/webhook");
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
