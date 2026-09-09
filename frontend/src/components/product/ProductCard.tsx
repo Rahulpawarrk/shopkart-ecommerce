@@ -113,6 +113,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <img
           src={product.primaryImageUrl || fallbackImage}
           alt={product.productName}
+          loading="lazy"
+          decoding="async"
           className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
           onError={(e) => {
             (e.target as HTMLElement).setAttribute('src', fallbackImage);

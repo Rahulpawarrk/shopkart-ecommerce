@@ -17,14 +17,6 @@ import {
   Gift,
   CheckCircle2,
   Mail,
-  Laptop,
-  Smartphone,
-  Headphones,
-  Watch,
-  Shirt,
-  Footprints,
-  Home,
-  ShoppingBag,
 } from 'lucide-react';
 
 export const HomePage: React.FC = () => {
@@ -62,19 +54,6 @@ export const HomePage: React.FC = () => {
       setEmailInput('');
     }
   };
-
-  if (loading) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12 animate-pulse">
-        <div className="h-96 bg-gray-200 rounded-3xl"></div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {[1, 2, 3, 4].map((n) => (
-            <div key={n} className="h-72 bg-gray-200 rounded-2xl"></div>
-          ))}
-        </div>
-      </div>
-    );
-  }
 
   const categories = showcase?.categories || [];
   const deals = showcase?.dealsOfTheDay || [];
@@ -237,168 +216,195 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Featured Categories */}
-      {categories.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
-                <Layers className="w-4 h-4" />
-              </div>
-              <h2 className="text-xl sm:text-2xl font-black text-gray-900">Shop by Category</h2>
+      {/* Dynamic Showcases or Localized Loading Skeleton */}
+      {loading ? (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 animate-pulse" aria-busy="true" aria-label="Loading products">
+          <div className="space-y-4">
+            <div className="h-6 w-48 bg-slate-200 rounded-lg" />
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+                <div key={n} className="h-28 bg-slate-200 rounded-2xl" />
+              ))}
             </div>
-            <Link to="/products" className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
-              <span>View All Categories</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
           </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4">
-            {categories.map((cat) => {
-              const nameLower = cat.categoryName.toLowerCase();
-              const slugLower = (cat.slug || '').toLowerCase();
-
-              // High-resolution photography mapping for each category
-              let catImage = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=400&q=80';
-
-              if (slugLower.includes('laptop') || nameLower.includes('laptop') || nameLower.includes('computer')) {
-                catImage = 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=400&q=80';
-              } else if (slugLower.includes('phone') || nameLower.includes('phone') || nameLower.includes('tablet')) {
-                catImage = 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=400&q=80';
-              } else if (slugLower.includes('audio') || nameLower.includes('audio') || nameLower.includes('headphone')) {
-                catImage = 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=400&q=80';
-              } else if (slugLower.includes('watch') || nameLower.includes('watch') || nameLower.includes('wearable')) {
-                catImage = 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=400&q=80';
-              } else if (slugLower.includes('men') || nameLower.includes('men')) {
-                catImage = 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=400&q=80';
-              } else if (slugLower.includes('women') || nameLower.includes('women')) {
-                catImage = 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=400&q=80';
-              } else if (slugLower.includes('footwear') || nameLower.includes('footwear') || nameLower.includes('shoe') || nameLower.includes('sneaker')) {
-                catImage = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=400&q=80';
-              } else if (slugLower.includes('home') || nameLower.includes('home') || nameLower.includes('kitchen')) {
-                catImage = 'https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?auto=format&fit=crop&w=400&q=80';
-              }
-
-              return (
-                <Link
-                  key={cat.categoryId}
-                  to={`/products?categorySlug=${cat.slug}`}
-                  className="group relative flex flex-col items-center text-center p-3 sm:p-4 bg-white rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-xl hover:border-blue-400 hover:-translate-y-1.5 transition-all duration-300 overflow-hidden"
-                >
-                  {/* High Quality Category Image Container */}
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden bg-slate-50 border border-slate-200/70 p-1 mb-3 group-hover:scale-105 group-hover:border-blue-300 transition-all duration-300 relative shadow-2xs">
-                    <img
-                      src={catImage}
-                      alt={cat.categoryName}
-                      className="w-full h-full object-cover rounded-xl group-hover:scale-110 transition-transform duration-500"
-                      loading="lazy"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=400&q=80';
-                      }}
-                    />
-                  </div>
-                  <span className="text-xs sm:text-sm font-black text-slate-900 group-hover:text-blue-600 transition line-clamp-1 px-1">
-                    {cat.categoryName}
-                  </span>
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 mt-1 opacity-75 group-hover:opacity-100 group-hover:translate-x-0.5 transition">
-                    Explore <ArrowRight className="w-3 h-3" />
-                  </span>
-                </Link>
-              );
-            })}
+          <div className="space-y-4">
+            <div className="h-24 bg-slate-200 rounded-3xl" />
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+              {[1, 2, 3, 4].map((n) => (
+                <div key={n} className="h-80 bg-slate-200 rounded-2xl" />
+              ))}
+            </div>
           </div>
-        </section>
-      )}
-
-      {/* Deals of the Day */}
-      {deals.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 rounded-3xl p-6 md:p-8 text-white mb-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-white text-red-600 flex items-center justify-center shadow-md flex-shrink-0">
-                <Zap className="w-7 h-7 fill-red-600 animate-bounce" />
-              </div>
-              <div>
+        </div>
+      ) : (
+        <>
+          {/* Featured Categories */}
+          {categories.length > 0 && (
+            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
-                  <h2 className="text-2xl sm:text-3xl font-black tracking-tight">Deals of the Day</h2>
-                  <span className="px-2.5 py-0.5 bg-yellow-400 text-gray-950 font-black text-[10px] rounded-full uppercase tracking-wider">
-                    Limited Stock
-                  </span>
+                  <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+                    <Layers className="w-4 h-4" />
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-black text-gray-900">Shop by Category</h2>
                 </div>
-                <p className="text-xs sm:text-sm text-red-100 mt-1">
-                  Handpicked bargains with the highest verified price drops and free delivery
-                </p>
+                <Link to="/products" className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
+                  <span>View All Categories</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
               </div>
-            </div>
 
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1.5 bg-black/30 backdrop-blur-xs px-4 py-2 rounded-xl text-white font-mono text-sm border border-white/20">
-                <Clock className="w-4 h-4 text-yellow-300" />
-                <span>{String(timeLeft.hours).padStart(2, '0')}:{String(timeLeft.minutes).padStart(2, '0')}:{String(timeLeft.seconds).padStart(2, '0')}</span>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4">
+                {categories.map((cat) => {
+                  const nameLower = cat.categoryName.toLowerCase();
+                  const slugLower = (cat.slug || '').toLowerCase();
+
+                  // High-resolution photography mapping for each category
+                  let catImage = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=400&q=80';
+
+                  if (slugLower.includes('laptop') || nameLower.includes('laptop') || nameLower.includes('computer')) {
+                    catImage = 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=400&q=80';
+                  } else if (slugLower.includes('phone') || nameLower.includes('phone') || nameLower.includes('tablet')) {
+                    catImage = 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=400&q=80';
+                  } else if (slugLower.includes('audio') || nameLower.includes('audio') || nameLower.includes('headphone')) {
+                    catImage = 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=400&q=80';
+                  } else if (slugLower.includes('watch') || nameLower.includes('watch') || nameLower.includes('wearable')) {
+                    catImage = 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=400&q=80';
+                  } else if (slugLower.includes('men') || nameLower.includes('men')) {
+                    catImage = 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=400&q=80';
+                  } else if (slugLower.includes('women') || nameLower.includes('women')) {
+                    catImage = 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=400&q=80';
+                  } else if (slugLower.includes('footwear') || nameLower.includes('footwear') || nameLower.includes('shoe') || nameLower.includes('sneaker')) {
+                    catImage = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=400&q=80';
+                  } else if (slugLower.includes('home') || nameLower.includes('home') || nameLower.includes('kitchen')) {
+                    catImage = 'https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?auto=format&fit=crop&w=400&q=80';
+                  }
+
+                  return (
+                    <Link
+                      key={cat.categoryId}
+                      to={`/products?categorySlug=${cat.slug}`}
+                      className="group relative flex flex-col items-center text-center p-3 sm:p-4 bg-white rounded-3xl border border-slate-200/80 shadow-xs hover:shadow-xl hover:border-blue-400 hover:-translate-y-1.5 transition-all duration-300 overflow-hidden"
+                    >
+                      {/* High Quality Category Image Container */}
+                      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden bg-slate-50 border border-slate-200/70 p-1 mb-3 group-hover:scale-105 group-hover:border-blue-300 transition-all duration-300 relative shadow-2xs">
+                        <img
+                          src={catImage}
+                          alt={cat.categoryName}
+                          className="w-full h-full object-cover rounded-xl group-hover:scale-110 transition-transform duration-500"
+                          loading="lazy"
+                          decoding="async"
+                          width="96"
+                          height="96"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=400&q=80';
+                          }}
+                        />
+                      </div>
+                      <span className="text-xs sm:text-sm font-black text-slate-900 group-hover:text-blue-600 transition line-clamp-1 px-1">
+                        {cat.categoryName}
+                      </span>
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 mt-1 opacity-75 group-hover:opacity-100 group-hover:translate-x-0.5 transition">
+                        Explore <ArrowRight className="w-3 h-3" />
+                      </span>
+                    </Link>
+                  );
+                })}
               </div>
-              <Link
-                to="/products?sort=deals"
-                className="px-6 py-2.5 bg-white text-red-600 font-bold text-xs rounded-full hover:bg-red-50 transition shadow-md whitespace-nowrap"
-              >
-                See All Deals &rarr;
-              </Link>
-            </div>
-          </div>
+            </section>
+          )}
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-            {deals.slice(0, 4).map((product) => (
-              <ProductCard key={product.productId} product={product} />
-            ))}
-          </div>
-        </section>
-      )}
+          {/* Deals of the Day */}
+          {deals.length > 0 && (
+            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 rounded-3xl p-6 md:p-8 text-white mb-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-white text-red-600 flex items-center justify-center shadow-md flex-shrink-0">
+                    <Zap className="w-7 h-7 fill-red-600 animate-bounce" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-2xl sm:text-3xl font-black tracking-tight">Deals of the Day</h2>
+                      <span className="px-2.5 py-0.5 bg-yellow-400 text-gray-950 font-black text-[10px] rounded-full uppercase tracking-wider">
+                        Limited Stock
+                      </span>
+                    </div>
+                    <p className="text-xs sm:text-sm text-red-100 mt-1">
+                      Handpicked bargains with the highest verified price drops and free delivery
+                    </p>
+                  </div>
+                </div>
 
-      {/* Bestsellers Showcase */}
-      {bestsellers.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
-                <TrendingUp className="w-4 h-4" />
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-1.5 bg-black/30 backdrop-blur-xs px-4 py-2 rounded-xl text-white font-mono text-sm border border-white/20">
+                    <Clock className="w-4 h-4 text-yellow-300" />
+                    <span>{String(timeLeft.hours).padStart(2, '0')}:{String(timeLeft.minutes).padStart(2, '0')}:{String(timeLeft.seconds).padStart(2, '0')}</span>
+                  </div>
+                  <Link
+                    to="/products?sort=deals"
+                    className="px-6 py-2.5 bg-white text-red-600 font-bold text-xs rounded-full hover:bg-red-50 transition shadow-md whitespace-nowrap"
+                  >
+                    See All Deals &rarr;
+                  </Link>
+                </div>
               </div>
-              <h2 className="text-xl sm:text-2xl font-black text-gray-900">Trending Bestsellers</h2>
-            </div>
-            <Link to="/products?sort=bestsellers" className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
-              <span>View All</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-            {bestsellers.slice(0, 8).map((product) => (
-              <ProductCard key={product.productId} product={product} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* New Arrivals Showcase */}
-      {newArrivals.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
-                <Sparkles className="w-4 h-4" />
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+                {deals.slice(0, 4).map((product) => (
+                  <ProductCard key={product.productId} product={product} />
+                ))}
               </div>
-              <h2 className="text-xl sm:text-2xl font-black text-gray-900">Just Dropped: New Arrivals</h2>
-            </div>
-            <Link to="/products?sort=newest" className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
-              <span>View All</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
+            </section>
+          )}
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-            {newArrivals.slice(0, 4).map((product) => (
-              <ProductCard key={product.productId} product={product} />
-            ))}
-          </div>
-        </section>
+          {/* Bestsellers Showcase */}
+          {bestsellers.length > 0 && (
+            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                    <TrendingUp className="w-4 h-4" />
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-black text-gray-900">Trending Bestsellers</h2>
+                </div>
+                <Link to="/products?sort=bestsellers" className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
+                  <span>View All</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+                {bestsellers.slice(0, 8).map((product) => (
+                  <ProductCard key={product.productId} product={product} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* New Arrivals Showcase */}
+          {newArrivals.length > 0 && (
+            <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                    <Sparkles className="w-4 h-4" />
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-black text-gray-900">Just Dropped: New Arrivals</h2>
+                </div>
+                <Link to="/products?sort=newest" className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
+                  <span>View All</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+                {newArrivals.slice(0, 4).map((product) => (
+                  <ProductCard key={product.productId} product={product} />
+                ))}
+              </div>
+            </section>
+          )}
+        </>
       )}
 
       {/* Newsletter / Discount Callout */}

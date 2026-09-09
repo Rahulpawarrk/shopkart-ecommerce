@@ -8,40 +8,101 @@ import { Footer } from '@/components/layout/Footer';
 import { CartDrawer } from '@/components/layout/CartDrawer';
 import { ToastContainer } from '@/components/common/ToastContainer';
 
-// Storefront Pages
+// Storefront Critical Page (statically imported for instant LCP)
 import { HomePage } from '@/pages/store/HomePage';
-import { ProductListingPage } from '@/pages/store/ProductListingPage';
-import { ProductDetailPage } from '@/pages/store/ProductDetailPage';
-import { CartPage } from '@/pages/cart/CartPage';
-import { CheckoutPage } from '@/pages/checkout/CheckoutPage';
-import { OrderConfirmationPage } from '@/pages/checkout/OrderConfirmationPage';
 
-// Customer Pages
-import { OrdersPage } from '@/pages/customer/OrdersPage';
-import { OrderDetailPage } from '@/pages/customer/OrderDetailPage';
-import { TrackOrderPage } from '@/pages/customer/TrackOrderPage';
-import { ProfilePage } from '@/pages/customer/ProfilePage';
-import { AddressBookPage } from '@/pages/customer/AddressBookPage';
-import { WishlistPage } from '@/pages/customer/WishlistPage';
+// Storefront Secondary Pages (Lazy Loaded)
+const ProductListingPage = React.lazy(() =>
+  import('@/pages/store/ProductListingPage').then((m) => ({ default: m.ProductListingPage }))
+);
+const ProductDetailPage = React.lazy(() =>
+  import('@/pages/store/ProductDetailPage').then((m) => ({ default: m.ProductDetailPage }))
+);
+const CartPage = React.lazy(() =>
+  import('@/pages/cart/CartPage').then((m) => ({ default: m.CartPage }))
+);
+const CheckoutPage = React.lazy(() =>
+  import('@/pages/checkout/CheckoutPage').then((m) => ({ default: m.CheckoutPage }))
+);
+const OrderConfirmationPage = React.lazy(() =>
+  import('@/pages/checkout/OrderConfirmationPage').then((m) => ({ default: m.OrderConfirmationPage }))
+);
 
-// Auth Pages
-import { LoginPage } from '@/pages/auth/LoginPage';
-import { RegisterPage } from '@/pages/auth/RegisterPage';
-import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
-import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
+// Customer Pages (Lazy Loaded)
+const OrdersPage = React.lazy(() =>
+  import('@/pages/customer/OrdersPage').then((m) => ({ default: m.OrdersPage }))
+);
+const OrderDetailPage = React.lazy(() =>
+  import('@/pages/customer/OrderDetailPage').then((m) => ({ default: m.OrderDetailPage }))
+);
+const TrackOrderPage = React.lazy(() =>
+  import('@/pages/customer/TrackOrderPage').then((m) => ({ default: m.TrackOrderPage }))
+);
+const ProfilePage = React.lazy(() =>
+  import('@/pages/customer/ProfilePage').then((m) => ({ default: m.ProfilePage }))
+);
+const AddressBookPage = React.lazy(() =>
+  import('@/pages/customer/AddressBookPage').then((m) => ({ default: m.AddressBookPage }))
+);
+const WishlistPage = React.lazy(() =>
+  import('@/pages/customer/WishlistPage').then((m) => ({ default: m.WishlistPage }))
+);
 
-// Admin Pages
-import { AdminLayout } from '@/pages/admin/AdminLayout';
-import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage';
-import { AdminProductsPage } from '@/pages/admin/AdminProductsPage';
-import { AdminCategoriesPage } from '@/pages/admin/AdminCategoriesPage';
-import { AdminOrdersPage } from '@/pages/admin/AdminOrdersPage';
-import { AdminInventoryPage } from '@/pages/admin/AdminInventoryPage';
-import { AdminCouponsPage } from '@/pages/admin/AdminCouponsPage';
-import { AdminReturnsPage } from '@/pages/admin/AdminReturnsPage';
-import { AdminAuditLogsPage } from '@/pages/admin/AdminAuditLogsPage';
-import { AdminUsersPage } from '@/pages/admin/AdminUsersPage';
-import { AdminReconciliationPage } from '@/pages/admin/AdminReconciliationPage';
+// Auth Pages (Lazy Loaded)
+const LoginPage = React.lazy(() =>
+  import('@/pages/auth/LoginPage').then((m) => ({ default: m.LoginPage }))
+);
+const RegisterPage = React.lazy(() =>
+  import('@/pages/auth/RegisterPage').then((m) => ({ default: m.RegisterPage }))
+);
+const ForgotPasswordPage = React.lazy(() =>
+  import('@/pages/auth/ForgotPasswordPage').then((m) => ({ default: m.ForgotPasswordPage }))
+);
+const ResetPasswordPage = React.lazy(() =>
+  import('@/pages/auth/ResetPasswordPage').then((m) => ({ default: m.ResetPasswordPage }))
+);
+
+// Admin Pages (Lazy Loaded)
+const AdminLayout = React.lazy(() =>
+  import('@/pages/admin/AdminLayout').then((m) => ({ default: m.AdminLayout }))
+);
+const AdminDashboardPage = React.lazy(() =>
+  import('@/pages/admin/AdminDashboardPage').then((m) => ({ default: m.AdminDashboardPage }))
+);
+const AdminProductsPage = React.lazy(() =>
+  import('@/pages/admin/AdminProductsPage').then((m) => ({ default: m.AdminProductsPage }))
+);
+const AdminCategoriesPage = React.lazy(() =>
+  import('@/pages/admin/AdminCategoriesPage').then((m) => ({ default: m.AdminCategoriesPage }))
+);
+const AdminOrdersPage = React.lazy(() =>
+  import('@/pages/admin/AdminOrdersPage').then((m) => ({ default: m.AdminOrdersPage }))
+);
+const AdminInventoryPage = React.lazy(() =>
+  import('@/pages/admin/AdminInventoryPage').then((m) => ({ default: m.AdminInventoryPage }))
+);
+const AdminCouponsPage = React.lazy(() =>
+  import('@/pages/admin/AdminCouponsPage').then((m) => ({ default: m.AdminCouponsPage }))
+);
+const AdminReturnsPage = React.lazy(() =>
+  import('@/pages/admin/AdminReturnsPage').then((m) => ({ default: m.AdminReturnsPage }))
+);
+const AdminAuditLogsPage = React.lazy(() =>
+  import('@/pages/admin/AdminAuditLogsPage').then((m) => ({ default: m.AdminAuditLogsPage }))
+);
+const AdminUsersPage = React.lazy(() =>
+  import('@/pages/admin/AdminUsersPage').then((m) => ({ default: m.AdminUsersPage }))
+);
+const AdminReconciliationPage = React.lazy(() =>
+  import('@/pages/admin/AdminReconciliationPage').then((m) => ({ default: m.AdminReconciliationPage }))
+);
+
+// Smooth Page Loading Indicator for lazy chunks
+const PageLoadingFallback: React.FC = () => (
+  <div className="min-h-[50vh] flex items-center justify-center" role="status" aria-label="Loading page">
+    <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin" />
+  </div>
+);
 
 // Protected Route Wrapper (Requires Logged-In User)
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -92,7 +153,9 @@ const StorefrontLayout: React.FC = () => (
   <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
     <Navbar />
     <main className="flex-1">
-      <Outlet />
+      <React.Suspense fallback={<PageLoadingFallback />}>
+        <Outlet />
+      </React.Suspense>
     </main>
     <Footer />
     <CartDrawer />
@@ -277,7 +340,9 @@ export const AppRoutes: React.FC = () => {
         path="/admin"
         element={
           <AdminRoute>
-            <AdminLayout />
+            <React.Suspense fallback={<PageLoadingFallback />}>
+              <AdminLayout />
+            </React.Suspense>
           </AdminRoute>
         }
       >
