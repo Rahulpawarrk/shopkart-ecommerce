@@ -21,7 +21,8 @@ import {
 } from 'lucide-react';
 
 export const ProductDetailPage: React.FC = () => {
-  const { slugOrId } = useParams<{ slugOrId: string }>();
+  const params = useParams<{ id?: string; slugOrId?: string }>();
+  const productIdentifier = params.slugOrId || params.id;
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useAppDispatch();
@@ -49,10 +50,10 @@ export const ProductDetailPage: React.FC = () => {
   const [pincodeStatus, setPincodeStatus] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!slugOrId) return;
+    if (!productIdentifier) return;
     setLoading(true);
     productService
-      .getProduct(slugOrId)
+      .getProduct(productIdentifier)
       .then((data) => {
         setProduct(data);
         setSelectedImage(data.primaryImageUrl || '/placeholder.svg');
@@ -66,7 +67,7 @@ export const ProductDetailPage: React.FC = () => {
         dispatch(showToast({ message: err.message || 'Product not found', type: 'error' }));
       })
       .finally(() => setLoading(false));
-  }, [slugOrId]);
+  }, [productIdentifier, dispatch]);
 
   const handleAddToCart = async () => {
     if (!product || !product.inStock) return;

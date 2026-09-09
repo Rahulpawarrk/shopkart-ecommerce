@@ -122,12 +122,15 @@ public class SecurityHeadersFilter implements Filter {
                 httpResponse.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
             }
 
-            // 9. Cache-Control: ensure HTML and SPA navigation routes are never cached by browsers
+            // 9. Cache-Control: allow bfcache restoration for HTML/SPA while keeping APIs uncached and assets immutable
             String uri = httpRequest.getRequestURI();
-            if (uri != null && (uri.equals("/") || uri.endsWith(".html") || uri.startsWith("/api") || !uri.contains("."))) {
+            if (uri != null && uri.startsWith("/api/")) {
                 httpResponse.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
                 httpResponse.setHeader("Pragma", "no-cache");
                 httpResponse.setHeader("Expires", "0");
+            } else if (uri != null && (uri.equals("/") || uri.endsWith(".html") || !uri.contains("."))) {
+                // SPA navigation & HTML documents: allow back/forward cache (bfcache) restoration while ensuring revalidation
+                httpResponse.setHeader("Cache-Control", "no-cache, must-revalidate");
             } else if (uri != null && uri.contains("/assets/")) {
                 httpResponse.setHeader("Cache-Control", "public, max-age=31536000, immutable");
             }

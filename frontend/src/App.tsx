@@ -18,7 +18,11 @@ const AppInitializer: React.FC = () => {
       .then((user) => {
         if (user) {
           dispatch(fetchCart());
-          dispatch(fetchWishlist());
+          if ('requestIdleCallback' in window) {
+            window.requestIdleCallback(() => dispatch(fetchWishlist()));
+          } else {
+            setTimeout(() => dispatch(fetchWishlist()), 100);
+          }
         } else {
           // Still fetch cart for guest session
           dispatch(fetchCart());
