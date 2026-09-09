@@ -15,8 +15,7 @@ on:
     branches: [ "main" ]
 
 permissions:
-  contents: read
-  dependency-graph: write
+  contents: write
 
 jobs:
   build:
