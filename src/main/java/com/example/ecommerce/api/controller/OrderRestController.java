@@ -2,6 +2,7 @@ package com.example.ecommerce.api.controller;
 
 import com.example.ecommerce.api.dto.*;
 import com.example.ecommerce.auth.model.UserSession;
+import com.example.ecommerce.cart.model.Cart;
 import com.example.ecommerce.cart.service.CartService;
 import com.example.ecommerce.coupon.model.Coupon;
 import com.example.ecommerce.coupon.service.CouponService;
@@ -23,6 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,15 +42,18 @@ public class OrderRestController {
     private final CouponService couponService;
     private final OrderReturnService orderReturnService;
     private final LogisticsService logisticsService;
+    private final com.example.ecommerce.product.service.ProductService productService;
 
     @Autowired
     public OrderRestController(OrderService orderService, CartService cartService, CouponService couponService,
-                               OrderReturnService orderReturnService, LogisticsService logisticsService) {
+                               OrderReturnService orderReturnService, LogisticsService logisticsService,
+                               com.example.ecommerce.product.service.ProductService productService) {
         this.orderService = orderService;
         this.cartService = cartService;
         this.couponService = couponService;
         this.orderReturnService = orderReturnService;
         this.logisticsService = logisticsService;
+        this.productService = productService;
     }
 
     private UserSession getAuthenticatedCustomer(HttpServletRequest request) {
@@ -74,9 +79,8 @@ public class OrderRestController {
         HttpSession session = request.getSession(true);
         Coupon coupon = (Coupon) session.getAttribute("appliedCoupon");
         if (coupon == null && req.getCouponCode() != null && !req.getCouponCode().trim().isEmpty()) {
-            try {
-                coupon = couponService.getCouponByCode(req.getCouponCode().trim().toUpperCase()).orElse(null);
-            } catch (Exception ignored) {}
+            Cart cart = cartService.getCart(user.getUserId());
+            coupon = couponService.validateAndApplyCoupon(req.getCouponCode().trim().toUpperCase(), cart.getSubtotal(), user.getUserId());
         }
 
         String paymentMethod = (req.getPaymentMethod() != null && !req.getPaymentMethod().trim().isEmpty())
@@ -112,9 +116,9 @@ public class OrderRestController {
 
         Coupon coupon = null;
         if (req.getCouponCode() != null && !req.getCouponCode().trim().isEmpty()) {
-            try {
-                coupon = couponService.getCouponByCode(req.getCouponCode().trim().toUpperCase()).orElse(null);
-            } catch (Exception ignored) {}
+            var prod = productService.getProductById(req.getProductId());
+            BigDecimal itemSubtotal = prod.getDiscountedPrice().multiply(BigDecimal.valueOf(Math.max(1, req.getQuantity())));
+            coupon = couponService.validateAndApplyCoupon(req.getCouponCode().trim().toUpperCase(), itemSubtotal, user.getUserId());
         }
 
         String paymentMethod = (req.getPaymentMethod() != null && !req.getPaymentMethod().trim().isEmpty())
@@ -148,7 +152,9 @@ public class OrderRestController {
                     .body(ApiResponse.error("Please log in to view your orders", "UNAUTHORIZED"));
         }
 
-        Pagination<Order> rawPagination = orderService.getUserOrders(user.getUserId(), status, null, page, pageSize);
+        int safePage = Math.max(1, page);
+        int safePageSize = Math.max(1, Math.min(50, pageSize));
+        Pagination<Order> rawPagination = orderService.getUserOrders(user.getUserId(), status, null, safePage, safePageSize);
 
         List<OrderDto> dtos = rawPagination.getItems().stream()
                 .map(OrderDto::fromEntity)

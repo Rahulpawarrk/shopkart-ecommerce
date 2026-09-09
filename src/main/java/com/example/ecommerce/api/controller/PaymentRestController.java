@@ -15,6 +15,7 @@ import com.example.ecommerce.payment.service.RazorpayService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -164,7 +165,16 @@ public class PaymentRestController {
             logger.info("Payment verified successfully for Order #{} (Payment ID: {})", order.getOrderNumber(), req.getRazorpayPaymentId());
 
         } else {
-            // Development simulation fallback when credentials are not supplied
+            // Development simulation fallback: strictly disallowed in production or when ALLOW_PAYMENT_SIMULATION is not explicitly true
+            boolean allowSimulation = "true".equalsIgnoreCase(System.getenv("ALLOW_PAYMENT_SIMULATION"))
+                    || "true".equalsIgnoreCase(System.getProperty("allow.payment.simulation"));
+
+            if (!allowSimulation) {
+                logger.error("Payment verification rejected: Razorpay credentials not configured and simulation is disabled for Order #{}", order.getOrderNumber());
+                return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                        .body(ApiResponse.error("Payment gateway is temporarily unavailable. Please choose Cash on Delivery or contact support.", "PAYMENT_GATEWAY_UNAVAILABLE"));
+            }
+
             String txnRef = (req.getTransactionReference() != null && !req.getTransactionReference().trim().isEmpty())
                     ? req.getTransactionReference().trim()
                     : "DEV-SIM-" + System.currentTimeMillis();
@@ -175,9 +185,9 @@ public class PaymentRestController {
                     txnRef,
                     "DEV-SIM-GATEWAY-ORDER",
                     true,
-                    "Development simulator confirmed payment"
+                    "Non-production simulator confirmed payment"
             );
-            logger.info("Development simulator confirmed payment for Order #{}", order.getOrderNumber());
+            logger.info("Non-production simulator confirmed payment for Order #{}", order.getOrderNumber());
         }
 
         return ResponseEntity.ok(ApiResponse.ok("Payment verified successfully", Map.of(
@@ -185,6 +195,69 @@ public class PaymentRestController {
                 "orderNumber", order.getOrderNumber(),
                 "status", "PAID"
         )));
+    }
+
+    @PostMapping("/webhook")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> handleRazorpayWebhook(
+            @RequestBody(required = false) String payload,
+            @RequestHeader(value = "X-Razorpay-Signature", required = false) String signature
+    ) {
+        if (payload == null || payload.trim().isEmpty() || signature == null || signature.trim().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error("Missing webhook payload or signature", "INVALID_WEBHOOK_PAYLOAD"));
+        }
+
+        boolean verified = razorpayService.verifyWebhookSignature(payload, signature);
+        if (!verified) {
+            logger.error("Razorpay webhook signature verification failed");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Webhook signature mismatch", "UNAUTHORIZED"));
+        }
+
+        try {
+            JSONObject eventObj = new JSONObject(payload);
+            String event = eventObj.optString("event");
+            logger.info("Received verified Razorpay webhook event: {}", event);
+
+            if ("payment.captured".equalsIgnoreCase(event) || "order.paid".equalsIgnoreCase(event)) {
+                JSONObject payloadObj = eventObj.getJSONObject("payload");
+                JSONObject paymentEntity = payloadObj.getJSONObject("payment").getJSONObject("entity");
+                String rzpPaymentId = paymentEntity.optString("id");
+                String rzpOrderId = paymentEntity.optString("order_id");
+
+                int internalOrderId = -1;
+                if (paymentEntity.has("notes")) {
+                    JSONObject notes = paymentEntity.getJSONObject("notes");
+                    internalOrderId = notes.optInt("ecommerce_order_id", -1);
+                }
+
+                if (internalOrderId <= 0 && paymentEntity.has("receipt")) {
+                    String receipt = paymentEntity.optString("receipt");
+                    if (receipt.startsWith("rcpt_ord_")) {
+                        try {
+                            internalOrderId = Integer.parseInt(receipt.substring("rcpt_ord_".length()));
+                        } catch (NumberFormatException ignored) {}
+                    }
+                }
+
+                if (internalOrderId > 0) {
+                    paymentService.processServerWebhook(
+                            internalOrderId,
+                            rzpPaymentId,
+                            rzpOrderId,
+                            true,
+                            "Webhook event: " + event + " (Payment ID: " + rzpPaymentId + ")"
+                    );
+                    logger.info("Order ID #{} successfully marked as PAID via webhook event {}", internalOrderId, event);
+                }
+            }
+
+            return ResponseEntity.ok(ApiResponse.ok("Webhook processed successfully", Map.of("status", "ok")));
+        } catch (Exception e) {
+            logger.error("Error processing Razorpay webhook payload", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Failed to process webhook event", "WEBHOOK_PROCESSING_ERROR"));
+        }
     }
 
     @PostMapping("/failure")

@@ -24,6 +24,20 @@ public class GlobalRestExceptionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalRestExceptionHandler.class);
 
+    @ExceptionHandler(com.example.ecommerce.exception.UnauthorizedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleUnauthorized(com.example.ecommerce.exception.UnauthorizedException ex) {
+        logger.warn("Unauthorized access: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ApiResponse.error(ex.getMessage(), "UNAUTHORIZED"));
+    }
+
+    @ExceptionHandler(com.example.ecommerce.exception.AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAccessDenied(com.example.ecommerce.exception.AccessDeniedException ex) {
+        logger.warn("Access denied: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiResponse.error(ex.getMessage(), "FORBIDDEN"));
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleNotFound(ResourceNotFoundException ex) {
         logger.warn("Resource not found: {}", ex.getMessage());
@@ -76,9 +90,8 @@ public class GlobalRestExceptionHandler {
         }
 
         logger.error("Unhandled API error", ex);
-        String details = ex.getClass().getSimpleName() + (ex.getMessage() != null ? ": " + ex.getMessage() : "");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("Server error: " + details, "INTERNAL_SERVER_ERROR"));
+                .body(ApiResponse.error("An unexpected error occurred. Please try again later.", "INTERNAL_SERVER_ERROR"));
     }
 
     private boolean isClientAbort(Throwable t) {

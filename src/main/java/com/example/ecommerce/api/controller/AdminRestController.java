@@ -94,8 +94,11 @@ public class AdminRestController {
     private UserSession getAuthenticatedAdmin(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         UserSession user = (session != null) ? (UserSession) session.getAttribute("currentUser") : null;
-        if (user == null || !user.isAdmin()) {
-            throw new ValidationException("Access denied: Administrative privileges required.");
+        if (user == null) {
+            throw new com.example.ecommerce.exception.UnauthorizedException("Please log in to access administrative operations.");
+        }
+        if (!user.isAdmin()) {
+            throw new com.example.ecommerce.exception.AccessDeniedException("Access denied: Administrative privileges required.");
         }
         return user;
     }
@@ -154,8 +157,8 @@ public class AdminRestController {
         ProductSearchCriteria criteria = new ProductSearchCriteria();
         criteria.setKeyword(q);
         criteria.setStatus(status); // Can be null to fetch all statuses for admin
-        criteria.setPage(page);
-        criteria.setPageSize(pageSize);
+        criteria.setPage(Math.max(1, page));
+        criteria.setPageSize(Math.max(1, Math.min(100, pageSize)));
 
         Pagination<Product> rawPagination = productService.searchCatalog(criteria);
         List<ProductDto> dtos = rawPagination.getItems().stream()
@@ -348,7 +351,9 @@ public class AdminRestController {
             } catch (IllegalArgumentException ignored) {}
         }
 
-        Pagination<Order> rawPagination = orderService.getAllOrders(q, orderStatus, page, pageSize);
+        int safePage = Math.max(1, page);
+        int safePageSize = Math.max(1, Math.min(100, pageSize));
+        Pagination<Order> rawPagination = orderService.getAllOrders(q, orderStatus, safePage, safePageSize);
         List<OrderDto> dtos = rawPagination.getItems().stream().map(OrderDto::fromEntity).collect(Collectors.toList());
 
         return ResponseEntity.ok(ApiResponse.ok(CatalogPageResponse.from(
@@ -406,7 +411,9 @@ public class AdminRestController {
             HttpServletRequest request
     ) {
         getAuthenticatedAdmin(request);
-        Pagination<Inventory> pagination = inventoryService.getInventoryList(q, filter, page, pageSize);
+        int safePage = Math.max(1, page);
+        int safePageSize = Math.max(1, Math.min(100, pageSize));
+        Pagination<Inventory> pagination = inventoryService.getInventoryList(q, filter, safePage, safePageSize);
         return ResponseEntity.ok(ApiResponse.ok(CatalogPageResponse.from(pagination)));
     }
 
@@ -442,7 +449,9 @@ public class AdminRestController {
             HttpServletRequest request
     ) {
         getAuthenticatedAdmin(request);
-        Pagination<Coupon> pagination = couponService.getAllCoupons(q, page, pageSize);
+        int safePage = Math.max(1, page);
+        int safePageSize = Math.max(1, Math.min(100, pageSize));
+        Pagination<Coupon> pagination = couponService.getAllCoupons(q, safePage, safePageSize);
         return ResponseEntity.ok(ApiResponse.ok(CatalogPageResponse.from(pagination)));
     }
 
@@ -492,7 +501,9 @@ public class AdminRestController {
             HttpServletRequest request
     ) {
         getAuthenticatedAdmin(request);
-        Pagination<OrderReturn> rawPagination = orderReturnService.getAllReturns(null, status, page, pageSize);
+        int safePage = Math.max(1, page);
+        int safePageSize = Math.max(1, Math.min(100, pageSize));
+        Pagination<OrderReturn> rawPagination = orderReturnService.getAllReturns(null, status, safePage, safePageSize);
         return ResponseEntity.ok(ApiResponse.ok(CatalogPageResponse.from(rawPagination)));
     }
 
@@ -580,7 +591,9 @@ public class AdminRestController {
             HttpServletRequest request
     ) {
         getAuthenticatedAdmin(request);
-        Pagination<com.example.ecommerce.payment.model.PaymentReconciliation> pagination = paymentService.getReconciliationList(q, status, page, pageSize);
+        int safePage = Math.max(1, page);
+        int safePageSize = Math.max(1, Math.min(100, pageSize));
+        Pagination<com.example.ecommerce.payment.model.PaymentReconciliation> pagination = paymentService.getReconciliationList(q, status, safePage, safePageSize);
         return ResponseEntity.ok(ApiResponse.ok(CatalogPageResponse.from(pagination)));
     }
 

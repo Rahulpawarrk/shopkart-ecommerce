@@ -115,6 +115,7 @@ public class OrderService {
         }
 
         if (appliedCoupon != null) {
+            validateCouponEligibility(appliedCoupon, cart.getSubtotal(), userId);
             BigDecimal couponDiscount = appliedCoupon.calculateDiscount(cart.getSubtotal());
             cart.setCouponId(appliedCoupon.getCouponId());
             cart.setAppliedCouponCode(appliedCoupon.getCode());
@@ -273,6 +274,7 @@ public class OrderService {
         Cart directCart = Cart.createDirectBuyCart(userId, product, finalQty);
 
         if (appliedCoupon != null) {
+            validateCouponEligibility(appliedCoupon, directCart.getSubtotal(), userId);
             BigDecimal couponDiscount = appliedCoupon.calculateDiscount(directCart.getSubtotal());
             directCart.setCouponId(appliedCoupon.getCouponId());
             directCart.setAppliedCouponCode(appliedCoupon.getCode());
@@ -332,6 +334,7 @@ public class OrderService {
                     if (!success) {
                         throw new ValidationException("Coupon usage limit has been reached.");
                     }
+                    couponDAO.recordCouponUsage(order.getCouponId(), userId, orderId, directCart.getCouponDiscount(), conn);
                 }
 
                 // Step C: Insert Single Direct Buy Order Item & Deduct Stock
@@ -712,5 +715,27 @@ public class OrderService {
             }
         }
         return count;
+    }
+
+    private void validateCouponEligibility(Coupon coupon, BigDecimal subtotal, int userId) {
+        if (coupon == null) return;
+        if (!coupon.isActive()) {
+            throw new ValidationException("Coupon code '" + coupon.getCode() + "' is no longer active.");
+        }
+        if (coupon.isExpired()) {
+            throw new ValidationException("Coupon code '" + coupon.getCode() + "' has expired or is not yet valid.");
+        }
+        if (coupon.isUsageLimitReached()) {
+            throw new ValidationException("Coupon code '" + coupon.getCode() + "' has reached its maximum global redemptions.");
+        }
+        if (userId > 0) {
+            int userRedemptions = couponDAO.getUserUsageCount(coupon.getCouponId(), userId);
+            if (userRedemptions >= 1) {
+                throw new ValidationException("You have already redeemed coupon code '" + coupon.getCode() + "'.");
+            }
+        }
+        if (coupon.getMinSpend() != null && subtotal.compareTo(coupon.getMinSpend()) < 0) {
+            throw new ValidationException("Minimum cart subtotal of ₹" + coupon.getMinSpend() + " is required to use code '" + coupon.getCode() + "'.");
+        }
     }
 }

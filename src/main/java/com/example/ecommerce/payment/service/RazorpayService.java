@@ -23,11 +23,14 @@ public class RazorpayService {
 
     private final String keyId;
     private final String keySecret;
+    private final String webhookSecret;
     private final boolean isConfigured;
 
     public RazorpayService() {
         String resolvedKey = resolveEnvOrProperty("RAZORPAY_KEY_ID", "RAZORPAY_KEY", "RAZORPAY_LIVE_KEY_ID", "RAZORPAY_LIVE_KEY", "razorpay.key.id");
         String resolvedSecret = resolveEnvOrProperty("RAZORPAY_KEY_SECRET", "RAZORPAY_SECRET", "RAZORPAY_LIVE_KEY_SECRET", "RAZORPAY_LIVE_SECRET", "razorpay.key.secret");
+        String resolvedWebhookSecret = resolveEnvOrProperty("RAZORPAY_WEBHOOK_SECRET", "RAZORPAY_WEBHOOK", "razorpay.webhook.secret");
+        this.webhookSecret = resolvedWebhookSecret != null ? resolvedWebhookSecret.trim() : "";
 
         if (resolvedKey != null && !resolvedKey.trim().isEmpty() &&
             resolvedSecret != null && !resolvedSecret.trim().isEmpty()) {
@@ -44,6 +47,10 @@ public class RazorpayService {
     }
 
     public RazorpayService(String keyId, String keySecret) {
+        this(keyId, keySecret, "");
+    }
+
+    public RazorpayService(String keyId, String keySecret, String webhookSecret) {
         if (keyId != null && !keyId.trim().isEmpty() && keySecret != null && !keySecret.trim().isEmpty()) {
             this.keyId = keyId.trim();
             this.keySecret = keySecret.trim();
@@ -53,6 +60,47 @@ public class RazorpayService {
             this.keySecret = "";
             this.isConfigured = false;
         }
+        this.webhookSecret = webhookSecret != null ? webhookSecret.trim() : "";
+    }
+
+    /**
+     * Cryptographically verifies HMAC-SHA256 signature for incoming Razorpay webhooks.
+     *
+     * @param payload Raw JSON webhook payload string
+     * @param signature Razorpay-Signature header value
+     * @return true if valid signature; false otherwise
+     */
+    public boolean verifyWebhookSignature(String payload, String signature) {
+        return verifyWebhookSignature(payload, signature, this.webhookSecret);
+    }
+
+    /**
+     * Cryptographically verifies HMAC-SHA256 signature for incoming Razorpay webhooks with specific secret.
+     *
+     * @param payload Raw JSON webhook payload string
+     * @param signature Razorpay-Signature header value
+     * @param secret Webhook secret to verify against
+     * @return true if valid signature; false otherwise
+     */
+    public boolean verifyWebhookSignature(String payload, String signature, String secret) {
+        if (payload == null || payload.trim().isEmpty() || signature == null || signature.trim().isEmpty()) {
+            return false;
+        }
+        String secretToUse = (secret != null && !secret.trim().isEmpty()) ? secret.trim() : this.webhookSecret;
+        if (secretToUse == null || secretToUse.trim().isEmpty()) {
+            logger.warn("Webhook signature verification failed: Webhook secret not configured.");
+            return false;
+        }
+        try {
+            return Utils.verifyWebhookSignature(payload, signature, secretToUse);
+        } catch (Exception e) {
+            logger.error("Error verifying Razorpay webhook signature", e);
+            return false;
+        }
+    }
+
+    public String getWebhookSecret() {
+        return webhookSecret;
     }
 
     /**

@@ -40,7 +40,8 @@ public class CsrfFilter implements Filter {
             "/register",
             "/api/logistics/webhook",
             "/payment/callback",
-            "/api/payment/webhook");
+            "/api/payment/webhook",
+            "/api/payments/webhook");
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -129,10 +130,9 @@ public class CsrfFilter implements Filter {
                     valid = java.security.MessageDigest.isEqual(reqBytes, sessionBytes);
                 }
 
-                // SPA AJAX requests sending custom X-Requested-With header cannot be forged by standard cross-origin form submissions
                 boolean isAjax = "XMLHttpRequest".equalsIgnoreCase(httpRequest.getHeader("X-Requested-With"));
 
-                if (!valid && !isAjax) {
+                if (!valid) {
                     logger.warn("CSRF validation blocked request to [{}] from IP [{}] (Method: {})", path,
                             httpRequest.getRemoteAddr(), method);
                     if (path.startsWith("/api/") || isAjax) {

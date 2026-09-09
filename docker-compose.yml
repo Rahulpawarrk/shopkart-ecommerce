@@ -37,6 +37,7 @@ services:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./src/main/resources/db/neon-dbo-setup.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
     restart: unless-stopped
 
   # ── 3. Redis In-Memory Cache & Session Store ──────────────────────────────

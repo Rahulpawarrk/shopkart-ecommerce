@@ -39,8 +39,10 @@ public class ReviewRestController {
             @RequestParam(required = false, defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "10") int pageSize
     ) {
+        int safePage = Math.max(1, page);
+        int safePageSize = Math.max(1, Math.min(50, pageSize));
         RatingSummary ratingSummary = reviewService.getRatingSummary(productId);
-        Pagination<Review> reviews = reviewService.getProductReviews(productId, page, pageSize);
+        Pagination<Review> reviews = reviewService.getProductReviews(productId, safePage, safePageSize);
 
         var reviewDtos = reviews.getItems().stream()
                 .map(ReviewDto::fromEntity)

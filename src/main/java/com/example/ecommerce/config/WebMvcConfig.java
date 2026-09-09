@@ -20,17 +20,29 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(@NonNull CorsRegistry registry) {
+        java.util.List<String> origins = new java.util.ArrayList<>();
+        origins.add("http://localhost:[*]");
+        origins.add("http://localhost:*");
+        origins.add("http://127.0.0.1:[*]");
+        origins.add("http://127.0.0.1:*");
+        origins.add("https://*.onrender.com");
+
+        String customOrigins = System.getenv("CORS_ALLOWED_ORIGINS");
+        if (customOrigins == null || customOrigins.trim().isEmpty()) {
+            customOrigins = System.getProperty("cors.allowed.origins");
+        }
+        if (customOrigins != null && !customOrigins.trim().isEmpty()) {
+            for (String origin : customOrigins.split(",")) {
+                if (!origin.trim().isEmpty()) {
+                    origins.add(origin.trim());
+                }
+            }
+        }
+
         registry.addMapping("/api/**")
-                .allowedOriginPatterns(
-                        "http://localhost:[*]",
-                        "http://localhost:*",
-                        "http://127.0.0.1:[*]",
-                        "http://127.0.0.1:*",
-                        "https://*.onrender.com",
-                        "*"
-                )
+                .allowedOriginPatterns(origins.toArray(new String[0]))
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
-                .allowedHeaders("*")
+                .allowedHeaders("Content-Type", "X-Requested-With", "X-CSRF-TOKEN", "X-XSRF-TOKEN", "Authorization", "Accept")
                 .exposedHeaders("X-CSRF-TOKEN", "X-XSRF-TOKEN")
                 .allowCredentials(true)
                 .maxAge(3600);

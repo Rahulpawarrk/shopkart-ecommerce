@@ -214,18 +214,11 @@ export const CheckoutPage: React.FC = () => {
 
       // Verify Razorpay script is present
       if (typeof window.Razorpay !== 'function') {
-        // Fallback for dev environments without external connectivity
-        await orderService.verifyPayment({
-          orderId: confirmedOrder.orderId,
-          transactionReference: 'DEV-SIM-' + Date.now(),
-        });
-        dispatch(fetchCart());
-        const paidOrder: Order = {
-          ...confirmedOrder,
-          paymentStatus: 'PAID',
-          orderStatus: 'CONFIRMED',
-        };
-        navigate(`/order-confirmation/${confirmedOrder.orderId}`, { state: { order: paidOrder } });
+        dispatch(showToast({
+          message: 'Payment gateway SDK could not be loaded. Please disable ad-blockers or check your connection.',
+          type: 'error',
+        }));
+        setPlacingOrder(false);
         return;
       }
 
