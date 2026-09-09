@@ -318,19 +318,19 @@ export const CheckoutPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-6 sm:space-y-8">
       <div className="border-b border-gray-200 pb-4">
-        <h1 className="text-2xl sm:text-3xl font-black text-gray-900">Secure Order Checkout</h1>
+        <h1 className="text-xl sm:text-3xl font-black text-gray-900">Secure Order Checkout</h1>
         <p className="text-xs text-gray-500 mt-1">Review your delivery address and choose a payment method</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
         
         {/* Left Column: Addresses & Payment Methods (8 cols) */}
-        <div className="lg:col-span-8 space-y-8">
+        <div className="lg:col-span-8 space-y-6 sm:space-y-8">
           
           {/* Step 1: Delivery Address */}
-          <div className="bg-white p-6 rounded-3xl border border-gray-200 shadow-xs space-y-4">
+          <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-gray-200 shadow-xs space-y-4">
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
               <h2 className="font-bold text-base text-gray-900 flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-blue-600" />
@@ -392,7 +392,7 @@ export const CheckoutPage: React.FC = () => {
           </div>
 
           {/* Step 2: Payment Method */}
-          <div className="bg-white p-6 rounded-3xl border border-gray-200 shadow-xs space-y-4">
+          <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-gray-200 shadow-xs space-y-4">
             <h2 className="font-bold text-base text-gray-900 flex items-center gap-2 border-b border-gray-100 pb-3">
               <CreditCard className="w-5 h-5 text-blue-600" />
               <span>2. Choose Payment Method</span>
@@ -401,7 +401,7 @@ export const CheckoutPage: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Razorpay Online */}
               <label
-                className={`flex items-start gap-3 p-4 rounded-2xl border-2 cursor-pointer transition ${
+                className={`flex items-start gap-3 p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border-2 cursor-pointer transition ${
                   paymentMethod === 'RAZORPAY'
                     ? 'border-blue-600 bg-blue-50/40 shadow-sm'
                     : 'border-gray-200 hover:border-gray-300'
@@ -419,17 +419,17 @@ export const CheckoutPage: React.FC = () => {
                     Online Payment (Razorpay)
                   </span>
                   <p className="text-xs text-gray-500 leading-relaxed">
-                    Pay safely using UPI (GPay, PhonePe, Paytm), Credit/Debit Cards, or Net Banking.
+                    UPI (Google Pay, PhonePe, Paytm), Credit/Debit Cards &amp; NetBanking
                   </p>
-                  <span className="inline-block text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">
-                    Instant & Secure
+                  <span className="inline-block mt-1 text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded">
+                    Instant &amp; 100% Safe
                   </span>
                 </div>
               </label>
 
               {/* Cash On Delivery */}
               <label
-                className={`flex items-start gap-3 p-4 rounded-2xl border-2 cursor-pointer transition ${
+                className={`flex items-start gap-3 p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border-2 cursor-pointer transition ${
                   paymentMethod === 'COD'
                     ? 'border-blue-600 bg-blue-50/40 shadow-sm'
                     : 'border-gray-200 hover:border-gray-300'
@@ -444,24 +444,25 @@ export const CheckoutPage: React.FC = () => {
                 />
                 <div className="space-y-1">
                   <span className="font-bold text-sm text-gray-900 block">
-                    Cash On Delivery (COD)
+                    Cash on Delivery (COD)
                   </span>
                   <p className="text-xs text-gray-500 leading-relaxed">
-                    Pay with cash or UPI QR code at the time of doorstep delivery.
+                    Pay with cash or scan delivery agent's UPI QR at your doorstep
                   </p>
+                  <span className="inline-block mt-1 text-[10px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 px-2 py-0.5 rounded">
+                    Verified Pin Codes Only
+                  </span>
                 </div>
               </label>
             </div>
           </div>
 
           {/* Delivery Instructions / Order Notes */}
-          <div className="bg-white p-6 rounded-3xl border border-gray-200 shadow-xs space-y-2">
-            <label className="text-xs font-bold text-gray-700 block">
-              Order Notes / Delivery Instructions (Optional):
-            </label>
+          <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-gray-200 shadow-xs space-y-3">
+            <h3 className="font-bold text-sm text-gray-900">Delivery Instructions (Optional)</h3>
             <textarea
               rows={2}
-              placeholder="e.g. Please leave package at reception or call before delivery"
+              placeholder="e.g. Leave at door, call before delivery, alternate phone number..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="w-full p-3 border border-gray-300 rounded-xl text-xs focus:outline-none focus:border-blue-600"
@@ -470,7 +471,7 @@ export const CheckoutPage: React.FC = () => {
         </div>
 
         {/* Right Column: Order Summary (4 cols) */}
-        <div className="lg:col-span-4 bg-white p-6 rounded-3xl border border-gray-200 shadow-xs space-y-6">
+        <div className="lg:col-span-4 bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-gray-200 shadow-xs space-y-5 sm:space-y-6">
           <h3 className="font-bold text-sm text-gray-900 border-b border-gray-100 pb-3">
             Checkout Summary ({itemsCount} item{itemsCount > 1 ? 's' : ''})
           </h3>

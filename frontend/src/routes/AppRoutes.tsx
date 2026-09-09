@@ -5,6 +5,7 @@ import { useAppSelector } from '@/store';
 // Layout & Common
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
+import { BottomNav } from '@/components/layout/BottomNav';
 import { CartDrawer } from '@/components/layout/CartDrawer';
 import { ToastContainer } from '@/components/common/ToastContainer';
 
@@ -153,7 +154,7 @@ const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 // Public & Customer Layout
 const StorefrontLayout: React.FC = () => (
-  <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+  <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 pb-14 lg:pb-0">
     <Navbar />
     <main className="flex-1">
       <React.Suspense fallback={<PageLoadingFallback />}>
@@ -161,6 +162,7 @@ const StorefrontLayout: React.FC = () => (
       </React.Suspense>
     </main>
     <Footer />
+    <BottomNav />
     <CartDrawer />
     <ToastContainer />
   </div>

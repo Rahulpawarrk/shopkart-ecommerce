@@ -288,6 +288,32 @@ export const Navbar: React.FC = () => {
 
           </div>
         </div>
+
+        {/* Mobile Search Bar (always visible on mobile < md) */}
+        <div className="md:hidden pt-1 pb-1">
+          <form onSubmit={handleSearch} className="w-full">
+            <div className="relative flex items-center bg-white rounded-xl shadow-xs overflow-hidden">
+              <Search className="w-4 h-4 text-slate-400 ml-3 flex-shrink-0" />
+              <input
+                type="text"
+                placeholder="Search products, brands and more..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full py-2 pl-2 pr-3 text-xs text-slate-900 bg-transparent placeholder:text-slate-400 focus:outline-hidden"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="mr-2 p-1 text-slate-400 hover:text-slate-600"
+                  aria-label="Clear search"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          </form>
+        </div>
       </div>
 
       {/* Secondary Category Strip matching live shopkart11.in */}

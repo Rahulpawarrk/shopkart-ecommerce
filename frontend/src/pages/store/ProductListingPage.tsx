@@ -172,33 +172,33 @@ export const ProductListingPage: React.FC = () => {
   const totalPages = data?.totalPages || 1;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8">
       {/* Top Header Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-gray-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 sm:pb-6 border-b border-gray-200">
         <div>
-          <h1 className="text-2xl font-black text-gray-900">
+          <h1 className="text-xl sm:text-2xl font-black text-gray-900">
             {q ? `Search results for "${q}"` : categorySlug ? `Category: ${categorySlug}` : 'Explore Products'}
           </h1>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-gray-500 mt-0.5 sm:mt-1">
             Showing {data?.totalItems || 0} results
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <button
             onClick={() => setMobileFilterOpen(true)}
-            className="lg:hidden flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-xl text-xs font-bold text-gray-700 bg-white shadow-sm"
+            className="lg:hidden flex items-center gap-1.5 px-3 py-1.5 border border-gray-300 rounded-xl text-xs font-bold text-gray-700 bg-white shadow-xs"
           >
-            <Filter className="w-4 h-4" /> Filters
+            <Filter className="w-3.5 h-3.5" /> Filters
           </button>
 
           {/* Sort Selector */}
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-gray-400 font-medium">Sort by:</span>
+          <div className="flex items-center gap-1.5 sm:gap-2 text-xs">
+            <span className="text-gray-400 font-medium hidden sm:inline">Sort by:</span>
             <select
               value={sort}
               onChange={(e) => updateParam('sort', e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-xl text-xs font-bold text-gray-700 bg-white focus:outline-none focus:border-blue-600"
+              className="px-2.5 py-1.5 border border-gray-300 rounded-xl text-xs font-bold text-gray-700 bg-white focus:outline-none focus:border-blue-600"
             >
               <option value="created_at">Newest First</option>
               <option value="price_asc">Price: Low to High</option>
@@ -210,7 +210,7 @@ export const ProductListingPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 pt-8">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-8 pt-4 sm:pt-8">
         {/* Desktop Filter Sidebar */}
         <div className="hidden lg:block bg-white p-6 rounded-2xl border border-gray-200 h-fit sticky top-24">
           <FilterSidebar />
@@ -240,7 +240,7 @@ export const ProductListingPage: React.FC = () => {
         {/* Products Grid */}
         <div className="lg:col-span-3">
           {loading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 animate-pulse">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-4 lg:gap-6 animate-pulse">
               {[1, 2, 3, 4, 5, 6].map((n) => (
                 <div key={n} className="h-80 bg-gray-200 rounded-2xl"></div>
               ))}
@@ -259,8 +259,8 @@ export const ProductListingPage: React.FC = () => {
               </button>
             </div>
           ) : (
-            <div className="space-y-8">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
+            <div className="space-y-6 sm:space-y-8">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-4 lg:gap-6">
                 {products.map((product) => (
                   <ProductCard key={product.productId} product={product} />
                 ))}

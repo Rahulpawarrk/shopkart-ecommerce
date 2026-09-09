@@ -186,7 +186,7 @@ export const ProductDetailPage: React.FC = () => {
   ].filter(Boolean);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-8 sm:space-y-12 pb-24 lg:pb-8">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-xs text-gray-500 font-medium">
         <Link to="/" className="hover:text-blue-600">Home</Link>
@@ -558,6 +558,43 @@ export const ProductDetailPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Mobile Sticky Bottom Action Bar (< lg) */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 p-2.5 px-3 flex items-center justify-between gap-2.5 lg:hidden shadow-[0_-4px_16px_rgba(0,0,0,0.1)]">
+        {/* Wishlist Icon Button */}
+        <button
+          onClick={handleToggleWishlist}
+          className={`w-10 h-10 rounded-xl border flex items-center justify-center flex-shrink-0 transition active:scale-95 ${
+            isInWishlist
+              ? 'border-red-200 bg-red-50 text-red-600'
+              : 'border-slate-200 bg-slate-50 text-slate-600'
+          }`}
+          title="Wishlist"
+          aria-label="Wishlist"
+        >
+          <Heart className={`w-4 h-4 ${isInWishlist ? 'fill-red-600' : ''}`} />
+        </button>
+
+        {/* Add to Cart */}
+        <button
+          onClick={handleAddToCart}
+          disabled={!product.inStock}
+          className="flex-1 py-2.5 px-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-xs"
+        >
+          <ShoppingCart className="w-4 h-4" />
+          <span>Add to Cart</span>
+        </button>
+
+        {/* Buy Now */}
+        <button
+          onClick={handleBuyNow}
+          disabled={!product.inStock}
+          className="flex-1 py-2.5 px-2 rounded-xl bg-[#2874F0] hover:bg-blue-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+        >
+          <Zap className="w-4 h-4 fill-white" />
+          <span>Buy Now</span>
+        </button>
+      </div>
     </div>
   );
 };

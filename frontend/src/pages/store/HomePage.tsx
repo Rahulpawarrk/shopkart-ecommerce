@@ -97,6 +97,7 @@ export const HomePage: React.FC = () => {
   // Carousel State
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const slideCount = HERO_BANNERS.length;
 
   // Dynamic Flash Deal Countdown Timer (ticks to midnight)
@@ -109,6 +110,22 @@ export const HomePage: React.FC = () => {
   const prevSlide = useCallback(() => {
     setCurrentSlide((prev) => (prev - 1 + slideCount) % slideCount);
   }, [slideCount]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX === null) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX - touchEndX;
+    if (diff > 35) {
+      nextSlide();
+    } else if (diff < -35) {
+      prevSlide();
+    }
+    setTouchStartX(null);
+  };
 
   // Auto-advance carousel every 4 seconds unless hovered
   useEffect(() => {
@@ -162,6 +179,8 @@ export const HomePage: React.FC = () => {
           className="relative w-full overflow-hidden rounded-2xl shadow-lg bg-slate-900 border border-slate-200/80 group"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
         >
           {/* Carousel Slide Track */}
           <div
@@ -177,7 +196,7 @@ export const HomePage: React.FC = () => {
                 <img
                   src={banner.imageUrl}
                   alt={banner.alt}
-                  className="w-full flex-shrink-0 object-cover h-44 sm:h-64 md:h-80 lg:h-96"
+                  className="w-full flex-shrink-0 object-cover h-36 sm:h-52 md:h-72 lg:h-96"
                   loading={index === 0 ? 'eager' : 'lazy'}
                   decoding="async"
                 />
@@ -310,7 +329,7 @@ export const HomePage: React.FC = () => {
                   </Link>
                 </div>
 
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2.5 sm:gap-3">
+                <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-1.5 sm:gap-2.5 md:gap-3">
                   {categories.map((cat) => {
                     const nameLower = cat.categoryName.toLowerCase();
                     const slugLower = (cat.slug || '').toLowerCase();
@@ -344,13 +363,13 @@ export const HomePage: React.FC = () => {
                       <Link
                         key={cat.categoryId}
                         to={`/products?categorySlug=${cat.slug}`}
-                        className="group flex flex-col items-center text-center p-2.5 rounded-xl hover:bg-slate-50 transition duration-200"
+                        className="group flex flex-col items-center text-center p-1.5 sm:p-2.5 rounded-xl hover:bg-slate-50 transition duration-200"
                       >
-                        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden bg-slate-50 border border-slate-200/80 p-1 mb-2 group-hover:scale-105 group-hover:border-blue-400 transition-all duration-300 relative shadow-2xs">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl overflow-hidden bg-slate-50 border border-slate-200/80 p-0.5 sm:p-1 mb-1.5 group-hover:scale-105 group-hover:border-blue-400 transition-all duration-300 relative shadow-2xs">
                           <img
                             src={catImage}
                             alt={cat.categoryName}
-                            className="w-full h-full object-cover rounded-xl group-hover:scale-110 transition-transform duration-500"
+                            className="w-full h-full object-cover rounded-lg sm:rounded-xl group-hover:scale-110 transition-transform duration-500"
                             loading="lazy"
                             decoding="async"
                             width="64"
@@ -360,7 +379,7 @@ export const HomePage: React.FC = () => {
                             }}
                           />
                         </div>
-                        <span className="text-[11px] sm:text-xs font-semibold text-slate-800 group-hover:text-[#2874F0] transition line-clamp-1">
+                        <span className="text-[10px] sm:text-xs font-semibold text-slate-800 group-hover:text-[#2874F0] transition line-clamp-1">
                           {cat.categoryName}
                         </span>
                       </Link>
