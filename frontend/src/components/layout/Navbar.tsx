@@ -77,83 +77,87 @@ export const Navbar: React.FC = () => {
   const totalWishlistCount = wishlistItems.length;
 
   return (
-    <header className="sticky top-0 z-40 bg-slate-900 border-b border-slate-800 shadow-md">
+    <header className="sticky top-0 z-40 bg-[#2874F0] shadow-md">
       {/* Top Utility Ticker Bar */}
-      <div className="bg-slate-950 border-b border-slate-800/80 text-slate-300 text-[11px] py-2 px-4">
+      <div className="bg-[#1b5fc9] text-white/90 text-[11px] py-1.5 px-4 hidden sm:block">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2 font-medium">
-            <Truck className="w-3.5 h-3.5 text-blue-400" />
+            <Truck className="w-3.5 h-3.5 text-yellow-300" />
             <span>⚡ Free Express Delivery on orders above ₹499 across India</span>
           </div>
-          <div className="hidden sm:flex items-center gap-4 text-slate-400">
-            <span className="flex items-center gap-1.5 text-slate-300 font-medium">
+          <div className="flex items-center gap-4 text-white/80">
+            <span className="flex items-center gap-1.5 font-medium">
               <span>📞 24x7 Customer Support: 1800-SHOPKART</span>
             </span>
-            <span className="text-slate-700">|</span>
-            <span className="text-slate-300">100% Genuine &amp; Verified Products</span>
+            <span className="text-white/40">|</span>
+            <span>100% Genuine &amp; Verified Products</span>
           </div>
         </div>
       </div>
 
       {/* Main Navbar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-18 gap-4 sm:gap-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3">
+        <div className="flex items-center justify-between gap-3 sm:gap-6">
           
           {/* Logo & Mobile Menu Button */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
             <button
               onClick={() => dispatch(toggleMobileMenu())}
-              className="lg:hidden p-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 transition"
+              className="lg:hidden p-1.5 rounded-lg text-white hover:bg-white/10 transition"
               aria-label="Toggle Navigation Menu"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
 
-            <Link to="/" className="flex items-center gap-2.5 group">
-              <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-500/25 group-hover:scale-105 transition">
-                <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
-                  <path d="M3 6h18" />
-                  <path d="M16 10a4 4 0 0 1-8 0" />
-                </svg>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-black text-2xl tracking-tight text-white leading-none">
-                  Shop<span className="text-blue-500">Kart</span>
+            <Link to="/" className="flex items-center gap-2 group flex-shrink-0">
+              <img
+                src="/logo.jpg"
+                alt="ShopKart Logo"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl object-cover shadow-sm group-hover:scale-105 transition flex-shrink-0"
+              />
+              <div className="flex flex-col items-start min-w-0">
+                <span className="text-base sm:text-xl font-black text-white leading-none tracking-tight">
+                  ShopKart
                 </span>
-                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
-                  India's Store
+                <span className="text-[9px] sm:text-[10px] text-white/80 font-medium tracking-normal mt-0.5 whitespace-nowrap">
+                  Best Deals, Always ✨
                 </span>
               </div>
             </Link>
           </div>
 
-          {/* Search Bar */}
-          <form onSubmit={handleSearch} className="flex-1 max-w-xl hidden md:block">
-            <div className="relative">
+          {/* Search Bar matching live shopkart11.in */}
+          <form onSubmit={handleSearch} className="flex-1 max-w-2xl hidden md:block">
+            <div className="relative flex items-center bg-white rounded-xl shadow-xs overflow-hidden">
+              <Search className="w-4 h-4 text-slate-400 ml-3.5 flex-shrink-0" />
               <input
                 type="text"
-                placeholder="Search laptops, smartphones, fashion, audio..."
+                placeholder="Search for products, brands and more"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-4 py-2.5 bg-slate-800/90 text-white placeholder-slate-400 border border-slate-700/80 rounded-2xl text-xs font-medium focus:outline-none focus:border-blue-500 focus:bg-slate-800 focus:ring-2 focus:ring-blue-500/20 transition shadow-inner"
+                className="w-full py-2.5 pl-2.5 pr-4 text-xs sm:text-sm text-slate-900 bg-transparent placeholder:text-slate-400 focus:outline-hidden"
               />
-              <Search className="w-4 h-4 text-slate-400 absolute left-4 top-3" />
+              <button
+                type="submit"
+                className="mr-2 px-3 py-1 bg-[#2874F0] hover:bg-[#1b5fc9] text-white rounded-lg text-xs font-bold transition cursor-pointer"
+              >
+                Search
+              </button>
             </div>
           </form>
 
-          {/* Right Action Icons */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          {/* Right Action Items */}
+          <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
             
             {/* Wishlist Link */}
             <Link
               to="/wishlist"
-              className="relative p-2.5 text-slate-300 hover:text-rose-400 rounded-2xl hover:bg-slate-800/80 transition group flex items-center gap-1.5"
+              className="relative p-2 text-white/90 hover:text-white rounded-xl hover:bg-white/10 transition group flex items-center gap-1.5"
               title="View Wishlist"
             >
               <Heart className="w-5 h-5 transition group-hover:scale-110" />
               {totalWishlistCount > 0 && (
-                <span className="absolute top-1 right-1 bg-rose-500 text-white font-black text-[10px] w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
+                <span className="absolute top-0.5 right-0.5 bg-yellow-400 text-slate-950 font-black text-[10px] w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
                   {totalWishlistCount}
                 </span>
               )}
@@ -162,22 +166,18 @@ export const Navbar: React.FC = () => {
             {/* Cart Trigger */}
             <button
               onClick={() => dispatch(toggleCartDrawer())}
-              className="relative p-2.5 text-slate-300 hover:text-blue-400 rounded-2xl hover:bg-slate-800/80 transition group flex items-center gap-2 cursor-pointer"
+              className="relative p-2 text-white/90 hover:text-white rounded-xl hover:bg-white/10 transition group flex items-center gap-2 cursor-pointer font-bold text-xs sm:text-sm"
               title="Shopping Cart"
             >
               <div className="relative">
                 <ShoppingCart className="w-5 h-5 transition group-hover:scale-110" />
                 {totalCartCount > 0 && (
-                  <span className="absolute -top-1.5 -right-2 bg-blue-600 text-white font-black text-[10px] min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center shadow-xs">
+                  <span className="absolute -top-1.5 -right-2 bg-yellow-400 text-slate-950 font-black text-[10px] min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center shadow-xs">
                     {totalCartCount}
                   </span>
                 )}
               </div>
-              {cart && cart.finalTotal > 0 && (
-                <span className="hidden xl:inline text-xs font-black text-white">
-                  ₹{cart.finalTotal.toLocaleString('en-IN')}
-                </span>
-              )}
+              <span className="hidden sm:inline">Cart</span>
             </button>
 
             {/* User Account / Auth Dropdown */}
@@ -186,29 +186,36 @@ export const Navbar: React.FC = () => {
                 <div>
                   <button
                     onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                    className="flex items-center gap-2 py-1 px-2.5 rounded-xl hover:bg-slate-800 transition text-xs font-bold text-white border border-slate-700/80 bg-slate-800/50 cursor-pointer"
+                    className="flex items-center gap-2 py-1.5 px-3 rounded-xl hover:bg-white/10 transition text-xs font-bold text-white border border-white/20 bg-white/10 cursor-pointer"
                   >
-                    <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center text-[11px] font-black shadow-xs">
+                    <div className="w-6 h-6 rounded-full bg-white text-[#2874F0] flex items-center justify-center text-[11px] font-black shadow-xs">
                       {user.firstName ? user.firstName.charAt(0).toUpperCase() : 'U'}
                     </div>
                     <span className="hidden lg:inline text-white leading-tight truncate max-w-[100px] font-bold text-xs">{user.firstName}</span>
-                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                    <ChevronDown className="w-3.5 h-3.5 text-white/80" />
                   </button>
 
                   {userDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-60 bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 py-2.5 z-50 animate-in fade-in slide-in-from-top-2 text-slate-200">
-                      <div className="px-4 py-2.5 border-b border-slate-700/80">
-                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Signed in as</p>
-                        <p className="text-xs font-bold text-white truncate mt-0.5">{user.fullName || user.email}</p>
+                    <div className="absolute right-0 mt-2 w-60 bg-white rounded-2xl shadow-2xl border border-slate-200 py-2.5 z-50 text-slate-800">
+                      <div className="px-4 py-2.5 border-b border-slate-100">
+                        <p className="text-xs font-bold text-slate-900 truncate">
+                          {user.firstName} {user.lastName || ''}
+                        </p>
+                        <p className="text-[11px] text-slate-500 truncate">{user.email}</p>
+                        {(user.admin || user.roles?.includes('ADMIN') || user.roles?.includes('ROLE_ADMIN')) && (
+                          <span className="inline-block mt-1.5 px-2 py-0.5 bg-blue-100 text-[#2874F0] text-[10px] font-bold rounded-md uppercase tracking-wider">
+                            Administrator
+                          </span>
+                        )}
                       </div>
 
-                      {user.admin && (
+                      {(user.admin || user.roles?.includes('ADMIN') || user.roles?.includes('ROLE_ADMIN')) && (
                         <Link
-                          to="/admin/dashboard"
+                          to="/admin"
                           onClick={() => setUserDropdownOpen(false)}
-                          className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-purple-400 hover:bg-slate-700/60 font-bold"
+                          className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-[#2874F0] hover:bg-blue-50 font-bold"
                         >
-                          <ShieldAlert className="w-4 h-4 text-purple-400" />
+                          <ShieldAlert className="w-4 h-4" />
                           <span>Admin Console</span>
                         </Link>
                       )}
@@ -216,7 +223,7 @@ export const Navbar: React.FC = () => {
                       <Link
                         to="/orders"
                         onClick={() => setUserDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-200 hover:bg-slate-700/60 font-semibold"
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-700 hover:bg-slate-50 font-semibold"
                       >
                         <Package className="w-4 h-4 text-slate-400" />
                         <span>My Orders</span>
@@ -225,16 +232,16 @@ export const Navbar: React.FC = () => {
                       <Link
                         to="/wishlist"
                         onClick={() => setUserDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-200 hover:bg-slate-700/60 font-semibold"
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-700 hover:bg-slate-50 font-semibold"
                       >
                         <Heart className="w-4 h-4 text-slate-400" />
-                        <span>My Wishlist ({totalWishlistCount})</span>
+                        <span>My Wishlist</span>
                       </Link>
 
                       <Link
                         to="/addresses"
                         onClick={() => setUserDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-200 hover:bg-slate-700/60 font-semibold"
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-700 hover:bg-slate-50 font-semibold"
                       >
                         <MapPin className="w-4 h-4 text-slate-400" />
                         <span>Saved Addresses</span>
@@ -243,17 +250,17 @@ export const Navbar: React.FC = () => {
                       <Link
                         to="/profile"
                         onClick={() => setUserDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-200 hover:bg-slate-700/60 font-semibold"
+                        className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-700 hover:bg-slate-50 font-semibold"
                       >
                         <UserIcon className="w-4 h-4 text-slate-400" />
                         <span>Account Profile</span>
                       </Link>
 
-                      <div className="border-t border-slate-700/80 my-1.5"></div>
+                      <div className="border-t border-slate-100 my-1.5"></div>
 
                       <button
                         onClick={handleLogout}
-                        className="w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-xs text-rose-400 hover:bg-rose-950/40 font-bold cursor-pointer"
+                        className="w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-xs text-rose-600 hover:bg-rose-50 font-bold cursor-pointer"
                       >
                         <LogOut className="w-4 h-4" />
                         <span>Sign Out</span>
@@ -265,15 +272,15 @@ export const Navbar: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <Link
                     to="/login"
-                    className="text-xs font-bold text-slate-200 hover:text-white px-3.5 py-2 rounded-xl hover:bg-slate-800 transition"
+                    className="px-4 py-1.5 bg-white text-[#2874F0] font-bold text-xs sm:text-sm rounded-lg hover:bg-slate-50 transition shadow-sm"
                   >
-                    Sign In
+                    Login
                   </Link>
                   <Link
                     to="/register"
-                    className="text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-xl transition shadow-md shadow-blue-600/30"
+                    className="hidden sm:inline-block px-3.5 py-1.5 bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm rounded-lg transition border border-white/30"
                   >
-                    Sign Up
+                    Become a Seller
                   </Link>
                 </div>
               )}
@@ -281,48 +288,74 @@ export const Navbar: React.FC = () => {
 
           </div>
         </div>
+      </div>
 
-        {/* Secondary Category Navigation Bar */}
-        <div className="hidden lg:flex items-center gap-8 py-2.5 border-t border-slate-800/80 text-xs font-bold text-slate-300">
-          <div className="relative" ref={categoryMenuRef}>
-            <button
-              onClick={() => setCategoryMenuOpen(!categoryMenuOpen)}
-              className="flex items-center gap-2 font-black text-white hover:text-blue-400 transition cursor-pointer"
-            >
-              <Layers className="w-4 h-4 text-blue-400" />
-              <span>All Categories</span>
-              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${categoryMenuOpen ? 'rotate-180' : ''}`} />
-            </button>
+      {/* Secondary Category Strip matching live shopkart11.in */}
+      <div className="bg-white border-b border-slate-200/80 shadow-xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between gap-6 py-2 overflow-x-auto text-xs font-bold text-slate-700 no-scrollbar">
+            <div className="flex items-center gap-6 sm:gap-8 flex-nowrap min-w-max">
+              <div className="relative" ref={categoryMenuRef}>
+                <button
+                  onClick={() => setCategoryMenuOpen(!categoryMenuOpen)}
+                  className="flex items-center gap-1.5 font-black text-slate-900 hover:text-[#2874F0] transition cursor-pointer"
+                >
+                  <Layers className="w-4 h-4 text-[#2874F0]" />
+                  <span>All Categories</span>
+                  <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${categoryMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
 
-            {categoryMenuOpen && (
-              <div className="absolute left-0 mt-2 w-72 bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 py-2.5 z-50 animate-in fade-in slide-in-from-top-2 text-slate-200">
-                {categories.map((cat) => (
-                  <Link
-                    key={cat.categoryId}
-                    to={`/products?categorySlug=${cat.slug}`}
-                    onClick={() => setCategoryMenuOpen(false)}
-                    className="block px-4 py-2.5 text-xs font-semibold text-slate-200 hover:bg-slate-700 hover:text-blue-400 transition"
-                  >
-                    {cat.categoryName}
-                  </Link>
-                ))}
+                {categoryMenuOpen && (
+                  <div className="absolute left-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200 py-2.5 z-50 text-slate-800">
+                    {categories.map((cat) => (
+                      <Link
+                        key={cat.categoryId}
+                        to={`/products?categorySlug=${cat.slug}`}
+                        onClick={() => setCategoryMenuOpen(false)}
+                        className="block px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-[#2874F0] transition"
+                      >
+                        {cat.categoryName}
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          <Link to="/products?sort=deals" className="text-amber-400 font-black hover:underline flex items-center gap-1">
-            <Zap className="w-3.5 h-3.5 fill-amber-400" />
-            <span>Super Flash Deals</span>
-          </Link>
-          <Link to="/products?sort=bestsellers" className="hover:text-blue-400 transition">
-            Bestsellers
-          </Link>
-          <Link to="/products?sort=newest" className="hover:text-blue-400 transition">
-            New Arrivals
-          </Link>
-          <Link to="/products" className="hover:text-blue-400 transition">
-            All Products Catalog
-          </Link>
+              {/* Exact Categories from https://shopkart11.in/ */}
+              <Link to="/products?categorySlug=grocery" className="hover:text-[#2874F0] transition whitespace-nowrap">
+                Grocery
+              </Link>
+              <Link to="/products?categorySlug=mobiles" className="hover:text-[#2874F0] transition whitespace-nowrap">
+                Mobiles
+              </Link>
+              <Link to="/products?categorySlug=fashion" className="hover:text-[#2874F0] transition whitespace-nowrap">
+                Fashion
+              </Link>
+              <Link to="/products?categorySlug=electronics" className="hover:text-[#2874F0] transition whitespace-nowrap">
+                Electronics
+              </Link>
+              <Link to="/products?categorySlug=home-furniture" className="hover:text-[#2874F0] transition whitespace-nowrap">
+                Home &amp; Furniture
+              </Link>
+              <Link to="/products?categorySlug=appliances" className="hover:text-[#2874F0] transition whitespace-nowrap">
+                Appliances
+              </Link>
+              <Link to="/products?categorySlug=travel" className="hover:text-[#2874F0] transition whitespace-nowrap">
+                Travel
+              </Link>
+              <Link to="/products?categorySlug=beauty" className="hover:text-[#2874F0] transition whitespace-nowrap">
+                Beauty
+              </Link>
+              <Link to="/products?categorySlug=toys" className="hover:text-[#2874F0] transition whitespace-nowrap">
+                Toys &amp; More
+              </Link>
+            </div>
+
+            <Link to="/products?sort=deals" className="hidden lg:flex items-center gap-1.5 text-amber-600 hover:text-amber-700 font-black whitespace-nowrap flex-shrink-0">
+              <Zap className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+              <span>Super Flash Deals</span>
+            </Link>
+          </div>
         </div>
       </div>
 

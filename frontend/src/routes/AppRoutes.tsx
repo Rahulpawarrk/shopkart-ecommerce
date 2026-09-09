@@ -29,6 +29,9 @@ const OrderConfirmationPage = React.lazy(() =>
 );
 
 // Customer Pages (Lazy Loaded)
+const PolicyPage = React.lazy(() =>
+  import('@/pages/store/PolicyPage').then((m) => ({ default: m.PolicyPage }))
+);
 const OrdersPage = React.lazy(() =>
   import('@/pages/customer/OrdersPage').then((m) => ({ default: m.OrdersPage }))
 );
@@ -330,6 +333,14 @@ export const AppRoutes: React.FC = () => {
             </ProtectedRoute>
           }
         />
+
+        {/* Informational & Policy Pages */}
+        <Route path="/about" element={<PolicyPage />} />
+        <Route path="/contact" element={<PolicyPage />} />
+        <Route path="/terms" element={<PolicyPage />} />
+        <Route path="/privacy" element={<PolicyPage />} />
+        <Route path="/return-policy" element={<PolicyPage />} />
+        <Route path="/shipping-policy" element={<PolicyPage />} />
 
         {/* 404 Storefront */}
         <Route path="*" element={<NotFoundPage />} />

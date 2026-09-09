@@ -78,11 +78,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   return (
     <div className="group bg-white rounded-3xl border border-slate-200/90 overflow-hidden hover:shadow-card hover:border-blue-300 transition duration-300 flex flex-col relative justify-between">
-      {/* Top Badges */}
-      <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5 pointer-events-none">
-        {product.discountPercentage > 0 && (
-          <span className="bg-red-500 text-white font-black text-[10px] px-2.5 py-0.5 rounded-full shadow-sm">
+      {/* Top Badges matching shopkart11.in */}
+      <div className="absolute top-3 left-3 z-10 flex flex-col items-start gap-1 pointer-events-none">
+        {product.discountPercentage >= 40 ? (
+          <span className="bg-red-600 text-white font-black text-[10px] px-2 py-0.5 rounded-full shadow-xs">
+            🔥 Super Deal
+          </span>
+        ) : product.discountPercentage > 0 ? (
+          <span className="bg-amber-500 text-white font-black text-[10px] px-2 py-0.5 rounded-full shadow-xs">
             {product.discountPercentage}% OFF
+          </span>
+        ) : null}
+        {Number(product.effectivePrice || product.price) >= 499 && (
+          <span className="bg-emerald-600/90 text-white font-bold text-[9px] px-2 py-0.5 rounded-full shadow-xs backdrop-blur-xs">
+            Free Delivery
           </span>
         )}
         {!product.inStock && (
