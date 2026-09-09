@@ -1,42 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-    <defs>
-        <!-- Blue Gradient for Badge -->
-        <linearGradient id="skFaviconBlue" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#3b82f6" />
-            <stop offset="45%" stop-color="#2563eb" />
-            <stop offset="100%" stop-color="#1d4ed8" />
-        </linearGradient>
-
-        <!-- Vibrant Gold Lightning & Wheel Gradient -->
-        <linearGradient id="skFaviconGold" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#fef08a" />
-            <stop offset="35%" stop-color="#fbbf24" />
-            <stop offset="80%" stop-color="#f59e0b" />
-            <stop offset="100%" stop-color="#ea580c" />
-        </linearGradient>
-
-        <!-- Outer Soft Shadow -->
-        <filter id="skFaviconShadow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.3" />
-        </filter>
-    </defs>
-
-    <!-- 1. SQUIRCLE BACKGROUND -->
-    <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#skFaviconBlue)" filter="url(#skFaviconShadow)" />
-    <!-- Crisp Inner Border for Dark & Light browser tabs -->
-    <rect x="3" y="3" width="58" height="58" rx="15" stroke="#93c5fd" stroke-width="2" stroke-opacity="0.75" fill="none" />
-
-    <!-- 2. HIGH-CONTRAST WHITE SHOPPING CART -->
-    <g stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
-        <!-- Cart Handle and Body Contour -->
-        <path d="M14 20 L21 20 L24.5 39 L47 39 L51.5 25 L22.5 25" />
-    </g>
-
-    <!-- 3. GOLDEN CART WHEELS -->
-    <circle cx="27.5" cy="46.5" r="3.75" fill="url(#skFaviconGold)" stroke="#b45309" stroke-width="0.75" />
-    <circle cx="44" cy="46.5" r="3.75" fill="url(#skFaviconGold)" stroke="#b45309" stroke-width="0.75" />
-
-    <!-- 4. ENERGETIC GOLD LIGHTNING BOLT -->
-    <!-- Positioned prominently in the basket for instant icon recognition at 16x16 / 32x32 -->
-    <polygon points="37,10 30,24 38,24 33,35 45,21 38,21 42,10" fill="url(#skFaviconGold)" stroke="#ffffff" stroke-width="1.2" stroke-linejoin="round" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="none">
+  <defs>
+    <linearGradient id="shopkart-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="7" fill="url(#shopkart-grad)" />
+  <g transform="translate(4, 4)" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+    <path d="M3 6h18" />
+    <path d="M16 10a4 4 0 0 1-8 0" />
+  </g>
 </svg>
